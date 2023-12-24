@@ -404,10 +404,21 @@ class PoLRYTubePlayingCard extends s {
                         @click=${() => this._play(str["media_content_type"], str["media_content_id"])}>
                         Play
                     </mwc-button>
+                    ${this._renderRadio(str["media_content_id"] - 1, this._entity["attributes"]["current_track"])}
                 </div>
             `;
         });
         return elements;
+    }
+    _renderRadio(cur_item, active_item) {
+        if (cur_item != active_item)
+            return x ``;
+        return x `
+            <mwc-button
+                @click=${() => this._startRadio(this._entity["attributes"]["_media_id"])}>
+                Radio
+            </mwc-button>
+        `;
     }
     render() {
         this._response["children"];
@@ -439,6 +450,21 @@ class PoLRYTubePlayingCard extends s {
             parameters: media_content_id,
         });
     }
+    async _startRadio(media_content_id) {
+        // await this._hass.callService("ytube_music_player", "start_radio", {
+        //     entity_id: this._config.entity_id,
+        //     interrupt: false,
+        // });
+        this._hass.callService("media_player", "shuffle_set", {
+            entity_id: this._config.entity_id,
+            shuffle: false,
+        });
+        this._hass.callService("media_player", "play_media", {
+            entity_id: this._config.entity_id,
+            media_content_id: media_content_id,
+            media_content_type: "vid_channel",
+        });
+    }
 }
 PoLRYTubePlayingCard.styles = i$2 `
         ha-card {
@@ -452,7 +478,7 @@ PoLRYTubePlayingCard.styles = i$2 `
             padding: 12px;
             border-radius: 12px;
             display: grid;
-            grid-template-columns: 1fr min-content;
+            grid-template-columns: 1fr min-content auto;
             align-items: center;
             gap: 8px;
         }

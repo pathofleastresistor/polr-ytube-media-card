@@ -71,6 +71,7 @@ export class PoLRYTubePlayingCard extends LitElement {
         if (this._response.length == 0) {
             return html` <div class="empty">No playlist</div>`;
         }
+
         const elements = this._response.map((str) => {
             return html`
                 <div
@@ -87,10 +88,26 @@ export class PoLRYTubePlayingCard extends LitElement {
                             )}>
                         Play
                     </mwc-button>
+                    ${this._renderRadio(
+                        str["media_content_id"] - 1,
+                        this._entity["attributes"]["current_track"]
+                    )}
                 </div>
             `;
         });
         return elements;
+    }
+
+    _renderRadio(cur_item, active_item) {
+        if (cur_item != active_item) return html``;
+
+        return html`
+            <mwc-button
+                @click=${() =>
+                    this._startRadio(this._entity["attributes"]["_media_id"])}>
+                Radio
+            </mwc-button>
+        `;
     }
 
     render() {
@@ -125,6 +142,22 @@ export class PoLRYTubePlayingCard extends LitElement {
             parameters: media_content_id,
         });
     }
+
+    async _startRadio(media_content_id) {
+        // await this._hass.callService("ytube_music_player", "start_radio", {
+        //     entity_id: this._config.entity_id,
+        //     interrupt: false,
+        // });
+        this._hass.callService("media_player", "shuffle_set", {
+            entity_id: this._config.entity_id,
+            shuffle: false,
+        });
+        this._hass.callService("media_player", "play_media", {
+            entity_id: this._config.entity_id,
+            media_content_id: media_content_id,
+            media_content_type: "vid_channel",
+        });
+    }
     static styles = css`
         ha-card {
             overflow: hidden;
@@ -137,7 +170,7 @@ export class PoLRYTubePlayingCard extends LitElement {
             padding: 12px;
             border-radius: 12px;
             display: grid;
-            grid-template-columns: 1fr min-content;
+            grid-template-columns: 1fr min-content auto;
             align-items: center;
             gap: 8px;
         }
