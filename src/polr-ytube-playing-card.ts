@@ -252,26 +252,14 @@ export class PoLRYTubePlayingCard extends LitElement {
         }
 
         select {
-            // A reset of styles, including removing the default dropdown arrow
             appearance: none;
-            // Additional resets for further consistency
-            background-color: transparent;
+            display: grid;
             border: none;
-            padding: 0 1em 0 0;
-            margin: 0;
-            width: 100%;
-            cursor: inherit;
-            line-height: inherit;
+            padding: 10px;
             outline: none;
-            width: 100%;
             border: 1px solid var(--primary-color);
             border-radius: 0.25em;
-            padding: 0.25em 0.5em;
             cursor: pointer;
-            line-height: 1.1;
-            background-color: #fff;
-            background-image: linear-gradient(to top, #f9f9f9, #fff 33%);
-            display: grid;
         }
         select::after {
             content: "";
