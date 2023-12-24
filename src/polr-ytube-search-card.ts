@@ -43,33 +43,13 @@ export class PoLRYTubeSearchCard extends LitElement {
         }
     }
 
-    async _fetchResults() {
-        try {
-            this._response = await this._hass.callWS({
-                type: "media_player/browse_media",
-                entity_id: this._config.entity_id,
-                media_content_type: "search",
-                media_content_id: "",
-            });
-
-            // console.log(this._response);
-
-            if (this._response["children"]?.length > 0)
-                this._resultsState = PoLRMediaSearchState.HAS_RESULTS;
-            else this._resultsState = PoLRMediaSearchState.NO_RESULTS;
-        } catch (e) {
-            this._resultsState = PoLRMediaSearchState.ERROR;
-            console.error(e, this._resultsState);
-        }
-    }
-
     _renderResponse() {
         if (this._resultsState == PoLRMediaSearchState.CLEAR) return html``;
 
         if (this._resultsState == PoLRMediaSearchState.HAS_RESULTS) {
             const elements = this._response["children"]
                 ?.filter(
-                    (result) => result["can_play"] && !result["can_expand"]
+                    (result) => true //result["can_play"] && !result["can_expand"]
                 )
                 .map((str) => {
                     return html`
@@ -128,6 +108,13 @@ export class PoLRYTubeSearchCard extends LitElement {
                 ${header}
                 <div class="content">
                     <div class="search">
+                        <div class="filter">
+                            <select id="filter">
+                                <option value="albums">Albums</option>
+                                <option value="playlists">Playlists</option>
+                                <option selected value="songs">Songs</option>
+                            </select>
+                        </div>
                         <ha-textfield
                             type="text"
                             id="query"
@@ -146,6 +133,24 @@ export class PoLRYTubeSearchCard extends LitElement {
         `;
     }
 
+    async _fetchResults() {
+        try {
+            this._response = await this._hass.callWS({
+                type: "media_player/browse_media",
+                entity_id: this._config.entity_id,
+                media_content_type: "search",
+                media_content_id: "",
+            });
+
+            if (this._response["children"]?.length > 0)
+                this._resultsState = PoLRMediaSearchState.HAS_RESULTS;
+            else this._resultsState = PoLRMediaSearchState.NO_RESULTS;
+        } catch (e) {
+            this._resultsState = PoLRMediaSearchState.ERROR;
+            console.error(e, this._resultsState);
+        }
+    }
+
     handleKey(ev) {
         if (ev.keyCode == 13) this._search();
     }
@@ -153,11 +158,12 @@ export class PoLRYTubeSearchCard extends LitElement {
     async _search() {
         this._response = {};
         this._resultsState = PoLRMediaSearchState.LOADING;
+        const filter = (this.shadowRoot.querySelector("#filter") as any).value;
         await this._hass.callService("ytube_music_player", "search", {
             entity_id: this._config.entity_id,
             query: (this.shadowRoot.querySelector("#query") as any).value,
-            filter: "songs",
-            limit: 20,
+            filter: filter,
+            limit: 50,
         });
         this._fetchResults();
     }
@@ -198,7 +204,7 @@ export class PoLRYTubeSearchCard extends LitElement {
 
         .search {
             display: grid;
-            grid-template-columns: 1fr min-content auto;
+            grid-template-columns: min-content 1fr min-content auto;
             align-items: center;
             gap: 4px;
         }
@@ -210,6 +216,7 @@ export class PoLRYTubeSearchCard extends LitElement {
             max-height: 400px;
             overflow: scroll;
         }
+
         .result {
             padding: 12px 0;
             display: grid;
@@ -218,10 +225,12 @@ export class PoLRYTubeSearchCard extends LitElement {
             font-size: 12px;
             gap: 8px;
         }
+
         .result img {
             width: 40px;
             height: 40px;
         }
+
         .loading {
             height: 50px;
             text-align: center;
@@ -237,6 +246,7 @@ export class PoLRYTubeSearchCard extends LitElement {
             grid-template-columns: min-content auto 40px;
             gap: 4px;
         }
+
         .icon-container {
             display: flex;
             height: 40px;
@@ -247,22 +257,37 @@ export class PoLRYTubeSearchCard extends LitElement {
             align-items: center;
             margin-right: 12px;
         }
+
         .info-container {
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
+
         .primary {
             font-weight: bold;
         }
+
         .action-container {
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
         }
+
         .content {
             padding: 12px 12px 12px 12px;
+        }
+
+        select {
+            appearance: none;
+            display: grid;
+            border: none;
+            padding: 10px;
+            outline: none;
+            border: 1px solid rgba(40, 40, 40, 0.3);
+            border-radius: 0.25em;
+            cursor: pointer;
         }
     `;
 }

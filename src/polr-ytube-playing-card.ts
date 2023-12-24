@@ -45,8 +45,9 @@ export class PoLRYTubePlayingCard extends LitElement {
             return [];
         }
 
+        const media_type = this._entity["attributes"]["_media_type"];
         try {
-            if (!(this._entity["_media_type"] in ["track"])) {
+            if (["vid_channel", "playlist", "track"].includes(media_type)) {
                 const response = await this._hass.callWS({
                     type: "media_player/browse_media",
                     entity_id: this._config.entity_id,
@@ -54,14 +55,18 @@ export class PoLRYTubePlayingCard extends LitElement {
                     media_content_id: "",
                 });
                 this._response = response["children"];
-            } else {
-                this._response = [
-                    {
-                        title: "media_title",
-                    },
-                ];
             }
-            // console.log(this._response);
+            //album_of_track
+
+            if (["album"].includes(media_type)) {
+                const response = await this._hass.callWS({
+                    type: "media_player/browse_media",
+                    entity_id: this._config.entity_id,
+                    media_content_type: "album_of_track",
+                    media_content_id: "1",
+                });
+                this._response = response["children"];
+            }
         } catch (e) {
             console.error(e);
         }
@@ -82,14 +87,21 @@ export class PoLRYTubePlayingCard extends LitElement {
                     <div class="title">${str["title"]}</div>
                     ${this._renderRadio(
                         str["media_content_id"] - 1,
-                        this._entity["attributes"]["current_track"]
+                        this._entity["attributes"]["current_track"],
+                        str["media_content_type"],
+                        str["media_content_id"]
                     )}
                     <mwc-button
                         @click=${() =>
-                            this._play(
-                                str["media_content_type"],
-                                str["media_content_id"]
-                            )}>
+                            str["media_content_type"] == "track"
+                                ? this._playTrack(
+                                      str["media_content_type"],
+                                      str["media_content_id"]
+                                  )
+                                : this._play(
+                                      str["media_content_type"],
+                                      str["media_content_id"]
+                                  )}>
                         Play
                     </mwc-button>
                 </div>
@@ -98,13 +110,16 @@ export class PoLRYTubePlayingCard extends LitElement {
         return elements;
     }
 
-    _renderRadio(cur_item, active_item) {
-        if (cur_item != active_item) return html``;
+    _renderRadio(cur_item, active_item, media_content_type, media_content_id) {
+        if (cur_item != active_item && media_content_type != "track")
+            return html``;
 
+        const id =
+            media_content_type == "track"
+                ? media_content_id
+                : this._entity["attributes"]["videoId"];
         return html`
-            <mwc-button
-                @click=${() =>
-                    this._startRadio(this._entity["attributes"]["videoId"])}>
+            <mwc-button @click=${() => this._startRadio(id)}>
                 Radio
             </mwc-button>
         `;
@@ -179,6 +194,13 @@ export class PoLRYTubePlayingCard extends LitElement {
             parameters: media_content_id,
         });
     }
+    async _playTrack(media_content_type, media_content_id) {
+        this._hass.callService("media_player", "play_media", {
+            entity_id: this._config.entity_id,
+            media_content_id: media_content_id,
+            media_content_type: media_content_type,
+        });
+    }
 
     async _startRadio(media_content_id) {
         this._hass.callService("media_player", "shuffle_set", {
@@ -203,10 +225,12 @@ export class PoLRYTubePlayingCard extends LitElement {
         ha-card {
             overflow: hidden;
         }
+
         .results {
             max-height: 400px;
             overflow: scroll;
         }
+
         .result {
             padding: 12px;
             border-radius: 12px;
@@ -214,6 +238,7 @@ export class PoLRYTubePlayingCard extends LitElement {
             grid-template-columns: 1fr min-content auto;
             align-items: center;
         }
+
         .current_track {
             font-weight: bold;
             background-color: rgb(64 64 64 / 20%);
@@ -226,6 +251,7 @@ export class PoLRYTubePlayingCard extends LitElement {
             grid-template-columns: min-content auto 40px;
             gap: 4px;
         }
+
         .icon-container {
             display: flex;
             height: 40px;
@@ -236,23 +262,28 @@ export class PoLRYTubePlayingCard extends LitElement {
             align-items: center;
             margin-right: 12px;
         }
+
         .info-container {
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
+
         .primary {
             font-weight: bold;
         }
+
         .action-container {
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
         }
+
         .content {
             padding: 12px 12px 12px 12px;
         }
+
         .source {
             padding: 12px;
             display: grid;

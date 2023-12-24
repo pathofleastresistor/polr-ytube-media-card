@@ -99,32 +99,13 @@ class PoLRYTubeSearchCard extends s {
             this._runOnce = true;
         }
     }
-    async _fetchResults() {
-        var _a;
-        try {
-            this._response = await this._hass.callWS({
-                type: "media_player/browse_media",
-                entity_id: this._config.entity_id,
-                media_content_type: "search",
-                media_content_id: "",
-            });
-            // console.log(this._response);
-            if (((_a = this._response["children"]) === null || _a === void 0 ? void 0 : _a.length) > 0)
-                this._resultsState = 2 /* PoLRMediaSearchState.HAS_RESULTS */;
-            else
-                this._resultsState = 8 /* PoLRMediaSearchState.NO_RESULTS */;
-        }
-        catch (e) {
-            this._resultsState = 16 /* PoLRMediaSearchState.ERROR */;
-            console.error(e, this._resultsState);
-        }
-    }
     _renderResponse() {
         var _a;
         if (this._resultsState == 1 /* PoLRMediaSearchState.CLEAR */)
             return x ``;
         if (this._resultsState == 2 /* PoLRMediaSearchState.HAS_RESULTS */) {
-            const elements = (_a = this._response["children"]) === null || _a === void 0 ? void 0 : _a.filter((result) => result["can_play"] && !result["can_expand"]).map((str) => {
+            const elements = (_a = this._response["children"]) === null || _a === void 0 ? void 0 : _a.filter((result) => true //result["can_play"] && !result["can_expand"]
+            ).map((str) => {
                 return x `
                         <div class="result">
                             <img src="${str["thumbnail"]}" />
@@ -171,6 +152,13 @@ class PoLRYTubeSearchCard extends s {
                 ${header}
                 <div class="content">
                     <div class="search">
+                        <div class="filter">
+                            <select id="filter">
+                                <option value="albums">Albums</option>
+                                <option value="playlists">Playlists</option>
+                                <option selected value="songs">Songs</option>
+                            </select>
+                        </div>
                         <ha-textfield
                             type="text"
                             id="query"
@@ -188,6 +176,25 @@ class PoLRYTubeSearchCard extends s {
             </ha-card>
         `;
     }
+    async _fetchResults() {
+        var _a;
+        try {
+            this._response = await this._hass.callWS({
+                type: "media_player/browse_media",
+                entity_id: this._config.entity_id,
+                media_content_type: "search",
+                media_content_id: "",
+            });
+            if (((_a = this._response["children"]) === null || _a === void 0 ? void 0 : _a.length) > 0)
+                this._resultsState = 2 /* PoLRMediaSearchState.HAS_RESULTS */;
+            else
+                this._resultsState = 8 /* PoLRMediaSearchState.NO_RESULTS */;
+        }
+        catch (e) {
+            this._resultsState = 16 /* PoLRMediaSearchState.ERROR */;
+            console.error(e, this._resultsState);
+        }
+    }
     handleKey(ev) {
         if (ev.keyCode == 13)
             this._search();
@@ -195,11 +202,12 @@ class PoLRYTubeSearchCard extends s {
     async _search() {
         this._response = {};
         this._resultsState = 4 /* PoLRMediaSearchState.LOADING */;
+        const filter = this.shadowRoot.querySelector("#filter").value;
         await this._hass.callService("ytube_music_player", "search", {
             entity_id: this._config.entity_id,
             query: this.shadowRoot.querySelector("#query").value,
-            filter: "songs",
-            limit: 20,
+            filter: filter,
+            limit: 50,
         });
         this._fetchResults();
     }
@@ -237,7 +245,7 @@ PoLRYTubeSearchCard.styles = i$2 `
 
         .search {
             display: grid;
-            grid-template-columns: 1fr min-content auto;
+            grid-template-columns: min-content 1fr min-content auto;
             align-items: center;
             gap: 4px;
         }
@@ -249,6 +257,7 @@ PoLRYTubeSearchCard.styles = i$2 `
             max-height: 400px;
             overflow: scroll;
         }
+
         .result {
             padding: 12px 0;
             display: grid;
@@ -257,10 +266,12 @@ PoLRYTubeSearchCard.styles = i$2 `
             font-size: 12px;
             gap: 8px;
         }
+
         .result img {
             width: 40px;
             height: 40px;
         }
+
         .loading {
             height: 50px;
             text-align: center;
@@ -276,6 +287,7 @@ PoLRYTubeSearchCard.styles = i$2 `
             grid-template-columns: min-content auto 40px;
             gap: 4px;
         }
+
         .icon-container {
             display: flex;
             height: 40px;
@@ -286,22 +298,37 @@ PoLRYTubeSearchCard.styles = i$2 `
             align-items: center;
             margin-right: 12px;
         }
+
         .info-container {
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
+
         .primary {
             font-weight: bold;
         }
+
         .action-container {
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
         }
+
         .content {
             padding: 12px 12px 12px 12px;
+        }
+
+        select {
+            appearance: none;
+            display: grid;
+            border: none;
+            padding: 10px;
+            outline: none;
+            border: 1px solid rgba(40, 40, 40, 0.3);
+            border-radius: 0.25em;
+            cursor: pointer;
         }
     `;
 __decorate([
@@ -365,8 +392,9 @@ class PoLRYTubePlayingCard extends s {
         if (["off", "unavailable"].includes(this._entity["state"])) {
             return [];
         }
+        const media_type = this._entity["attributes"]["_media_type"];
         try {
-            if (!(this._entity["_media_type"] in ["track"])) {
+            if (["vid_channel", "playlist", "track"].includes(media_type)) {
                 const response = await this._hass.callWS({
                     type: "media_player/browse_media",
                     entity_id: this._config.entity_id,
@@ -375,14 +403,16 @@ class PoLRYTubePlayingCard extends s {
                 });
                 this._response = response["children"];
             }
-            else {
-                this._response = [
-                    {
-                        title: "media_title",
-                    },
-                ];
+            //album_of_track
+            if (["album"].includes(media_type)) {
+                const response = await this._hass.callWS({
+                    type: "media_player/browse_media",
+                    entity_id: this._config.entity_id,
+                    media_content_type: "album_of_track",
+                    media_content_id: "1",
+                });
+                this._response = response["children"];
             }
-            // console.log(this._response);
         }
         catch (e) {
             console.error(e);
@@ -400,9 +430,11 @@ class PoLRYTubePlayingCard extends s {
                 ? "current_track"
                 : ""}">
                     <div class="title">${str["title"]}</div>
-                    ${this._renderRadio(str["media_content_id"] - 1, this._entity["attributes"]["current_track"])}
+                    ${this._renderRadio(str["media_content_id"] - 1, this._entity["attributes"]["current_track"], str["media_content_type"], str["media_content_id"])}
                     <mwc-button
-                        @click=${() => this._play(str["media_content_type"], str["media_content_id"])}>
+                        @click=${() => str["media_content_type"] == "track"
+                ? this._playTrack(str["media_content_type"], str["media_content_id"])
+                : this._play(str["media_content_type"], str["media_content_id"])}>
                         Play
                     </mwc-button>
                 </div>
@@ -410,12 +442,14 @@ class PoLRYTubePlayingCard extends s {
         });
         return elements;
     }
-    _renderRadio(cur_item, active_item) {
-        if (cur_item != active_item)
+    _renderRadio(cur_item, active_item, media_content_type, media_content_id) {
+        if (cur_item != active_item && media_content_type != "track")
             return x ``;
+        const id = media_content_type == "track"
+            ? media_content_id
+            : this._entity["attributes"]["videoId"];
         return x `
-            <mwc-button
-                @click=${() => this._startRadio(this._entity["attributes"]["videoId"])}>
+            <mwc-button @click=${() => this._startRadio(id)}>
                 Radio
             </mwc-button>
         `;
@@ -483,6 +517,13 @@ class PoLRYTubePlayingCard extends s {
             parameters: media_content_id,
         });
     }
+    async _playTrack(media_content_type, media_content_id) {
+        this._hass.callService("media_player", "play_media", {
+            entity_id: this._config.entity_id,
+            media_content_id: media_content_id,
+            media_content_type: media_content_type,
+        });
+    }
     async _startRadio(media_content_id) {
         this._hass.callService("media_player", "shuffle_set", {
             entity_id: this._config.entity_id,
@@ -505,10 +546,12 @@ PoLRYTubePlayingCard.styles = i$2 `
         ha-card {
             overflow: hidden;
         }
+
         .results {
             max-height: 400px;
             overflow: scroll;
         }
+
         .result {
             padding: 12px;
             border-radius: 12px;
@@ -516,6 +559,7 @@ PoLRYTubePlayingCard.styles = i$2 `
             grid-template-columns: 1fr min-content auto;
             align-items: center;
         }
+
         .current_track {
             font-weight: bold;
             background-color: rgb(64 64 64 / 20%);
@@ -528,6 +572,7 @@ PoLRYTubePlayingCard.styles = i$2 `
             grid-template-columns: min-content auto 40px;
             gap: 4px;
         }
+
         .icon-container {
             display: flex;
             height: 40px;
@@ -538,23 +583,28 @@ PoLRYTubePlayingCard.styles = i$2 `
             align-items: center;
             margin-right: 12px;
         }
+
         .info-container {
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
+
         .primary {
             font-weight: bold;
         }
+
         .action-container {
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
         }
+
         .content {
             padding: 12px 12px 12px 12px;
         }
+
         .source {
             padding: 12px;
             display: grid;
