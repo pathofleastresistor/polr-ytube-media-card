@@ -257,16 +257,9 @@ export class PoLRYTubePlayingCard extends LitElement {
             border: none;
             padding: 10px;
             outline: none;
-            border: 1px solid var(--primary-color);
+            border: 1px solid rgba(40, 40, 40, 0.3);
             border-radius: 0.25em;
             cursor: pointer;
-        }
-        select::after {
-            content: "";
-            width: 0.8em;
-            height: 0.5em;
-            background-color: var(--select-arrow);
-            clip-path: polygon(100% 0%, 0 0%, 50% 100%);
         }
     `;
 }

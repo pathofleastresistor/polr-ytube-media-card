@@ -42,8 +42,25 @@ header: Living Room (YouTube)
 searchTitle: Search on Living Room
 ```
 
-![](img/polr-ytube-search-card.png)
+<img src="img/polr-ytube-search-card.png" height="400" />
 
 ## PoLR-YTube-Playing-Card
 
 -   This card shows info and actions related to the current playlist
+
+### Settings
+
+-   `entity_id` - a YTube_Media_Player entity
+-   `showHeader` - `true`/`false` to show the header
+-   `header` - title of the card
+
+### Example
+
+```
+type: custom:polr-ytube-playing-card
+entity_id: media_player.youtube_living_room_display
+header: Currently Playing
+showHeader: true
+```
+
+<img src="img/polr-ytube-playing-card.png" height="400" />
