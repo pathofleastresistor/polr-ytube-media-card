@@ -28,12 +28,9 @@ export class PoLRYTubeSearchCard extends LitElement {
         if (!config.entity_id) {
             throw new Error("entity_id must be specified");
         }
-        if (!config.header) {
-            throw new Error("header must be specified");
-        }
 
         this._config = structuredClone(config);
-        this._config.header = this._config.header;
+        if (!("header" in this._config)) this._config.header = "YouTube Search";
         if (!("showHeader" in this._config)) this._config.showHeader = false;
         if (!("searchTitle" in this._config))
             this._config.searchTitle = "Search";
@@ -120,10 +117,7 @@ export class PoLRYTubeSearchCard extends LitElement {
                           <ha-icon icon="${this._config.icon}"></ha-icon>
                       </div>
                       <div class="info-container">
-                          <div class="primary">
-                              <ha-icon icon="mdi:loading" id="spinner"></ha-icon
-                              >${this._config.header}
-                          </div>
+                          <div class="primary">${this._config.header}</div>
                       </div>
                   </div>
               `
@@ -231,7 +225,7 @@ export class PoLRYTubeSearchCard extends LitElement {
         .header {
             display: grid;
             height: 40px;
-            padding: 12px;
+            padding: 12px 12px 0 12px;
             grid-template-columns: min-content auto 40px;
             gap: 4px;
         }
