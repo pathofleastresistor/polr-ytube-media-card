@@ -1,6 +1,8 @@
 # PoLR-YTube-Media-Card
 
-A collection of cards was design to enhance the features of the YTube_Media_Player integration.
+A collection of cards was design to enhance the features of the [YTube_Media_Player integration](https://github.com/KoljaWindeler/ytube_music_player) and the [Mini Media Player](https://github.com/kalkih/mini-media-player)
+
+<img src="img/polr-ytube-media-card.gif" align="center" width="400px"></img>
 
 ## Installation
 
@@ -42,7 +44,7 @@ header: Living Room (YouTube)
 searchTitle: Search on Living Room
 ```
 
-<img src="img/polr-ytube-search-card.png" height="400" />
+<img src="img/polr-ytube-search-card.png" align="center" height="400" />
 
 ## PoLR-YTube-Playing-Card
 
@@ -63,4 +65,4 @@ header: Currently Playing
 showHeader: true
 ```
 
-<img src="img/polr-ytube-playing-card.png" height="400" />
+<img src="img/polr-ytube-playing-card.png" align="center" height="400" />
