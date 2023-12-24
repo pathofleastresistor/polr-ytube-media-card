@@ -42,7 +42,7 @@ header: Living Room (YouTube)
 searchTitle: Search on Living Room
 ```
 
-![](image.png)
+![](img/polr-ytube-search-card.png)
 
 ## PoLR-YTube-Playing-Card
 
