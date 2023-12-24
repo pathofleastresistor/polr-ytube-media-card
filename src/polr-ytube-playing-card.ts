@@ -104,7 +104,7 @@ export class PoLRYTubePlayingCard extends LitElement {
         return html`
             <mwc-button
                 @click=${() =>
-                    this._startRadio(this._entity["attributes"]["_media_id"])}>
+                    this._startRadio(this._entity["attributes"]["videoId"])}>
                 Radio
             </mwc-button>
         `;

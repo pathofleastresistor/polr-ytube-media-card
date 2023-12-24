@@ -415,7 +415,7 @@ class PoLRYTubePlayingCard extends s {
             return x ``;
         return x `
             <mwc-button
-                @click=${() => this._startRadio(this._entity["attributes"]["_media_id"])}>
+                @click=${() => this._startRadio(this._entity["attributes"]["videoId"])}>
                 Radio
             </mwc-button>
         `;
