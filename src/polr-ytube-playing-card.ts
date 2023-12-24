@@ -5,7 +5,7 @@ export class PoLRYTubePlayingCard extends LitElement {
     @property() _config: any = {};
     @property() _hass: any;
     @property() _runOnce: boolean = false;
-    @property() _response: boolean = false;
+    @property() _response: any = [];
     @state() _entity: any;
 
     static getConfigElement() {
@@ -31,47 +31,68 @@ export class PoLRYTubePlayingCard extends LitElement {
 
     set hass(hass) {
         this._hass = hass;
-        this._entity = this._hass["states"][this._config["entity_id"]];
+        this._entity = structuredClone(
+            this._hass["states"][this._config["entity_id"]]
+        );
+        this._fetchResults();
         if (!this._runOnce) {
-            this._fetchResults();
             this._runOnce = true;
-            console.log(this._entity);
         }
     }
 
     async _fetchResults() {
-        try {
-            this._response = await this._hass.callWS({
-                type: "media_player/browse_media",
-                entity_id: this._config.entity_id,
-                media_content_type: "cur_playlists",
-                media_content_id: "",
-            });
+        if (["off", "unavailable"].includes(this._entity["state"])) {
+            return [];
+        }
 
-            console.log(this._response);
+        try {
+            if (!(this._entity["_media_type"] in ["track"])) {
+                const response = await this._hass.callWS({
+                    type: "media_player/browse_media",
+                    entity_id: this._config.entity_id,
+                    media_content_type: "cur_playlists",
+                    media_content_id: "",
+                });
+                this._response = response["children"];
+            } else {
+                this._response = [
+                    {
+                        title: "media_title",
+                    },
+                ];
+            }
+            // console.log(this._response);
         } catch (e) {
             console.error(e);
         }
     }
 
     _renderResponse() {
-        const elements = this._response["children"]
-            ?.filter((result) => result["can_play"] && !result["can_expand"])
-            .map((str) => {
-                return html`
-                    <div class="result">
-                        <div
-                            class="title ${str["media_content_id"] ==
-                            this._entity["attributes"]["current_track"]
-                                ? "current_track"
-                                : ""}">
-                            ${str["title"]}
-                        </div>
-                    </div>
-                `;
-            });
+        if (this._response.length == 0) {
+            return html` <div class="empty">No playlist</div>`;
+        }
+        const elements = this._response.map((str) => {
+            return html`
+                <div
+                    class="result ${parseInt(str["media_content_id"]) - 1 ==
+                    this._entity["attributes"]["current_track"]
+                        ? "current_track"
+                        : ""}">
+                    <div class="title">${str["title"]}</div>
+                    <mwc-button
+                        @click=${() =>
+                            this._play(
+                                str["media_content_type"],
+                                str["media_content_id"]
+                            )}>
+                        Play
+                    </mwc-button>
+                </div>
+            `;
+        });
         return elements;
     }
+
     render() {
         const elements = this._response["children"];
         const header = this._config["showHeader"]
@@ -97,6 +118,13 @@ export class PoLRYTubePlayingCard extends LitElement {
         `;
     }
 
+    async _play(media_content_type, media_content_id) {
+        this._hass.callService("ytube_music_player", "call_method", {
+            entity_id: this._config.entity_id,
+            command: "goto_track",
+            parameters: media_content_id,
+        });
+    }
     static styles = css`
         ha-card {
             overflow: hidden;
@@ -106,14 +134,16 @@ export class PoLRYTubePlayingCard extends LitElement {
             overflow: scroll;
         }
         .result {
-            padding: 12px 0;
+            padding: 12px;
+            border-radius: 12px;
             display: grid;
-            grid-template-columns: 1fr;
+            grid-template-columns: 1fr min-content;
             align-items: center;
             gap: 8px;
         }
         .current_track {
             font-weight: bold;
+            background-color: rgb(64 64 64 / 20%);
         }
 
         .header {

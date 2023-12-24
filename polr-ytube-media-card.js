@@ -108,7 +108,7 @@ class PoLRYTubeSearchCard extends s {
                 media_content_type: "search",
                 media_content_id: "",
             });
-            console.log(this._response);
+            // console.log(this._response);
             if (((_a = this._response["children"]) === null || _a === void 0 ? void 0 : _a.length) > 0)
                 this._resultsState = 2 /* PoLRMediaSearchState.HAS_RESULTS */;
             else
@@ -326,7 +326,7 @@ class PoLRYTubePlayingCard extends s {
         super(...arguments);
         this._config = {};
         this._runOnce = false;
-        this._response = false;
+        this._response = [];
     }
     static getConfigElement() {
         // return document.createElement("polr-ytube-playing-card-editor");
@@ -348,41 +348,57 @@ class PoLRYTubePlayingCard extends s {
     }
     set hass(hass) {
         this._hass = hass;
-        this._entity = this._hass["states"][this._config["entity_id"]];
+        this._entity = structuredClone(this._hass["states"][this._config["entity_id"]]);
+        this._fetchResults();
         if (!this._runOnce) {
-            this._fetchResults();
             this._runOnce = true;
-            console.log(this._entity);
         }
     }
     async _fetchResults() {
+        if (["off", "unavailable"].includes(this._entity["state"])) {
+            return [];
+        }
         try {
-            this._response = await this._hass.callWS({
-                type: "media_player/browse_media",
-                entity_id: this._config.entity_id,
-                media_content_type: "cur_playlists",
-                media_content_id: "",
-            });
-            console.log(this._response);
+            if (!(this._entity["_media_type"] in ["track"])) {
+                const response = await this._hass.callWS({
+                    type: "media_player/browse_media",
+                    entity_id: this._config.entity_id,
+                    media_content_type: "cur_playlists",
+                    media_content_id: "",
+                });
+                this._response = response["children"];
+            }
+            else {
+                this._response = [
+                    {
+                        title: "media_title",
+                    },
+                ];
+            }
+            // console.log(this._response);
         }
         catch (e) {
             console.error(e);
         }
     }
     _renderResponse() {
-        var _a;
-        const elements = (_a = this._response["children"]) === null || _a === void 0 ? void 0 : _a.filter((result) => result["can_play"] && !result["can_expand"]).map((str) => {
+        if (this._response.length == 0) {
+            return x ` <div class="empty">No playlist</div>`;
+        }
+        const elements = this._response.map((str) => {
             return x `
-                    <div class="result">
-                        <div
-                            class="title ${str["media_content_id"] ==
+                <div
+                    class="result ${parseInt(str["media_content_id"]) - 1 ==
                 this._entity["attributes"]["current_track"]
                 ? "current_track"
                 : ""}">
-                            ${str["title"]}
-                        </div>
-                    </div>
-                `;
+                    <div class="title">${str["title"]}</div>
+                    <mwc-button
+                        @click=${() => this._play(str["media_content_type"], str["media_content_id"])}>
+                        Play
+                    </mwc-button>
+                </div>
+            `;
         });
         return elements;
     }
@@ -409,6 +425,13 @@ class PoLRYTubePlayingCard extends s {
             </ha-card>
         `;
     }
+    async _play(media_content_type, media_content_id) {
+        this._hass.callService("ytube_music_player", "call_method", {
+            entity_id: this._config.entity_id,
+            command: "goto_track",
+            parameters: media_content_id,
+        });
+    }
 }
 PoLRYTubePlayingCard.styles = i$2 `
         ha-card {
@@ -419,14 +442,16 @@ PoLRYTubePlayingCard.styles = i$2 `
             overflow: scroll;
         }
         .result {
-            padding: 12px 0;
+            padding: 12px;
+            border-radius: 12px;
             display: grid;
-            grid-template-columns: 1fr;
+            grid-template-columns: 1fr min-content;
             align-items: center;
             gap: 8px;
         }
         .current_track {
             font-weight: bold;
+            background-color: rgb(64 64 64 / 20%);
         }
 
         .header {

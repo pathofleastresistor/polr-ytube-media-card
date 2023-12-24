@@ -52,7 +52,7 @@ export class PoLRYTubeSearchCard extends LitElement {
                 media_content_id: "",
             });
 
-            console.log(this._response);
+            // console.log(this._response);
 
             if (this._response["children"]?.length > 0)
                 this._resultsState = PoLRMediaSearchState.HAS_RESULTS;
