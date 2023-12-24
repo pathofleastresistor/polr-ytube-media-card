@@ -134,7 +134,10 @@ export class PoLRYTubeSearchCard extends LitElement {
                             label="${this._config["searchTitle"]}"
                             @keyup="${this.handleKey}"></ha-textfield>
                         <mwc-button @click=${this._search}
-                            ><ha-icon icon="mdi:send"></ha-icon
+                            ><ha-icon icon="mdi:magnify"></ha-icon
+                        ></mwc-button>
+                        <mwc-button @click=${this._clear}
+                            ><ha-icon icon="mdi:close"></ha-icon
                         ></mwc-button>
                     </div>
                     <div class="results">${this._renderResponse()}</div>
@@ -157,6 +160,11 @@ export class PoLRYTubeSearchCard extends LitElement {
             limit: 20,
         });
         this._fetchResults();
+    }
+
+    private _clear() {
+        (this.shadowRoot.querySelector("#query") as any).value = "";
+        this._response = [];
     }
 
     async _play(media_content_type, media_content_id) {
@@ -190,7 +198,7 @@ export class PoLRYTubeSearchCard extends LitElement {
 
         .search {
             display: grid;
-            grid-template-columns: 1fr min-content;
+            grid-template-columns: 1fr min-content auto;
             align-items: center;
             gap: 4px;
         }

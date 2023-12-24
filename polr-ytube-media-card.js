@@ -177,7 +177,10 @@ class PoLRYTubeSearchCard extends s {
                             label="${this._config["searchTitle"]}"
                             @keyup="${this.handleKey}"></ha-textfield>
                         <mwc-button @click=${this._search}
-                            ><ha-icon icon="mdi:send"></ha-icon
+                            ><ha-icon icon="mdi:magnify"></ha-icon
+                        ></mwc-button>
+                        <mwc-button @click=${this._clear}
+                            ><ha-icon icon="mdi:close"></ha-icon
                         ></mwc-button>
                     </div>
                     <div class="results">${this._renderResponse()}</div>
@@ -199,6 +202,10 @@ class PoLRYTubeSearchCard extends s {
             limit: 20,
         });
         this._fetchResults();
+    }
+    _clear() {
+        this.shadowRoot.querySelector("#query").value = "";
+        this._response = [];
     }
     async _play(media_content_type, media_content_id) {
         this._hass.callService("media_player", "play_media", {
@@ -230,7 +237,7 @@ PoLRYTubeSearchCard.styles = i$2 `
 
         .search {
             display: grid;
-            grid-template-columns: 1fr min-content;
+            grid-template-columns: 1fr min-content auto;
             align-items: center;
             gap: 4px;
         }
