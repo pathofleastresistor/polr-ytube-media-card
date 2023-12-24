@@ -400,11 +400,11 @@ class PoLRYTubePlayingCard extends s {
                 ? "current_track"
                 : ""}">
                     <div class="title">${str["title"]}</div>
+                    ${this._renderRadio(str["media_content_id"] - 1, this._entity["attributes"]["current_track"])}
                     <mwc-button
                         @click=${() => this._play(str["media_content_type"], str["media_content_id"])}>
                         Play
                     </mwc-button>
-                    ${this._renderRadio(str["media_content_id"] - 1, this._entity["attributes"]["current_track"])}
                 </div>
             `;
         });
@@ -425,18 +425,24 @@ class PoLRYTubePlayingCard extends s {
         for (const [key, value] of Object.entries(this._hass["states"])) {
             if (key.startsWith("media_player")) {
                 if (!("remote_player_id" in value["attributes"]))
-                    media_players.push(key);
+                    media_players.push([
+                        key,
+                        value["attributes"]["friendly_name"],
+                    ]);
             }
         }
-        const elements = media_players.map((str) => {
-            const sel = str == this._entity["attributes"]["remote_player_id"]
-                ? `selected="selected`
-                : "";
-            return x `<option ${sel} value=${str}>${str}</option> `;
-        });
-        return x ` <select id="source" @change=${this._selectSource}>
-            ${elements}
-        </select>`;
+        media_players.sort();
+        return x `
+            <div class="source">
+                <select id="source" @change=${this._selectSource}>
+                    ${media_players.map((str) => str[0] == this._entity["attributes"]["remote_player_id"]
+            ? x `<option selected value=${str[0]}>
+                                  ${str[1]}
+                              </option> `
+            : x `<option value=${str[0]}>${str[1]}</option> `)}
+                </select>
+            </div>
+        `;
     }
     render() {
         this._response["children"];
@@ -541,6 +547,40 @@ PoLRYTubePlayingCard.styles = i$2 `
         }
         .content {
             padding: 12px 12px 12px 12px;
+        }
+        .source {
+            padding: 12px;
+            display: grid;
+        }
+
+        select {
+            // A reset of styles, including removing the default dropdown arrow
+            appearance: none;
+            // Additional resets for further consistency
+            background-color: transparent;
+            border: none;
+            padding: 0 1em 0 0;
+            margin: 0;
+            width: 100%;
+            cursor: inherit;
+            line-height: inherit;
+            outline: none;
+            width: 100%;
+            border: 1px solid var(--primary-color);
+            border-radius: 0.25em;
+            padding: 0.25em 0.5em;
+            cursor: pointer;
+            line-height: 1.1;
+            background-color: #fff;
+            background-image: linear-gradient(to top, #f9f9f9, #fff 33%);
+            display: grid;
+        }
+        select::after {
+            content: "";
+            width: 0.8em;
+            height: 0.5em;
+            background-color: var(--select-arrow);
+            clip-path: polygon(100% 0%, 0 0%, 50% 100%);
         }
     `;
 __decorate([
