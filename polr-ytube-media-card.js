@@ -137,6 +137,10 @@ class PoLRYTubeSearchCard extends s {
                                 @click=${() => this._startRadio(str["media_content_id"])}>
                                 Radio
                             </mwc-button>
+                            <mwc-button
+                                @click=${() => this._addToPlaylist(str["media_content_id"])}>
+                                Add
+                            </mwc-button>
                         </div>
                     `;
             });
@@ -229,6 +233,15 @@ class PoLRYTubeSearchCard extends s {
             media_content_type: "vid_channel",
         });
     }
+    async _addToPlaylist(media_content_id) {
+        // TODO: Support for radio playlists is missing
+        const playlist_id = "";
+        await this._hass.callService("ytube_music_player", "add_to_playlist", {
+            entity_id: this._config.entity_id,
+            song_id: media_content_id,
+            playlist_id: playlist_id,
+        });
+    }
 }
 PoLRYTubeSearchCard.styles = i$2 `
         ha-card {
@@ -252,7 +265,7 @@ PoLRYTubeSearchCard.styles = i$2 `
         .result {
             padding: 12px 0;
             display: grid;
-            grid-template-columns: 40px 1fr min-content min-content;
+            grid-template-columns: 40px 1fr min-content min-content min-content;
             align-items: center;
             font-size: 12px;
             gap: 8px;
