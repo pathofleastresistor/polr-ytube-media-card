@@ -1,12 +1,22 @@
 import { LitElement, html, css, CSSResultGroup } from "lit";
 import { property, state } from "lit/decorators.js";
 
+export const enum PoLRCurrentState {
+    INITAL = 1,
+    LOADING = 2,
+    HAS_RESULTS = 4,
+    NO_RESULTS = 8,
+    ERROR = 16,
+}
+
 export class PoLRYTubePlayingCard extends LitElement {
     @property() _config: any = {};
-    @property() _hass: any;
+    @state() _hass: any;
     @property() _runOnce: boolean = false;
     @property() _response: any = [];
     @state() _entity: any;
+    @state() _cardState: PoLRCurrentState = PoLRCurrentState.INITAL;
+    @state() _lastChanged: any;
 
     static getConfigElement() {
         // return document.createElement("polr-ytube-playing-card-editor");
@@ -31,9 +41,16 @@ export class PoLRYTubePlayingCard extends LitElement {
 
     set hass(hass) {
         this._hass = hass;
+
         this._entity = structuredClone(
             this._hass["states"][this._config["entity_id"]]
         );
+
+        if (this._entity["state"] == "off") {
+            this._cardState = PoLRCurrentState.INITAL;
+        }
+        //console.log(this._entity);
+
         this._fetchResults();
         if (!this._runOnce) {
             this._runOnce = true;
@@ -46,6 +63,7 @@ export class PoLRYTubePlayingCard extends LitElement {
         }
 
         const media_type = this._entity["attributes"]["_media_type"];
+
         try {
             if (["vid_channel", "playlist", "track"].includes(media_type)) {
                 const response = await this._hass.callWS({
@@ -56,7 +74,6 @@ export class PoLRYTubePlayingCard extends LitElement {
                 });
                 this._response = response["children"];
             }
-            //album_of_track
 
             if (["album"].includes(media_type)) {
                 const response = await this._hass.callWS({
@@ -67,14 +84,29 @@ export class PoLRYTubePlayingCard extends LitElement {
                 });
                 this._response = response["children"];
             }
+
+            if (this._response.length == 0)
+                this._cardState = PoLRCurrentState.NO_RESULTS;
+
+            if (this._response.length > 0)
+                this._cardState = PoLRCurrentState.HAS_RESULTS;
         } catch (e) {
             console.error(e);
+            this._cardState = PoLRCurrentState.ERROR;
         }
     }
 
     _renderResponse() {
-        if (this._response.length == 0) {
-            return html` <div class="empty">No playlist</div>`;
+        if (this._cardState == PoLRCurrentState.INITAL) {
+            return html``;
+        }
+
+        if (this._cardState == PoLRCurrentState.NO_RESULTS) {
+            return html` <div class="no-results">No songs found.</div>`;
+        }
+
+        if (this._cardState == PoLRCurrentState.ERROR) {
+            return html` <div class="error">An error occurred.</div>`;
         }
 
         const elements = this._response.map((str) => {
@@ -207,6 +239,10 @@ export class PoLRYTubePlayingCard extends LitElement {
         `;
     }
 
+    update(changedProperties) {
+        super.update(changedProperties);
+    }
+
     async _play(media_content_type, media_content_id) {
         this._hass.callService("ytube_music_player", "call_method", {
             entity_id: this._config.entity_id,
@@ -260,6 +296,7 @@ export class PoLRYTubePlayingCard extends LitElement {
         .results {
             max-height: 400px;
             overflow: scroll;
+            padding-top: 12px;
         }
 
         .result {

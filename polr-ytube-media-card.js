@@ -396,6 +396,7 @@ class PoLRYTubePlayingCard extends s {
         this._config = {};
         this._runOnce = false;
         this._response = [];
+        this._cardState = 1 /* PoLRCurrentState.INITAL */;
     }
     static getConfigElement() {
         // return document.createElement("polr-ytube-playing-card-editor");
@@ -418,6 +419,10 @@ class PoLRYTubePlayingCard extends s {
     set hass(hass) {
         this._hass = hass;
         this._entity = structuredClone(this._hass["states"][this._config["entity_id"]]);
+        if (this._entity["state"] == "off") {
+            this._cardState = 1 /* PoLRCurrentState.INITAL */;
+        }
+        //console.log(this._entity);
         this._fetchResults();
         if (!this._runOnce) {
             this._runOnce = true;
@@ -438,7 +443,6 @@ class PoLRYTubePlayingCard extends s {
                 });
                 this._response = response["children"];
             }
-            //album_of_track
             if (["album"].includes(media_type)) {
                 const response = await this._hass.callWS({
                     type: "media_player/browse_media",
@@ -448,14 +452,25 @@ class PoLRYTubePlayingCard extends s {
                 });
                 this._response = response["children"];
             }
+            if (this._response.length == 0)
+                this._cardState = 8 /* PoLRCurrentState.NO_RESULTS */;
+            if (this._response.length > 0)
+                this._cardState = 4 /* PoLRCurrentState.HAS_RESULTS */;
         }
         catch (e) {
             console.error(e);
+            this._cardState = 16 /* PoLRCurrentState.ERROR */;
         }
     }
     _renderResponse() {
-        if (this._response.length == 0) {
-            return x ` <div class="empty">No playlist</div>`;
+        if (this._cardState == 1 /* PoLRCurrentState.INITAL */) {
+            return x ``;
+        }
+        if (this._cardState == 8 /* PoLRCurrentState.NO_RESULTS */) {
+            return x ` <div class="no-results">No songs found.</div>`;
+        }
+        if (this._cardState == 16 /* PoLRCurrentState.ERROR */) {
+            return x ` <div class="error">An error occurred.</div>`;
         }
         const elements = this._response.map((str) => {
             return x `
@@ -565,6 +580,9 @@ class PoLRYTubePlayingCard extends s {
             </ha-card>
         `;
     }
+    update(changedProperties) {
+        super.update(changedProperties);
+    }
     async _play(media_content_type, media_content_id) {
         this._hass.callService("ytube_music_player", "call_method", {
             entity_id: this._config.entity_id,
@@ -616,6 +634,7 @@ PoLRYTubePlayingCard.styles = i$2 `
         .results {
             max-height: 400px;
             overflow: scroll;
+            padding-top: 12px;
         }
 
         .result {
@@ -696,7 +715,7 @@ __decorate([
     n$1()
 ], PoLRYTubePlayingCard.prototype, "_config", void 0);
 __decorate([
-    n$1()
+    t()
 ], PoLRYTubePlayingCard.prototype, "_hass", void 0);
 __decorate([
     n$1()
@@ -707,6 +726,12 @@ __decorate([
 __decorate([
     t()
 ], PoLRYTubePlayingCard.prototype, "_entity", void 0);
+__decorate([
+    t()
+], PoLRYTubePlayingCard.prototype, "_cardState", void 0);
+__decorate([
+    t()
+], PoLRYTubePlayingCard.prototype, "_lastChanged", void 0);
 customElements.define("polr-ytube-playing-card", PoLRYTubePlayingCard);
 // This puts your card into the UI card picker dialog
 window.customCards = window.customCards || [];
