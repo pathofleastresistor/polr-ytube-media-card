@@ -153,11 +153,25 @@ class PoLRYTubeSearchCard extends s {
                 <div class="content">
                     <div class="search">
                         <div class="filter">
-                            <select id="filter">
+                            <!-- <select id="filter">
                                 <option value="albums">Albums</option>
                                 <option value="playlists">Playlists</option>
                                 <option selected value="songs">Songs</option>
-                            </select>
+                            </select> -->
+                            <ha-select
+                                id="filter"
+                                naturalmenuwidth
+                                fixedmenuposition>
+                                <mwc-list-item value="albums"
+                                    >Albums</mwc-list-item
+                                >
+                                <mwc-list-item value="playlists"
+                                    >Playlists</mwc-list-item
+                                >
+                                <mwc-list-item selected value="songs"
+                                    >Songs</mwc-list-item
+                                >
+                            </ha-select>
                         </div>
                         <ha-textfield
                             type="text"
@@ -239,6 +253,11 @@ class PoLRYTubeSearchCard extends s {
     }
 }
 PoLRYTubeSearchCard.styles = i$2 `
+        :host {
+            --mdc-typography-subtitle1-font-size: 10px;
+            --paper-font-body1_-_font-size: 10px;
+        }
+
         ha-card {
             overflow: hidden;
         }
@@ -332,6 +351,9 @@ PoLRYTubeSearchCard.styles = i$2 `
         }
         .filter {
             margin: 4px;
+        }
+        ha-select {
+            width: 100px;
         }
     `;
 __decorate([
