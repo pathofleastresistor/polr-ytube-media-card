@@ -8,11 +8,9 @@ A collection of cards was design to enhance the features of the [YTube_Media_Pla
 
 ### HACS
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?repository=polr-ytube-media-card&category=Lovelace&owner=pathofleastresistor)
-
 1. Open the HACS section of Home Assistant.
 2. Click the "..." button in the top right corner and select "Custom Repositories."
-3. In the window that opens paste this Github URL.
+3. In the window that opens paste this Github URL (https://github.com/pathofleastresistor/polr-ytube-media-card).
 4. Select "Lovelace"
 5. In the window that opens when you select it click om "Install This Repository in HACS"
 
