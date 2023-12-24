@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "target": "ES2017",
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "allowSyntheticDefaultImports": true,
+        "experimentalDecorators": true,
+        "lib": ["ES2017", "DOM", "ES2017.Object"]
+    }
+}
