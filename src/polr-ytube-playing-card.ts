@@ -121,7 +121,15 @@ export class PoLRYTubePlayingCard extends LitElement {
                     ]);
             }
         }
-        media_players.sort();
+        media_players.sort(function (a, b) {
+            if (a[1] < b[1]) {
+                return -1;
+            }
+            if (a[1] > b[1]) {
+                return 1;
+            }
+            return 0;
+        });
 
         return html`
             <div class="source">

@@ -431,7 +431,15 @@ class PoLRYTubePlayingCard extends s {
                     ]);
             }
         }
-        media_players.sort();
+        media_players.sort(function (a, b) {
+            if (a[1] < b[1]) {
+                return -1;
+            }
+            if (a[1] > b[1]) {
+                return 1;
+            }
+            return 0;
+        });
         return x `
             <div class="source">
                 <select id="source" @change=${this._selectSource}>
