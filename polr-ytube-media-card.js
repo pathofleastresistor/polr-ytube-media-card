@@ -73,6 +73,7 @@ class PoLRYTubeSearchCard extends s {
         this._config = {};
         this._runOnce = false;
         this._response = {};
+        this._action = 1 /* PoLRMediaSearchAction.SEARCH */;
         this._resultsState = 1 /* PoLRMediaSearchState.CLEAR */;
     }
     static getConfigElement() {
@@ -133,6 +134,18 @@ class PoLRYTubeSearchCard extends s {
             return x `<div class="error">Unknown Error</div>`;
         }
     }
+    _renderAction() {
+        if (this._action == 1 /* PoLRMediaSearchAction.SEARCH */)
+            return x ` <mwc-button @click=${this._search}
+                ><ha-icon icon="mdi:magnify"></ha-icon
+            ></mwc-button>`;
+        if (this._action == 2 /* PoLRMediaSearchAction.CLEAR */)
+            return x `
+                <mwc-button @click=${this._clear}
+                    ><ha-icon icon="mdi:close"></ha-icon
+                ></mwc-button>
+            `;
+    }
     render() {
         this._response["children"];
         const header = this._config["showHeader"]
@@ -153,11 +166,6 @@ class PoLRYTubeSearchCard extends s {
                 <div class="content">
                     <div class="search">
                         <div class="filter">
-                            <!-- <select id="filter">
-                                <option value="albums">Albums</option>
-                                <option value="playlists">Playlists</option>
-                                <option selected value="songs">Songs</option>
-                            </select> -->
                             <ha-select
                                 id="filter"
                                 naturalmenuwidth
@@ -178,12 +186,7 @@ class PoLRYTubeSearchCard extends s {
                             id="query"
                             label="${this._config["searchTitle"]}"
                             @keyup="${this.handleKey}"></ha-textfield>
-                        <mwc-button @click=${this._search}
-                            ><ha-icon icon="mdi:magnify"></ha-icon
-                        ></mwc-button>
-                        <mwc-button @click=${this._clear}
-                            ><ha-icon icon="mdi:close"></ha-icon
-                        ></mwc-button>
+                        ${this._renderAction()}
                     </div>
                     <div class="results">${this._renderResponse()}</div>
                 </div>
@@ -210,12 +213,16 @@ class PoLRYTubeSearchCard extends s {
         }
     }
     handleKey(ev) {
+        const value = this.shadowRoot.querySelector("#query").value;
+        if (value == "")
+            this._clear();
         if (ev.keyCode == 13)
             this._search();
     }
     async _search() {
         this._response = {};
         this._resultsState = 4 /* PoLRMediaSearchState.LOADING */;
+        this._action = 2 /* PoLRMediaSearchAction.CLEAR */;
         const filter = this.shadowRoot.querySelector("#filter").value;
         await this._hass.callService("ytube_music_player", "search", {
             entity_id: this._config.entity_id,
@@ -228,6 +235,7 @@ class PoLRYTubeSearchCard extends s {
     _clear() {
         this.shadowRoot.querySelector("#query").value = "";
         this._response = [];
+        this._action = 1 /* PoLRMediaSearchAction.SEARCH */;
     }
     async _play(media_content_type, media_content_id) {
         this._hass.callService("media_player", "play_media", {
@@ -263,7 +271,7 @@ PoLRYTubeSearchCard.styles = i$2 `
 
         .search {
             display: grid;
-            grid-template-columns: min-content 1fr min-content auto;
+            grid-template-columns: min-content 1fr min-content;
             align-items: center;
             gap: 4px;
         }
@@ -367,6 +375,9 @@ __decorate([
 __decorate([
     t()
 ], PoLRYTubeSearchCard.prototype, "_response", void 0);
+__decorate([
+    t()
+], PoLRYTubeSearchCard.prototype, "_action", void 0);
 __decorate([
     n$1()
 ], PoLRYTubeSearchCard.prototype, "_resultsState", void 0);

@@ -9,11 +9,17 @@ export const enum PoLRMediaSearchState {
     ERROR = 16,
 }
 
+export const enum PoLRMediaSearchAction {
+    SEARCH = 1,
+    CLEAR = 2,
+}
+
 export class PoLRYTubeSearchCard extends LitElement {
     @property() _config: any = {};
     @property() _hass: any;
     @property() _runOnce: boolean = false;
     @state() _response: any = {};
+    @state() _action: PoLRMediaSearchAction = PoLRMediaSearchAction.SEARCH;
     @property() _resultsState = PoLRMediaSearchState.CLEAR;
 
     static getConfigElement() {
@@ -88,6 +94,18 @@ export class PoLRYTubeSearchCard extends LitElement {
         }
     }
 
+    _renderAction() {
+        if (this._action == PoLRMediaSearchAction.SEARCH)
+            return html` <mwc-button @click=${this._search}
+                ><ha-icon icon="mdi:magnify"></ha-icon
+            ></mwc-button>`;
+        if (this._action == PoLRMediaSearchAction.CLEAR)
+            return html`
+                <mwc-button @click=${this._clear}
+                    ><ha-icon icon="mdi:close"></ha-icon
+                ></mwc-button>
+            `;
+    }
     render() {
         const elements = this._response["children"];
         const header = this._config["showHeader"]
@@ -109,11 +127,6 @@ export class PoLRYTubeSearchCard extends LitElement {
                 <div class="content">
                     <div class="search">
                         <div class="filter">
-                            <!-- <select id="filter">
-                                <option value="albums">Albums</option>
-                                <option value="playlists">Playlists</option>
-                                <option selected value="songs">Songs</option>
-                            </select> -->
                             <ha-select
                                 id="filter"
                                 naturalmenuwidth
@@ -134,12 +147,7 @@ export class PoLRYTubeSearchCard extends LitElement {
                             id="query"
                             label="${this._config["searchTitle"]}"
                             @keyup="${this.handleKey}"></ha-textfield>
-                        <mwc-button @click=${this._search}
-                            ><ha-icon icon="mdi:magnify"></ha-icon
-                        ></mwc-button>
-                        <mwc-button @click=${this._clear}
-                            ><ha-icon icon="mdi:close"></ha-icon
-                        ></mwc-button>
+                        ${this._renderAction()}
                     </div>
                     <div class="results">${this._renderResponse()}</div>
                 </div>
@@ -166,12 +174,17 @@ export class PoLRYTubeSearchCard extends LitElement {
     }
 
     handleKey(ev) {
+        const value = (this.shadowRoot.querySelector("#query") as any).value;
+        if (value == "") this._clear();
+
         if (ev.keyCode == 13) this._search();
     }
 
     async _search() {
         this._response = {};
         this._resultsState = PoLRMediaSearchState.LOADING;
+        this._action = PoLRMediaSearchAction.CLEAR;
+
         const filter = (this.shadowRoot.querySelector("#filter") as any).value;
         await this._hass.callService("ytube_music_player", "search", {
             entity_id: this._config.entity_id,
@@ -179,12 +192,14 @@ export class PoLRYTubeSearchCard extends LitElement {
             filter: filter,
             limit: 50,
         });
+
         this._fetchResults();
     }
 
     private _clear() {
         (this.shadowRoot.querySelector("#query") as any).value = "";
         this._response = [];
+        this._action = PoLRMediaSearchAction.SEARCH;
     }
 
     async _play(media_content_type, media_content_id) {
@@ -222,7 +237,7 @@ export class PoLRYTubeSearchCard extends LitElement {
 
         .search {
             display: grid;
-            grid-template-columns: min-content 1fr min-content auto;
+            grid-template-columns: min-content 1fr min-content;
             align-items: center;
             gap: 4px;
         }
