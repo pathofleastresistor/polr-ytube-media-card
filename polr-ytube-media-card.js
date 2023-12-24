@@ -330,6 +330,9 @@ PoLRYTubeSearchCard.styles = i$2 `
             border-radius: 0.25em;
             cursor: pointer;
         }
+        .filter {
+            margin: 4px;
+        }
     `;
 __decorate([
     n$1()

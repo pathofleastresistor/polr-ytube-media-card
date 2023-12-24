@@ -289,6 +289,9 @@ export class PoLRYTubeSearchCard extends LitElement {
             border-radius: 0.25em;
             cursor: pointer;
         }
+        .filter {
+            margin: 4px;
+        }
     `;
 }
 
