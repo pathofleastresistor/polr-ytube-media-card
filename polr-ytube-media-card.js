@@ -254,8 +254,7 @@ class PoLRYTubeSearchCard extends s {
 }
 PoLRYTubeSearchCard.styles = i$2 `
         :host {
-            --mdc-typography-subtitle1-font-size: 10px;
-            --paper-font-body1_-_font-size: 10px;
+            --mdc-typography-subtitle1-font-size: 12px;
         }
 
         ha-card {
@@ -501,15 +500,35 @@ class PoLRYTubePlayingCard extends s {
         });
         return x `
             <div class="source">
-                <select id="source" @change=${this._selectSource}>
+                <div>Source:</div>
+                <ha-select
+                    id="source"
+                    naturalmenuwidth
+                    fixedmenuposition
+                    @selected=${this._selectSource}>
                     ${media_players.map((str) => str[0] == this._entity["attributes"]["remote_player_id"]
-            ? x `<option selected value=${str[0]}>
+            ? x `<mwc-list-item selected value=${str[0]}>
                                   ${str[1]}
-                              </option> `
-            : x `<option value=${str[0]}>${str[1]}</option> `)}
-                </select>
+                              </mwc-list-item> `
+            : x `<mwc-list-item value=${str[0]}
+                                  >${str[1]}</mwc-list-item
+                              > `)}
+                </ha-select>
             </div>
         `;
+        // return html`
+        //     <div class="source">
+        //         <select id="source" @change=${this._selectSource}>
+        //             ${media_players.map((str) =>
+        //                 str[0] == this._entity["attributes"]["remote_player_id"]
+        //                     ? html`<option selected value=${str[0]}>
+        //                           ${str[1]}
+        //                       </option> `
+        //                     : html`<option value=${str[0]}>${str[1]}</option> `
+        //             )}
+        //         </select>
+        //     </div>
+        // `;
     }
     render() {
         this._response["children"];
@@ -561,6 +580,13 @@ class PoLRYTubePlayingCard extends s {
         });
     }
     async _selectSource(ev) {
+        const selectedSource = this.shadowRoot.querySelector("#source")
+            .value;
+        const currentSource = this._entity["attributes"]["remote_player_id"];
+        if (selectedSource == "")
+            return;
+        if (selectedSource == currentSource)
+            return;
         this._hass.callService("media_player", "select_source", {
             entity_id: this._config.entity_id,
             source: this.shadowRoot.querySelector("#source").value,
@@ -568,6 +594,10 @@ class PoLRYTubePlayingCard extends s {
     }
 }
 PoLRYTubePlayingCard.styles = i$2 `
+        :host {
+            --mdc-typography-subtitle1-font-size: 12px;
+        }
+
         ha-card {
             overflow: hidden;
         }
@@ -633,6 +663,11 @@ PoLRYTubePlayingCard.styles = i$2 `
         .source {
             padding: 12px;
             display: grid;
+            grid-template-columns: min-content 1fr;
+            gap: 20px;
+            align-items: center;
+            border-top: 1px rgb(98 98 98 / 30%) solid;
+            border-bottom: 1px rgb(98 98 98 / 30%) solid;
         }
 
         select {

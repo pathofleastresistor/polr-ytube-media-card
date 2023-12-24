@@ -148,17 +148,37 @@ export class PoLRYTubePlayingCard extends LitElement {
 
         return html`
             <div class="source">
-                <select id="source" @change=${this._selectSource}>
+                <div>Source:</div>
+                <ha-select
+                    id="source"
+                    naturalmenuwidth
+                    fixedmenuposition
+                    @selected=${this._selectSource}>
                     ${media_players.map((str) =>
                         str[0] == this._entity["attributes"]["remote_player_id"]
-                            ? html`<option selected value=${str[0]}>
+                            ? html`<mwc-list-item selected value=${str[0]}>
                                   ${str[1]}
-                              </option> `
-                            : html`<option value=${str[0]}>${str[1]}</option> `
+                              </mwc-list-item> `
+                            : html`<mwc-list-item value=${str[0]}
+                                  >${str[1]}</mwc-list-item
+                              > `
                     )}
-                </select>
+                </ha-select>
             </div>
         `;
+        // return html`
+        //     <div class="source">
+        //         <select id="source" @change=${this._selectSource}>
+        //             ${media_players.map((str) =>
+        //                 str[0] == this._entity["attributes"]["remote_player_id"]
+        //                     ? html`<option selected value=${str[0]}>
+        //                           ${str[1]}
+        //                       </option> `
+        //                     : html`<option value=${str[0]}>${str[1]}</option> `
+        //             )}
+        //         </select>
+        //     </div>
+        // `;
     }
 
     render() {
@@ -215,6 +235,13 @@ export class PoLRYTubePlayingCard extends LitElement {
     }
 
     async _selectSource(ev) {
+        const selectedSource = (this.shadowRoot.querySelector("#source") as any)
+            .value;
+        const currentSource = this._entity["attributes"]["remote_player_id"];
+
+        if (selectedSource == "") return;
+        if (selectedSource == currentSource) return;
+
         this._hass.callService("media_player", "select_source", {
             entity_id: this._config.entity_id,
             source: (this.shadowRoot.querySelector("#source") as any).value,
@@ -222,6 +249,10 @@ export class PoLRYTubePlayingCard extends LitElement {
     }
 
     static styles = css`
+        :host {
+            --mdc-typography-subtitle1-font-size: 12px;
+        }
+
         ha-card {
             overflow: hidden;
         }
@@ -287,6 +318,11 @@ export class PoLRYTubePlayingCard extends LitElement {
         .source {
             padding: 12px;
             display: grid;
+            grid-template-columns: min-content 1fr;
+            gap: 20px;
+            align-items: center;
+            border-top: 1px rgb(98 98 98 / 30%) solid;
+            border-bottom: 1px rgb(98 98 98 / 30%) solid;
         }
 
         select {

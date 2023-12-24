@@ -213,8 +213,7 @@ export class PoLRYTubeSearchCard extends LitElement {
 
     static styles = css`
         :host {
-            --mdc-typography-subtitle1-font-size: 10px;
-            --paper-font-body1_-_font-size: 10px;
+            --mdc-typography-subtitle1-font-size: 12px;
         }
 
         ha-card {
