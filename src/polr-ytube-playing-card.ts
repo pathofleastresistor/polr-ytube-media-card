@@ -181,6 +181,31 @@ export class PoLRYTubePlayingCard extends LitElement {
         return html`
             <div class="source">
                 <div>Source:</div>
+                <ha-control-select-menu
+                    id="source"
+                    show-arrow
+                    hide-label
+                    naturalmenuwidth
+                    fixedmenuposition
+                    @selected=${this._selectSource}>
+                    <ha-svg-icon
+                        slot="icon"
+                        path="M12,8A4,4 0 0,0 8,12A4,4 0 0,0 12,16A4,4 0 0,0 16,12A4,4 0 0,0 12,8Z"></ha-svg-icon>
+                    ${media_players.map((str) =>
+                        str[0] == this._entity["attributes"]["remote_player_id"]
+                            ? html`<ha-list-item selected value=${str[0]}>
+                                  ${str[1]}
+                              </ha-list-item> `
+                            : html`<ha-list-item value=${str[0]}
+                                  >${str[1]}</ha-list-item
+                              > `
+                    )}
+                </ha-control-select-menu>
+            </div>
+        `;
+        return html`
+            <div class="source">
+                <div>Source:</div>
                 <ha-select
                     id="source"
                     naturalmenuwidth

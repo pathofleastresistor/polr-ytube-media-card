@@ -527,19 +527,24 @@ class PoLRYTubePlayingCard extends s {
         return x `
             <div class="source">
                 <div>Source:</div>
-                <ha-select
+                <ha-control-select-menu
                     id="source"
+                    show-arrow
+                    hide-label
                     naturalmenuwidth
                     fixedmenuposition
                     @selected=${this._selectSource}>
+                    <ha-svg-icon
+                        slot="icon"
+                        path="M12,8A4,4 0 0,0 8,12A4,4 0 0,0 12,16A4,4 0 0,0 16,12A4,4 0 0,0 12,8Z"></ha-svg-icon>
                     ${media_players.map((str) => str[0] == this._entity["attributes"]["remote_player_id"]
-            ? x `<mwc-list-item selected value=${str[0]}>
+            ? x `<ha-list-item selected value=${str[0]}>
                                   ${str[1]}
-                              </mwc-list-item> `
-            : x `<mwc-list-item value=${str[0]}
-                                  >${str[1]}</mwc-list-item
+                              </ha-list-item> `
+            : x `<ha-list-item value=${str[0]}
+                                  >${str[1]}</ha-list-item
                               > `)}
-                </ha-select>
+                </ha-control-select-menu>
             </div>
         `;
         // return html`
