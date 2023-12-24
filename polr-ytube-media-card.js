@@ -420,6 +420,24 @@ class PoLRYTubePlayingCard extends s {
             </mwc-button>
         `;
     }
+    _renderSource() {
+        const media_players = [];
+        for (const [key, value] of Object.entries(this._hass["states"])) {
+            if (key.startsWith("media_player")) {
+                if (!("remote_player_id" in value["attributes"]))
+                    media_players.push(key);
+            }
+        }
+        const elements = media_players.map((str) => {
+            const sel = str == this._entity["attributes"]["remote_player_id"]
+                ? `selected="selected`
+                : "";
+            return x `<option ${sel} value=${str}>${str}</option> `;
+        });
+        return x ` <select id="source" @change=${this._selectSource}>
+            ${elements}
+        </select>`;
+    }
     render() {
         this._response["children"];
         const header = this._config["showHeader"]
@@ -438,6 +456,7 @@ class PoLRYTubePlayingCard extends s {
             <ha-card>
                 ${header}
                 <div class="content">
+                    ${this._renderSource()}
                     <div class="results">${this._renderResponse()}</div>
                 </div>
             </ha-card>
@@ -451,10 +470,6 @@ class PoLRYTubePlayingCard extends s {
         });
     }
     async _startRadio(media_content_id) {
-        // await this._hass.callService("ytube_music_player", "start_radio", {
-        //     entity_id: this._config.entity_id,
-        //     interrupt: false,
-        // });
         this._hass.callService("media_player", "shuffle_set", {
             entity_id: this._config.entity_id,
             shuffle: false,
@@ -463,6 +478,12 @@ class PoLRYTubePlayingCard extends s {
             entity_id: this._config.entity_id,
             media_content_id: media_content_id,
             media_content_type: "vid_channel",
+        });
+    }
+    async _selectSource(ev) {
+        this._hass.callService("media_player", "select_source", {
+            entity_id: this._config.entity_id,
+            source: this.shadowRoot.querySelector("#source").value,
         });
     }
 }
