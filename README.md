@@ -32,6 +32,18 @@ A collection of cards was design to enhance the features of the YTube_Media_Play
 -   `header` - title of the card
 -   `searchTitle` - title for the search box
 
+### Example
+
+```
+type: custom:polr-ytube-search-card
+icon: mdi:card-search
+entity_id: media_player.youtube_living_room_display
+header: Living Room (YouTube)
+searchTitle: Search on Living Room
+```
+
+![](image.png)
+
 ## PoLR-YTube-Playing-Card
 
 -   This card shows info and actions related to the current playlist
