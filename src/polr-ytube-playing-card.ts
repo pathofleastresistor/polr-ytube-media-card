@@ -213,7 +213,6 @@ export class PoLRYTubePlayingCard extends LitElement {
             display: grid;
             grid-template-columns: 1fr min-content auto;
             align-items: center;
-            gap: 8px;
         }
         .current_track {
             font-weight: bold;
