@@ -552,19 +552,6 @@ class PoLRYTubePlayingCard extends s {
                 </ha-control-select-menu>
             </div>
         `;
-        // return html`
-        //     <div class="source">
-        //         <select id="source" @change=${this._selectSource}>
-        //             ${media_players.map((str) =>
-        //                 str[0] == this._entity["attributes"]["remote_player_id"]
-        //                     ? html`<option selected value=${str[0]}>
-        //                           ${str[1]}
-        //                       </option> `
-        //                     : html`<option value=${str[0]}>${str[1]}</option> `
-        //             )}
-        //         </select>
-        //     </div>
-        // `;
     }
     render() {
         this._response["children"];
