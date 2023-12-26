@@ -1,5 +1,7 @@
 import { LitElement, html, css, CSSResultGroup } from "lit";
 import { property, state } from "lit/decorators.js";
+import "./elements/polr-ytube-search";
+import "./elements/polr-ytube-page-tabs";
 
 export const enum PoLRCurrentState {
     INITAL = 1,
@@ -11,6 +13,7 @@ export const enum PoLRCurrentState {
 export const enum PoLRYTubePage {
     CURRENTLY_PLAYING = 1,
     FOR_YOU = 2,
+    SEARCH = 4,
 }
 
 export interface PoLRBrowseAction {
@@ -104,6 +107,7 @@ export class PoLRYTubePlayingCard extends LitElement {
             });
             return elements;
         }
+
         if (this._page == PoLRYTubePage.FOR_YOU) {
             const elements = [];
             if (this._lastBrowseAction.length > 1) {
@@ -120,6 +124,7 @@ export class PoLRYTubePlayingCard extends LitElement {
                     </div>
                 `);
             }
+
             elements.push(
                 this._forYouResponse.map((str) => {
                     return html`
@@ -143,6 +148,16 @@ export class PoLRYTubePlayingCard extends LitElement {
                 })
             );
             return elements;
+        }
+
+        if (this._page == PoLRYTubePage.SEARCH) {
+            return html`
+                <polr-ytube-search
+                    ._hass=${this._hass}
+                    ._config=${{
+                        entity_id: this._config["entity_id"],
+                    }}></polr-ytube-search>
+            `;
         }
     }
 
@@ -266,19 +281,11 @@ export class PoLRYTubePlayingCard extends LitElement {
                 ${header}
                 <div class="content">
                     ${this._renderSourceSelctor()}
-                    <div class="pages">
-                        <mwc-button
-                            @click=${() =>
-                                this._navigate(PoLRYTubePage.CURRENTLY_PLAYING)}
-                            >Currently Playing</mwc-button
-                        >
-                        <mwc-button
-                            @click=${() => {
-                                this._navigate(PoLRYTubePage.FOR_YOU);
-                            }}
-                            >For You</mwc-button
-                        >
-                    </div>
+                    <polr-ytube-page-tabs
+                        @tabChange=${(ev) =>
+                            this._navigate(
+                                ev.detail.tab
+                            )}></polr-ytube-page-tabs>
                     <div class="results">${this._renderItems()}</div>
                 </div>
             </ha-card>
@@ -300,6 +307,9 @@ export class PoLRYTubePlayingCard extends LitElement {
                     });
                 }
                 this._page = PoLRYTubePage.FOR_YOU;
+                break;
+            case PoLRYTubePage.SEARCH:
+                this._page = PoLRYTubePage.SEARCH;
                 break;
         }
     }
@@ -477,7 +487,6 @@ export class PoLRYTubePlayingCard extends LitElement {
             display: grid;
             gap: 12px;
         }
-
         .source {
             padding: 12px;
             display: grid;
@@ -497,6 +506,9 @@ export class PoLRYTubePlayingCard extends LitElement {
             border: 1px solid rgba(40, 40, 40, 0.3);
             border-radius: 0.25em;
             cursor: pointer;
+        }
+        polr-ytube-page-tabs {
+            padding: 12px;
         }
     `;
 }
