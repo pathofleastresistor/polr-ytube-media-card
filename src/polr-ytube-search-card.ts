@@ -168,7 +168,7 @@ export class PoLRYTubeSearchCard extends LitElement {
                 // TODO: Move to ytube_music_player component,
                 //       instead of handling in frontend
                 // Filter out community playlists of podcast
-                this._response.filter(
+                this._response["children"].filter(
                     (el) => !el["media_content_id"].startsWith("MPSP")
                 );
                 this._resultsState = PoLRMediaSearchState.HAS_RESULTS;
