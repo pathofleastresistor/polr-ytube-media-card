@@ -202,8 +202,13 @@ class PoLRYTubeSearchCard extends s {
                 media_content_type: "search",
                 media_content_id: "",
             });
-            if (((_a = this._response["children"]) === null || _a === void 0 ? void 0 : _a.length) > 0)
+            if (((_a = this._response["children"]) === null || _a === void 0 ? void 0 : _a.length) > 0) {
+                // TODO: Move to ytube_music_player component,
+                //       instead of handling in frontend
+                // Filter out community playlists of podcast
+                this._response.filter((el) => !el["media_content_id"].startsWith("MPSP"));
                 this._resultsState = 2 /* PoLRMediaSearchState.HAS_RESULTS */;
+            }
             else
                 this._resultsState = 8 /* PoLRMediaSearchState.NO_RESULTS */;
         }

@@ -164,9 +164,15 @@ export class PoLRYTubeSearchCard extends LitElement {
                 media_content_id: "",
             });
 
-            if (this._response["children"]?.length > 0)
+            if (this._response["children"]?.length > 0) {
+                // TODO: Move to ytube_music_player component,
+                //       instead of handling in frontend
+                // Filter out community playlists of podcast
+                this._response.filter(
+                    (el) => !el["media_content_id"].startsWith("MPSP")
+                );
                 this._resultsState = PoLRMediaSearchState.HAS_RESULTS;
-            else this._resultsState = PoLRMediaSearchState.NO_RESULTS;
+            } else this._resultsState = PoLRMediaSearchState.NO_RESULTS;
         } catch (e) {
             this._resultsState = PoLRMediaSearchState.ERROR;
             console.error(e, this._resultsState);
