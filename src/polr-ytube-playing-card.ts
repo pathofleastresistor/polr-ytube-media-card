@@ -8,6 +8,15 @@ export const enum PoLRCurrentState {
     NO_RESULTS = 8,
     ERROR = 16,
 }
+export const enum PoLRYTubePage {
+    CURRENTLY_PLAYING = 1,
+    FOR_YOU = 2,
+}
+
+export interface PoLRBrowseAction {
+    media_content_id: string;
+    media_content_type: string;
+}
 
 export class PoLRYTubePlayingCard extends LitElement {
     @property() _config: any = {};
@@ -17,6 +26,9 @@ export class PoLRYTubePlayingCard extends LitElement {
     @state() _entity: any;
     @state() _cardState: PoLRCurrentState = PoLRCurrentState.INITAL;
     @state() _lastChanged: any;
+    @property() _page: PoLRYTubePage = PoLRYTubePage.CURRENTLY_PLAYING;
+    @property() _forYouResponse: any = [];
+    @state() _lastBrowseAction: PoLRBrowseAction[] = [];
 
     static getConfigElement() {
         // return document.createElement("polr-ytube-playing-card-editor");
@@ -51,52 +63,13 @@ export class PoLRYTubePlayingCard extends LitElement {
         }
         //console.log(this._entity);
 
-        this._fetchResults();
+        this._getCurrentlyPlaying();
         if (!this._runOnce) {
             this._runOnce = true;
         }
     }
 
-    async _fetchResults() {
-        if (["off", "unavailable"].includes(this._entity["state"])) {
-            return [];
-        }
-
-        const media_type = this._entity["attributes"]["_media_type"];
-
-        try {
-            if (["vid_channel", "playlist", "track"].includes(media_type)) {
-                const response = await this._hass.callWS({
-                    type: "media_player/browse_media",
-                    entity_id: this._config.entity_id,
-                    media_content_type: "cur_playlists",
-                    media_content_id: "",
-                });
-                this._response = response["children"];
-            }
-
-            if (["album"].includes(media_type)) {
-                const response = await this._hass.callWS({
-                    type: "media_player/browse_media",
-                    entity_id: this._config.entity_id,
-                    media_content_type: "album_of_track",
-                    media_content_id: "1",
-                });
-                this._response = response["children"];
-            }
-
-            if (this._response.length == 0)
-                this._cardState = PoLRCurrentState.NO_RESULTS;
-
-            if (this._response.length > 0)
-                this._cardState = PoLRCurrentState.HAS_RESULTS;
-        } catch (e) {
-            console.error(e);
-            this._cardState = PoLRCurrentState.ERROR;
-        }
-    }
-
-    _renderResponse() {
+    _renderItems() {
         if (this._cardState == PoLRCurrentState.INITAL) {
             return html``;
         }
@@ -109,40 +82,109 @@ export class PoLRYTubePlayingCard extends LitElement {
             return html` <div class="error">An error occurred.</div>`;
         }
 
-        const elements = this._response.map((str) => {
-            return html`
-                <div
-                    class="result ${parseInt(str["media_content_id"]) - 1 ==
-                    this._entity["attributes"]["current_track"]
-                        ? "current_track"
-                        : ""}">
-                    <div class="title">${str["title"]}</div>
-                    ${this._renderRadio(
-                        str["media_content_id"] - 1,
-                        this._entity["attributes"]["current_track"],
-                        str["media_content_type"],
-                        str["media_content_id"]
-                    )}
-                    <mwc-button
-                        @click=${() =>
-                            str["media_content_type"] == "track"
-                                ? this._playTrack(
-                                      str["media_content_type"],
-                                      str["media_content_id"]
-                                  )
-                                : this._play(
-                                      str["media_content_type"],
-                                      str["media_content_id"]
-                                  )}>
-                        Play
-                    </mwc-button>
-                </div>
-            `;
-        });
-        return elements;
+        if (this._page == PoLRYTubePage.CURRENTLY_PLAYING) {
+            const elements = this._response.map((str) => {
+                return html`
+                    <div
+                        class="result ${parseInt(str["media_content_id"]) - 1 ==
+                        this._entity["attributes"]["current_track"]
+                            ? "current_track"
+                            : ""}">
+                        <div class="title">${str["title"]}</div>
+                        ${this._renderMoreButton(str)}
+                        ${this._renderRadioButton(
+                            str["media_content_id"] - 1,
+                            this._entity["attributes"]["current_track"],
+                            str["media_content_type"],
+                            str["media_content_id"]
+                        )}
+                        ${this._renderPlayButton(str)}
+                    </div>
+                `;
+            });
+            return elements;
+        }
+        if (this._page == PoLRYTubePage.FOR_YOU) {
+            const elements = [];
+            if (this._lastBrowseAction.length > 1) {
+                elements.push(html`
+                    <div>
+                        <mwc-button
+                            @click=${() =>
+                                this._browseForYou(
+                                    this._lastBrowseAction.pop() &&
+                                        this._lastBrowseAction.pop()
+                                )}
+                            >back</mwc-button
+                        >
+                    </div>
+                `);
+            }
+            elements.push(
+                this._forYouResponse.map((str) => {
+                    return html`
+                        <div
+                            class="result ${parseInt(str["media_content_id"]) -
+                                1 ==
+                            this._entity["attributes"]["current_track"]
+                                ? "current_track"
+                                : ""}">
+                            <div class="title">${str["title"]}</div>
+                            ${this._renderMoreButton(str)}
+                            ${this._renderRadioButton(
+                                str["media_content_id"] - 1,
+                                this._entity["attributes"]["current_track"],
+                                str["media_content_type"],
+                                str["media_content_id"]
+                            )}
+                            ${this._renderPlayButton(str)}
+                        </div>
+                    `;
+                })
+            );
+            return elements;
+        }
     }
 
-    _renderRadio(cur_item, active_item, media_content_type, media_content_id) {
+    _renderPlayButton(str) {
+        if (!str["can_play"]) return html``;
+        return html`
+            <mwc-button
+                @click=${() =>
+                    ["track", "playlist"].includes(str["media_content_type"])
+                        ? this._playTrack(
+                              str["media_content_type"],
+                              str["media_content_id"]
+                          )
+                        : this._play(
+                              str["media_content_type"],
+                              str["media_content_id"]
+                          )}>
+                Play
+            </mwc-button>
+        `;
+    }
+
+    _renderMoreButton(item) {
+        if (!item["can_expand"]) return html``;
+        return html`
+            <mwc-button
+                @click=${() =>
+                    this._browseForYou({
+                        media_content_type: item["media_content_type"],
+                        media_content_id: item["media_content_id"],
+                    })}>
+                More
+            </mwc-button>
+        `;
+    }
+
+    _renderRadioButton(
+        cur_item,
+        active_item,
+        media_content_type,
+        media_content_id
+    ) {
         if (cur_item != active_item && media_content_type != "track")
             return html``;
 
@@ -157,7 +199,7 @@ export class PoLRYTubePlayingCard extends LitElement {
         `;
     }
 
-    _renderSource() {
+    _renderSourceSelctor() {
         const media_players = [];
         for (const [key, value] of Object.entries(this._hass["states"])) {
             if (key.startsWith("media_player")) {
@@ -206,7 +248,6 @@ export class PoLRYTubePlayingCard extends LitElement {
     }
 
     render() {
-        const elements = this._response["children"];
         const header = this._config["showHeader"]
             ? html`
                   <div class="header">
@@ -224,15 +265,106 @@ export class PoLRYTubePlayingCard extends LitElement {
             <ha-card>
                 ${header}
                 <div class="content">
-                    ${this._renderSource()}
-                    <div class="results">${this._renderResponse()}</div>
+                    ${this._renderSourceSelctor()}
+                    <div class="pages">
+                        <mwc-button
+                            @click=${() =>
+                                this._navigate(PoLRYTubePage.CURRENTLY_PLAYING)}
+                            >Currently Playing</mwc-button
+                        >
+                        <mwc-button
+                            @click=${() => {
+                                this._navigate(PoLRYTubePage.FOR_YOU);
+                            }}
+                            >For You</mwc-button
+                        >
+                    </div>
+                    <div class="results">${this._renderItems()}</div>
                 </div>
             </ha-card>
         `;
     }
 
-    update(changedProperties) {
-        super.update(changedProperties);
+    async _navigate(page: PoLRYTubePage) {
+        this._page = page;
+
+        switch (page) {
+            case PoLRYTubePage.CURRENTLY_PLAYING:
+                this._getCurrentlyPlaying();
+                break;
+            case PoLRYTubePage.FOR_YOU:
+                if (this._forYouResponse.length == 0) {
+                    this._browseForYou({
+                        media_content_type: "mood_overview",
+                        media_content_id: "",
+                    });
+                }
+                this._page = PoLRYTubePage.FOR_YOU;
+                break;
+        }
+    }
+
+    async _getCurrentlyPlaying() {
+        if (["off", "unavailable"].includes(this._entity["state"])) {
+            return [];
+        }
+
+        const media_type = this._entity["attributes"]["_media_type"];
+
+        try {
+            if (["vid_channel", "playlist", "track"].includes(media_type)) {
+                const response = await this._hass.callWS({
+                    type: "media_player/browse_media",
+                    entity_id: this._config.entity_id,
+                    media_content_type: "cur_playlists",
+                    media_content_id: "",
+                });
+                this._response = response["children"];
+            }
+
+            if (["album"].includes(media_type)) {
+                const response = await this._hass.callWS({
+                    type: "media_player/browse_media",
+                    entity_id: this._config.entity_id,
+                    media_content_type: "album_of_track",
+                    media_content_id: "1",
+                });
+                this._response = response["children"];
+            }
+
+            if (this._response.length == 0)
+                this._cardState = PoLRCurrentState.NO_RESULTS;
+
+            if (this._response.length > 0)
+                this._cardState = PoLRCurrentState.HAS_RESULTS;
+        } catch (e) {
+            console.error(e);
+            this._cardState = PoLRCurrentState.ERROR;
+        }
+    }
+
+    async _browseForYou(browseAction: PoLRBrowseAction) {
+        this._lastBrowseAction.push({
+            media_content_type: browseAction.media_content_type,
+            media_content_id: browseAction.media_content_id,
+        });
+
+        try {
+            const response = await this._hass.callWS({
+                type: "media_player/browse_media",
+                entity_id: this._config.entity_id,
+                media_content_type: browseAction.media_content_type,
+                media_content_id: browseAction.media_content_id,
+            });
+
+            this._forYouResponse = response["children"];
+        } catch (e) {
+            console.log(
+                e,
+                browseAction.media_content_type,
+                browseAction.media_content_id
+            );
+        }
     }
 
     async _play(media_content_type, media_content_id) {
@@ -242,6 +374,7 @@ export class PoLRYTubePlayingCard extends LitElement {
             parameters: media_content_id,
         });
     }
+
     async _playTrack(media_content_type, media_content_id) {
         this._hass.callService("media_player", "play_media", {
             entity_id: this._config.entity_id,
@@ -288,7 +421,6 @@ export class PoLRYTubePlayingCard extends LitElement {
         .results {
             max-height: 400px;
             overflow: scroll;
-            padding-top: 12px;
         }
 
         .result {
@@ -342,6 +474,8 @@ export class PoLRYTubePlayingCard extends LitElement {
 
         .content {
             padding: 12px 12px 12px 12px;
+            display: grid;
+            gap: 12px;
         }
 
         .source {

@@ -402,6 +402,9 @@ class PoLRYTubePlayingCard extends s {
         this._runOnce = false;
         this._response = [];
         this._cardState = 1 /* PoLRCurrentState.INITAL */;
+        this._page = 1 /* PoLRYTubePage.CURRENTLY_PLAYING */;
+        this._forYouResponse = [];
+        this._lastBrowseAction = [];
     }
     static getConfigElement() {
         // return document.createElement("polr-ytube-playing-card-editor");
@@ -428,46 +431,12 @@ class PoLRYTubePlayingCard extends s {
             this._cardState = 1 /* PoLRCurrentState.INITAL */;
         }
         //console.log(this._entity);
-        this._fetchResults();
+        this._getCurrentlyPlaying();
         if (!this._runOnce) {
             this._runOnce = true;
         }
     }
-    async _fetchResults() {
-        if (["off", "unavailable"].includes(this._entity["state"])) {
-            return [];
-        }
-        const media_type = this._entity["attributes"]["_media_type"];
-        try {
-            if (["vid_channel", "playlist", "track"].includes(media_type)) {
-                const response = await this._hass.callWS({
-                    type: "media_player/browse_media",
-                    entity_id: this._config.entity_id,
-                    media_content_type: "cur_playlists",
-                    media_content_id: "",
-                });
-                this._response = response["children"];
-            }
-            if (["album"].includes(media_type)) {
-                const response = await this._hass.callWS({
-                    type: "media_player/browse_media",
-                    entity_id: this._config.entity_id,
-                    media_content_type: "album_of_track",
-                    media_content_id: "1",
-                });
-                this._response = response["children"];
-            }
-            if (this._response.length == 0)
-                this._cardState = 8 /* PoLRCurrentState.NO_RESULTS */;
-            if (this._response.length > 0)
-                this._cardState = 4 /* PoLRCurrentState.HAS_RESULTS */;
-        }
-        catch (e) {
-            console.error(e);
-            this._cardState = 16 /* PoLRCurrentState.ERROR */;
-        }
-    }
-    _renderResponse() {
+    _renderItems() {
         if (this._cardState == 1 /* PoLRCurrentState.INITAL */) {
             return x ``;
         }
@@ -477,27 +446,80 @@ class PoLRYTubePlayingCard extends s {
         if (this._cardState == 16 /* PoLRCurrentState.ERROR */) {
             return x ` <div class="error">An error occurred.</div>`;
         }
-        const elements = this._response.map((str) => {
-            return x `
-                <div
-                    class="result ${parseInt(str["media_content_id"]) - 1 ==
-                this._entity["attributes"]["current_track"]
-                ? "current_track"
-                : ""}">
-                    <div class="title">${str["title"]}</div>
-                    ${this._renderRadio(str["media_content_id"] - 1, this._entity["attributes"]["current_track"], str["media_content_type"], str["media_content_id"])}
-                    <mwc-button
-                        @click=${() => str["media_content_type"] == "track"
-                ? this._playTrack(str["media_content_type"], str["media_content_id"])
-                : this._play(str["media_content_type"], str["media_content_id"])}>
-                        Play
-                    </mwc-button>
-                </div>
-            `;
-        });
-        return elements;
+        if (this._page == 1 /* PoLRYTubePage.CURRENTLY_PLAYING */) {
+            const elements = this._response.map((str) => {
+                return x `
+                    <div
+                        class="result ${parseInt(str["media_content_id"]) - 1 ==
+                    this._entity["attributes"]["current_track"]
+                    ? "current_track"
+                    : ""}">
+                        <div class="title">${str["title"]}</div>
+                        ${this._renderMoreButton(str)}
+                        ${this._renderRadioButton(str["media_content_id"] - 1, this._entity["attributes"]["current_track"], str["media_content_type"], str["media_content_id"])}
+                        ${this._renderPlayButton(str)}
+                    </div>
+                `;
+            });
+            return elements;
+        }
+        if (this._page == 2 /* PoLRYTubePage.FOR_YOU */) {
+            const elements = [];
+            if (this._lastBrowseAction.length > 1) {
+                elements.push(x `
+                    <div>
+                        <mwc-button
+                            @click=${() => this._browseForYou(this._lastBrowseAction.pop() &&
+                    this._lastBrowseAction.pop())}
+                            >back</mwc-button
+                        >
+                    </div>
+                `);
+            }
+            elements.push(this._forYouResponse.map((str) => {
+                return x `
+                        <div
+                            class="result ${parseInt(str["media_content_id"]) -
+                    1 ==
+                    this._entity["attributes"]["current_track"]
+                    ? "current_track"
+                    : ""}">
+                            <div class="title">${str["title"]}</div>
+                            ${this._renderMoreButton(str)}
+                            ${this._renderRadioButton(str["media_content_id"] - 1, this._entity["attributes"]["current_track"], str["media_content_type"], str["media_content_id"])}
+                            ${this._renderPlayButton(str)}
+                        </div>
+                    `;
+            }));
+            return elements;
+        }
     }
-    _renderRadio(cur_item, active_item, media_content_type, media_content_id) {
+    _renderPlayButton(str) {
+        if (!str["can_play"])
+            return x ``;
+        return x `
+            <mwc-button
+                @click=${() => ["track", "playlist"].includes(str["media_content_type"])
+            ? this._playTrack(str["media_content_type"], str["media_content_id"])
+            : this._play(str["media_content_type"], str["media_content_id"])}>
+                Play
+            </mwc-button>
+        `;
+    }
+    _renderMoreButton(item) {
+        if (!item["can_expand"])
+            return x ``;
+        return x `
+            <mwc-button
+                @click=${() => this._browseForYou({
+            media_content_type: item["media_content_type"],
+            media_content_id: item["media_content_id"],
+        })}>
+                More
+            </mwc-button>
+        `;
+    }
+    _renderRadioButton(cur_item, active_item, media_content_type, media_content_id) {
         if (cur_item != active_item && media_content_type != "track")
             return x ``;
         const id = media_content_type == "track"
@@ -509,7 +531,7 @@ class PoLRYTubePlayingCard extends s {
             </mwc-button>
         `;
     }
-    _renderSource() {
+    _renderSourceSelctor() {
         const media_players = [];
         for (const [key, value] of Object.entries(this._hass["states"])) {
             if (key.startsWith("media_player")) {
@@ -554,7 +576,6 @@ class PoLRYTubePlayingCard extends s {
         `;
     }
     render() {
-        this._response["children"];
         const header = this._config["showHeader"]
             ? x `
                   <div class="header">
@@ -571,14 +592,92 @@ class PoLRYTubePlayingCard extends s {
             <ha-card>
                 ${header}
                 <div class="content">
-                    ${this._renderSource()}
-                    <div class="results">${this._renderResponse()}</div>
+                    ${this._renderSourceSelctor()}
+                    <div class="pages">
+                        <mwc-button
+                            @click=${() => this._navigate(1 /* PoLRYTubePage.CURRENTLY_PLAYING */)}
+                            >Currently Playing</mwc-button
+                        >
+                        <mwc-button
+                            @click=${() => {
+            this._navigate(2 /* PoLRYTubePage.FOR_YOU */);
+        }}
+                            >For You</mwc-button
+                        >
+                    </div>
+                    <div class="results">${this._renderItems()}</div>
                 </div>
             </ha-card>
         `;
     }
-    update(changedProperties) {
-        super.update(changedProperties);
+    async _navigate(page) {
+        this._page = page;
+        switch (page) {
+            case 1 /* PoLRYTubePage.CURRENTLY_PLAYING */:
+                this._getCurrentlyPlaying();
+                break;
+            case 2 /* PoLRYTubePage.FOR_YOU */:
+                if (this._forYouResponse.length == 0) {
+                    this._browseForYou({
+                        media_content_type: "mood_overview",
+                        media_content_id: "",
+                    });
+                }
+                this._page = 2 /* PoLRYTubePage.FOR_YOU */;
+                break;
+        }
+    }
+    async _getCurrentlyPlaying() {
+        if (["off", "unavailable"].includes(this._entity["state"])) {
+            return [];
+        }
+        const media_type = this._entity["attributes"]["_media_type"];
+        try {
+            if (["vid_channel", "playlist", "track"].includes(media_type)) {
+                const response = await this._hass.callWS({
+                    type: "media_player/browse_media",
+                    entity_id: this._config.entity_id,
+                    media_content_type: "cur_playlists",
+                    media_content_id: "",
+                });
+                this._response = response["children"];
+            }
+            if (["album"].includes(media_type)) {
+                const response = await this._hass.callWS({
+                    type: "media_player/browse_media",
+                    entity_id: this._config.entity_id,
+                    media_content_type: "album_of_track",
+                    media_content_id: "1",
+                });
+                this._response = response["children"];
+            }
+            if (this._response.length == 0)
+                this._cardState = 8 /* PoLRCurrentState.NO_RESULTS */;
+            if (this._response.length > 0)
+                this._cardState = 4 /* PoLRCurrentState.HAS_RESULTS */;
+        }
+        catch (e) {
+            console.error(e);
+            this._cardState = 16 /* PoLRCurrentState.ERROR */;
+        }
+    }
+    async _browseForYou(browseAction) {
+        this._lastBrowseAction.push({
+            media_content_type: browseAction.media_content_type,
+            media_content_id: browseAction.media_content_id,
+        });
+        try {
+            const response = await this._hass.callWS({
+                type: "media_player/browse_media",
+                entity_id: this._config.entity_id,
+                media_content_type: browseAction.media_content_type,
+                media_content_id: browseAction.media_content_id,
+            });
+            this._forYouResponse = response["children"];
+        }
+        catch (e) {
+            console.log(e, browseAction.media_content_type, browseAction.media_content_id);
+        }
     }
     async _play(media_content_type, media_content_id) {
         this._hass.callService("ytube_music_player", "call_method", {
@@ -631,7 +730,6 @@ PoLRYTubePlayingCard.styles = i$2 `
         .results {
             max-height: 400px;
             overflow: scroll;
-            padding-top: 12px;
         }
 
         .result {
@@ -685,6 +783,8 @@ PoLRYTubePlayingCard.styles = i$2 `
 
         .content {
             padding: 12px 12px 12px 12px;
+            display: grid;
+            gap: 12px;
         }
 
         .source {
@@ -729,6 +829,15 @@ __decorate([
 __decorate([
     t()
 ], PoLRYTubePlayingCard.prototype, "_lastChanged", void 0);
+__decorate([
+    n$1()
+], PoLRYTubePlayingCard.prototype, "_page", void 0);
+__decorate([
+    n$1()
+], PoLRYTubePlayingCard.prototype, "_forYouResponse", void 0);
+__decorate([
+    t()
+], PoLRYTubePlayingCard.prototype, "_lastBrowseAction", void 0);
 customElements.define("polr-ytube-playing-card", PoLRYTubePlayingCard);
 // This puts your card into the UI card picker dialog
 window.customCards = window.customCards || [];
