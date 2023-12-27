@@ -212,14 +212,8 @@ export class PoLRYTubePlayingCard extends LitElement {
     }
 
     _getFullTitle() {
+        // TODO: Implement a title
         return html``;
-        if (this._entity.state == "off") return html``;
-
-        const elements = [];
-
-        return html` <div class="secondary">${elements}</div>
-            ${this._entity["attributes"]["media_title"]} -
-            ${this._entity["attributes"]["media_artist"]}`;
     }
 
     async _changeTab(page: PoLRYTubeTab) {

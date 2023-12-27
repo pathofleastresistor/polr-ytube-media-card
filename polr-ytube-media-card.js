@@ -1136,6 +1136,7 @@ class PoLRYTubePlayingCard extends s {
         `;
     }
     _getFullTitle() {
+        // TODO: Implement a title
         return x ``;
     }
     async _changeTab(page) {
