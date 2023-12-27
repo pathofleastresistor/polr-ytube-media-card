@@ -1,5 +1,6 @@
 import { LitElement, html, css, CSSResultGroup, PropertyValues } from "lit";
 import { property, state } from "lit/decorators.js";
+import { classMap } from "lit/directives/class-map";
 import "./elements/polr-ytube-search";
 import "./elements/polr-ytube-page-tabs";
 import "./elements/polr-ytube-list";
@@ -44,8 +45,6 @@ export class PoLRYTubePlayingCard extends LitElement {
 
         this._config = structuredClone(config);
         if (!("header" in this._config)) this._config.header = "YouTube Music";
-        if (!("searchTitle" in this._config))
-            this._config.searchTitle = "Search";
         if (!("icon" in this._config)) this._config.searchTitle = "mdi:speaker";
     }
 
@@ -93,11 +92,16 @@ export class PoLRYTubePlayingCard extends LitElement {
 
     _renderTab() {
         if (this._page == PoLRYTubeTab.FOR_YOU) {
+            const item = new PoLRYTubeItem();
+            item.media_content_id = "";
+            item.media_content_type = "mood_overview";
+            item.title = "For You";
+
             return html`
                 <polr-ytube-browser
                     .hass=${this._hass}
-                    .elements=${this._forYouItems}
-                    .entity=${this._entity}></polr-ytube-browser>
+                    .entity=${this._entity}
+                    .initialAction=${item}></polr-ytube-browser>
             `;
         }
 
@@ -191,6 +195,7 @@ export class PoLRYTubePlayingCard extends LitElement {
                     </div>
                     <div class="info-container">
                         <div class="primary">${this._config.header}</div>
+                        ${this._getFullTitle()}
                     </div>
                 </div>
                 <div class="content">
@@ -204,6 +209,17 @@ export class PoLRYTubePlayingCard extends LitElement {
                 </div>
             </ha-card>
         `;
+    }
+
+    _getFullTitle() {
+        return html``;
+        if (this._entity.state == "off") return html``;
+
+        const elements = [];
+
+        return html` <div class="secondary">${elements}</div>
+            ${this._entity["attributes"]["media_title"]} -
+            ${this._entity["attributes"]["media_artist"]}`;
     }
 
     async _changeTab(page: PoLRYTubeTab) {
@@ -316,6 +332,9 @@ export class PoLRYTubePlayingCard extends LitElement {
 
                 .primary {
                     font-weight: bold;
+                }
+                .secondary {
+                    font-size: 12px;
                 }
 
                 .content {

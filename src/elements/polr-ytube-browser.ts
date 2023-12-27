@@ -17,15 +17,12 @@ export class PoLRYTubeBrowser extends LitElement {
     @property() public elements: PoLRYTubeItem[];
     @property() private _state: PoLRYTubeState = PoLRYTubeState.INITAL;
     @state() private _browseHistory: PoLRYTubeItem[] = [];
+    @state() public initialAction: PoLRYTubeItem;
 
     protected firstUpdated(
         _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
     ): void {
-        const item = new PoLRYTubeItem();
-        item.media_content_id = "";
-        item.media_content_type = "mood_overview";
-        item.title = "For you";
-        this._browse(item);
+        this._browse(this.initialAction);
     }
 
     render() {

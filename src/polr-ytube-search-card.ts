@@ -1,5 +1,6 @@
 import { LitElement, html, css, CSSResultGroup } from "lit";
 import { property, state } from "lit/decorators.js";
+import "./elements/polr-ytube-search";
 
 export const enum PoLRMediaSearchState {
     CLEAR = 1,
@@ -125,31 +126,11 @@ export class PoLRYTubeSearchCard extends LitElement {
             <ha-card>
                 ${header}
                 <div class="content">
-                    <div class="search">
-                        <div class="filter">
-                            <ha-select
-                                id="filter"
-                                naturalmenuwidth
-                                fixedmenuposition>
-                                <mwc-list-item value="albums"
-                                    >Albums</mwc-list-item
-                                >
-                                <mwc-list-item value="playlists"
-                                    >Playlists</mwc-list-item
-                                >
-                                <mwc-list-item selected value="songs"
-                                    >Songs</mwc-list-item
-                                >
-                            </ha-select>
-                        </div>
-                        <ha-textfield
-                            type="text"
-                            id="query"
-                            label="${this._config["searchTitle"]}"
-                            @keyup="${this.handleKey}"></ha-textfield>
-                        ${this._renderAction()}
-                    </div>
-                    <div class="results">${this._renderResponse()}</div>
+                    <polr-ytube-search
+                        ._hass=${this._hass}
+                        ._config=${{
+                            entity_id: this._config["entity_id"],
+                        }}></polr-ytube-search>
                 </div>
             </ha-card>
         `;

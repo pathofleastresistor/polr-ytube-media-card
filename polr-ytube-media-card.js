@@ -74,334 +74,6 @@ const i=(i,e)=>"method"===e.kind&&e.descriptor&&!("value"in e.descriptor)?{...e,
  * SPDX-License-Identifier: BSD-3-Clause
  */var n;null!=(null===(n=window.HTMLSlotElement)||void 0===n?void 0:n.prototype.assignedElements)?(o,n)=>o.assignedElements(n):(o,n)=>o.assignedNodes(n).filter((o=>o.nodeType===Node.ELEMENT_NODE));
 
-class PoLRYTubeSearchCard extends s {
-    constructor() {
-        super(...arguments);
-        this._config = {};
-        this._runOnce = false;
-        this._response = {};
-        this._action = 1 /* PoLRMediaSearchAction.SEARCH */;
-        this._resultsState = 1 /* PoLRMediaSearchState.CLEAR */;
-    }
-    static getConfigElement() {
-        // return document.createElement("polr-ytube-search-card-editor");
-    }
-    static getStubConfig() {
-        return {};
-    }
-    setConfig(config) {
-        if (!config.entity_id) {
-            throw new Error("entity_id must be specified");
-        }
-        this._config = structuredClone(config);
-        if (!("header" in this._config))
-            this._config.header = "YouTube Search";
-        if (!("showHeader" in this._config))
-            this._config.showHeader = false;
-        if (!("searchTitle" in this._config))
-            this._config.searchTitle = "Search";
-    }
-    set hass(hass) {
-        if (!this._runOnce) {
-            this._hass = hass;
-            this._runOnce = true;
-        }
-    }
-    _renderResponse() {
-        var _a;
-        if (this._resultsState == 1 /* PoLRMediaSearchState.CLEAR */)
-            return x ``;
-        if (this._resultsState == 2 /* PoLRMediaSearchState.HAS_RESULTS */) {
-            const elements = (_a = this._response["children"]) === null || _a === void 0 ? void 0 : _a.filter((result) => true //result["can_play"] && !result["can_expand"]
-            ).map((str) => {
-                return x `
-                        <div class="result">
-                            <img src="${str["thumbnail"]}" />
-                            <div class="title">${str["title"]}</div>
-                            <mwc-button
-                                @click=${() => this._play(str["media_content_type"], str["media_content_id"])}>
-                                Play
-                            </mwc-button>
-                            <mwc-button
-                                @click=${() => this._startRadio(str["media_content_id"])}>
-                                Radio
-                            </mwc-button>
-                        </div>
-                    `;
-            });
-            return elements;
-        }
-        if (this._resultsState == 4 /* PoLRMediaSearchState.LOADING */) {
-            return x `<div class="loading">Loading...</div>`;
-        }
-        if (this._resultsState == 8 /* PoLRMediaSearchState.NO_RESULTS */) {
-            return x `<div class="empty">No results</div>`;
-        }
-        if (this._resultsState == 16 /* PoLRMediaSearchState.ERROR */) {
-            return x `<div class="error">Unknown Error</div>`;
-        }
-    }
-    _renderAction() {
-        if (this._action == 1 /* PoLRMediaSearchAction.SEARCH */)
-            return x ` <mwc-button @click=${this._search}
-                ><ha-icon icon="mdi:magnify"></ha-icon
-            ></mwc-button>`;
-        if (this._action == 2 /* PoLRMediaSearchAction.CLEAR */)
-            return x `
-                <mwc-button @click=${this._clear}
-                    ><ha-icon icon="mdi:close"></ha-icon
-                ></mwc-button>
-            `;
-    }
-    render() {
-        this._response["children"];
-        const header = this._config["showHeader"]
-            ? x `
-                  <div class="header">
-                      <div class="icon-container">
-                          <ha-icon icon="${this._config.icon}"></ha-icon>
-                      </div>
-                      <div class="info-container">
-                          <div class="primary">${this._config.header}</div>
-                      </div>
-                  </div>
-              `
-            : x ``;
-        return x `
-            <ha-card>
-                ${header}
-                <div class="content">
-                    <div class="search">
-                        <div class="filter">
-                            <ha-select
-                                id="filter"
-                                naturalmenuwidth
-                                fixedmenuposition>
-                                <mwc-list-item value="albums"
-                                    >Albums</mwc-list-item
-                                >
-                                <mwc-list-item value="playlists"
-                                    >Playlists</mwc-list-item
-                                >
-                                <mwc-list-item selected value="songs"
-                                    >Songs</mwc-list-item
-                                >
-                            </ha-select>
-                        </div>
-                        <ha-textfield
-                            type="text"
-                            id="query"
-                            label="${this._config["searchTitle"]}"
-                            @keyup="${this.handleKey}"></ha-textfield>
-                        ${this._renderAction()}
-                    </div>
-                    <div class="results">${this._renderResponse()}</div>
-                </div>
-            </ha-card>
-        `;
-    }
-    async _fetchResults() {
-        var _a;
-        try {
-            this._response = await this._hass.callWS({
-                type: "media_player/browse_media",
-                entity_id: this._config.entity_id,
-                media_content_type: "search",
-                media_content_id: "",
-            });
-            if (((_a = this._response["children"]) === null || _a === void 0 ? void 0 : _a.length) > 0) {
-                // TODO: Move to ytube_music_player component,
-                //       instead of handling in frontend
-                // Filter out community playlists of podcast
-                this._response["children"].filter((el) => !el["media_content_id"].startsWith("MPSP"));
-                this._resultsState = 2 /* PoLRMediaSearchState.HAS_RESULTS */;
-            }
-            else
-                this._resultsState = 8 /* PoLRMediaSearchState.NO_RESULTS */;
-        }
-        catch (e) {
-            this._resultsState = 16 /* PoLRMediaSearchState.ERROR */;
-            console.error(e, this._resultsState);
-        }
-    }
-    handleKey(ev) {
-        const value = this.shadowRoot.querySelector("#query").value;
-        if (value == "")
-            this._clear();
-        if (ev.keyCode == 13)
-            this._search();
-    }
-    async _search() {
-        this._response = {};
-        this._resultsState = 4 /* PoLRMediaSearchState.LOADING */;
-        this._action = 2 /* PoLRMediaSearchAction.CLEAR */;
-        const filter = this.shadowRoot.querySelector("#filter").value;
-        await this._hass.callService("ytube_music_player", "search", {
-            entity_id: this._config.entity_id,
-            query: this.shadowRoot.querySelector("#query").value,
-            filter: filter,
-            limit: 50,
-        });
-        this._fetchResults();
-    }
-    _clear() {
-        this.shadowRoot.querySelector("#query").value = "";
-        this._response = [];
-        this._action = 1 /* PoLRMediaSearchAction.SEARCH */;
-    }
-    async _play(media_content_type, media_content_id) {
-        this._hass.callService("media_player", "play_media", {
-            entity_id: this._config.entity_id,
-            media_content_id: media_content_id,
-            media_content_type: media_content_type,
-        });
-    }
-    async _startRadio(media_content_id) {
-        // await this._hass.callService("ytube_music_player", "start_radio", {
-        //     entity_id: this._config.entity_id,
-        //     interrupt: false,
-        // });
-        this._hass.callService("media_player", "shuffle_set", {
-            entity_id: this._config.entity_id,
-            shuffle: false,
-        });
-        this._hass.callService("media_player", "play_media", {
-            entity_id: this._config.entity_id,
-            media_content_id: media_content_id,
-            media_content_type: "vid_channel",
-        });
-    }
-}
-PoLRYTubeSearchCard.styles = i$2 `
-        :host {
-            --mdc-typography-subtitle1-font-size: 12px;
-        }
-
-        ha-card {
-            overflow: hidden;
-        }
-
-        .search {
-            display: grid;
-            grid-template-columns: min-content 1fr min-content;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .search > mwc-button {
-        }
-
-        .results {
-            max-height: 400px;
-            overflow: scroll;
-        }
-
-        .result {
-            padding: 12px 0;
-            display: grid;
-            grid-template-columns: 40px 1fr min-content min-content;
-            align-items: center;
-            font-size: 12px;
-            gap: 8px;
-        }
-
-        .result img {
-            width: 40px;
-            height: 40px;
-        }
-
-        .loading {
-            height: 50px;
-            text-align: center;
-            display: grid;
-            align-items: center;
-            padding: 12px 0;
-        }
-
-        .header {
-            display: grid;
-            height: 40px;
-            padding: 12px 12px 0 12px;
-            grid-template-columns: min-content auto 40px;
-            gap: 4px;
-        }
-
-        .icon-container {
-            display: flex;
-            height: 40px;
-            width: 40px;
-            border-radius: 50%;
-            background: rgba(111, 111, 111, 0.2);
-            place-content: center;
-            align-items: center;
-            margin-right: 12px;
-        }
-
-        .info-container {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .primary {
-            font-weight: bold;
-        }
-
-        .action-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-
-        .content {
-            padding: 12px 12px 12px 12px;
-        }
-
-        select {
-            appearance: none;
-            display: grid;
-            border: none;
-            padding: 10px;
-            outline: none;
-            border: 1px solid rgba(40, 40, 40, 0.3);
-            border-radius: 0.25em;
-            cursor: pointer;
-        }
-        .filter {
-            margin: 4px;
-        }
-        ha-select {
-            width: 100px;
-        }
-    `;
-__decorate([
-    n$1()
-], PoLRYTubeSearchCard.prototype, "_config", void 0);
-__decorate([
-    n$1()
-], PoLRYTubeSearchCard.prototype, "_hass", void 0);
-__decorate([
-    n$1()
-], PoLRYTubeSearchCard.prototype, "_runOnce", void 0);
-__decorate([
-    t()
-], PoLRYTubeSearchCard.prototype, "_response", void 0);
-__decorate([
-    t()
-], PoLRYTubeSearchCard.prototype, "_action", void 0);
-__decorate([
-    n$1()
-], PoLRYTubeSearchCard.prototype, "_resultsState", void 0);
-customElements.define("polr-ytube-search-card", PoLRYTubeSearchCard);
-// This puts your card into the UI card picker dialog
-window.customCards = window.customCards || [];
-window.customCards.push({
-    type: "polr-ytube-search-card",
-    name: "PoLR YouTube Search",
-    description: "Requires the ytube_media_player integration",
-});
-
 let PoLRYTubeList = class PoLRYTubeList extends s {
     constructor() {
         super(...arguments);
@@ -793,6 +465,314 @@ PoLRYTubeSearch = __decorate([
     e$1("polr-ytube-search")
 ], PoLRYTubeSearch);
 
+class PoLRYTubeSearchCard extends s {
+    constructor() {
+        super(...arguments);
+        this._config = {};
+        this._runOnce = false;
+        this._response = {};
+        this._action = 1 /* PoLRMediaSearchAction.SEARCH */;
+        this._resultsState = 1 /* PoLRMediaSearchState.CLEAR */;
+    }
+    static getConfigElement() {
+        // return document.createElement("polr-ytube-search-card-editor");
+    }
+    static getStubConfig() {
+        return {};
+    }
+    setConfig(config) {
+        if (!config.entity_id) {
+            throw new Error("entity_id must be specified");
+        }
+        this._config = structuredClone(config);
+        if (!("header" in this._config))
+            this._config.header = "YouTube Search";
+        if (!("showHeader" in this._config))
+            this._config.showHeader = false;
+        if (!("searchTitle" in this._config))
+            this._config.searchTitle = "Search";
+    }
+    set hass(hass) {
+        if (!this._runOnce) {
+            this._hass = hass;
+            this._runOnce = true;
+        }
+    }
+    _renderResponse() {
+        var _a;
+        if (this._resultsState == 1 /* PoLRMediaSearchState.CLEAR */)
+            return x ``;
+        if (this._resultsState == 2 /* PoLRMediaSearchState.HAS_RESULTS */) {
+            const elements = (_a = this._response["children"]) === null || _a === void 0 ? void 0 : _a.filter((result) => true //result["can_play"] && !result["can_expand"]
+            ).map((str) => {
+                return x `
+                        <div class="result">
+                            <img src="${str["thumbnail"]}" />
+                            <div class="title">${str["title"]}</div>
+                            <mwc-button
+                                @click=${() => this._play(str["media_content_type"], str["media_content_id"])}>
+                                Play
+                            </mwc-button>
+                            <mwc-button
+                                @click=${() => this._startRadio(str["media_content_id"])}>
+                                Radio
+                            </mwc-button>
+                        </div>
+                    `;
+            });
+            return elements;
+        }
+        if (this._resultsState == 4 /* PoLRMediaSearchState.LOADING */) {
+            return x `<div class="loading">Loading...</div>`;
+        }
+        if (this._resultsState == 8 /* PoLRMediaSearchState.NO_RESULTS */) {
+            return x `<div class="empty">No results</div>`;
+        }
+        if (this._resultsState == 16 /* PoLRMediaSearchState.ERROR */) {
+            return x `<div class="error">Unknown Error</div>`;
+        }
+    }
+    _renderAction() {
+        if (this._action == 1 /* PoLRMediaSearchAction.SEARCH */)
+            return x ` <mwc-button @click=${this._search}
+                ><ha-icon icon="mdi:magnify"></ha-icon
+            ></mwc-button>`;
+        if (this._action == 2 /* PoLRMediaSearchAction.CLEAR */)
+            return x `
+                <mwc-button @click=${this._clear}
+                    ><ha-icon icon="mdi:close"></ha-icon
+                ></mwc-button>
+            `;
+    }
+    render() {
+        this._response["children"];
+        const header = this._config["showHeader"]
+            ? x `
+                  <div class="header">
+                      <div class="icon-container">
+                          <ha-icon icon="${this._config.icon}"></ha-icon>
+                      </div>
+                      <div class="info-container">
+                          <div class="primary">${this._config.header}</div>
+                      </div>
+                  </div>
+              `
+            : x ``;
+        return x `
+            <ha-card>
+                ${header}
+                <div class="content">
+                    <polr-ytube-search
+                        ._hass=${this._hass}
+                        ._config=${{
+            entity_id: this._config["entity_id"],
+        }}></polr-ytube-search>
+                </div>
+            </ha-card>
+        `;
+    }
+    async _fetchResults() {
+        var _a;
+        try {
+            this._response = await this._hass.callWS({
+                type: "media_player/browse_media",
+                entity_id: this._config.entity_id,
+                media_content_type: "search",
+                media_content_id: "",
+            });
+            if (((_a = this._response["children"]) === null || _a === void 0 ? void 0 : _a.length) > 0) {
+                // TODO: Move to ytube_music_player component,
+                //       instead of handling in frontend
+                // Filter out community playlists of podcast
+                this._response["children"].filter((el) => !el["media_content_id"].startsWith("MPSP"));
+                this._resultsState = 2 /* PoLRMediaSearchState.HAS_RESULTS */;
+            }
+            else
+                this._resultsState = 8 /* PoLRMediaSearchState.NO_RESULTS */;
+        }
+        catch (e) {
+            this._resultsState = 16 /* PoLRMediaSearchState.ERROR */;
+            console.error(e, this._resultsState);
+        }
+    }
+    handleKey(ev) {
+        const value = this.shadowRoot.querySelector("#query").value;
+        if (value == "")
+            this._clear();
+        if (ev.keyCode == 13)
+            this._search();
+    }
+    async _search() {
+        this._response = {};
+        this._resultsState = 4 /* PoLRMediaSearchState.LOADING */;
+        this._action = 2 /* PoLRMediaSearchAction.CLEAR */;
+        const filter = this.shadowRoot.querySelector("#filter").value;
+        await this._hass.callService("ytube_music_player", "search", {
+            entity_id: this._config.entity_id,
+            query: this.shadowRoot.querySelector("#query").value,
+            filter: filter,
+            limit: 50,
+        });
+        this._fetchResults();
+    }
+    _clear() {
+        this.shadowRoot.querySelector("#query").value = "";
+        this._response = [];
+        this._action = 1 /* PoLRMediaSearchAction.SEARCH */;
+    }
+    async _play(media_content_type, media_content_id) {
+        this._hass.callService("media_player", "play_media", {
+            entity_id: this._config.entity_id,
+            media_content_id: media_content_id,
+            media_content_type: media_content_type,
+        });
+    }
+    async _startRadio(media_content_id) {
+        // await this._hass.callService("ytube_music_player", "start_radio", {
+        //     entity_id: this._config.entity_id,
+        //     interrupt: false,
+        // });
+        this._hass.callService("media_player", "shuffle_set", {
+            entity_id: this._config.entity_id,
+            shuffle: false,
+        });
+        this._hass.callService("media_player", "play_media", {
+            entity_id: this._config.entity_id,
+            media_content_id: media_content_id,
+            media_content_type: "vid_channel",
+        });
+    }
+}
+PoLRYTubeSearchCard.styles = i$2 `
+        :host {
+            --mdc-typography-subtitle1-font-size: 12px;
+        }
+
+        ha-card {
+            overflow: hidden;
+        }
+
+        .search {
+            display: grid;
+            grid-template-columns: min-content 1fr min-content;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .search > mwc-button {
+        }
+
+        .results {
+            max-height: 400px;
+            overflow: scroll;
+        }
+
+        .result {
+            padding: 12px 0;
+            display: grid;
+            grid-template-columns: 40px 1fr min-content min-content;
+            align-items: center;
+            font-size: 12px;
+            gap: 8px;
+        }
+
+        .result img {
+            width: 40px;
+            height: 40px;
+        }
+
+        .loading {
+            height: 50px;
+            text-align: center;
+            display: grid;
+            align-items: center;
+            padding: 12px 0;
+        }
+
+        .header {
+            display: grid;
+            height: 40px;
+            padding: 12px 12px 0 12px;
+            grid-template-columns: min-content auto 40px;
+            gap: 4px;
+        }
+
+        .icon-container {
+            display: flex;
+            height: 40px;
+            width: 40px;
+            border-radius: 50%;
+            background: rgba(111, 111, 111, 0.2);
+            place-content: center;
+            align-items: center;
+            margin-right: 12px;
+        }
+
+        .info-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .primary {
+            font-weight: bold;
+        }
+
+        .action-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .content {
+            padding: 12px 12px 12px 12px;
+        }
+
+        select {
+            appearance: none;
+            display: grid;
+            border: none;
+            padding: 10px;
+            outline: none;
+            border: 1px solid rgba(40, 40, 40, 0.3);
+            border-radius: 0.25em;
+            cursor: pointer;
+        }
+        .filter {
+            margin: 4px;
+        }
+        ha-select {
+            width: 100px;
+        }
+    `;
+__decorate([
+    n$1()
+], PoLRYTubeSearchCard.prototype, "_config", void 0);
+__decorate([
+    n$1()
+], PoLRYTubeSearchCard.prototype, "_hass", void 0);
+__decorate([
+    n$1()
+], PoLRYTubeSearchCard.prototype, "_runOnce", void 0);
+__decorate([
+    t()
+], PoLRYTubeSearchCard.prototype, "_response", void 0);
+__decorate([
+    t()
+], PoLRYTubeSearchCard.prototype, "_action", void 0);
+__decorate([
+    n$1()
+], PoLRYTubeSearchCard.prototype, "_resultsState", void 0);
+customElements.define("polr-ytube-search-card", PoLRYTubeSearchCard);
+// This puts your card into the UI card picker dialog
+window.customCards = window.customCards || [];
+window.customCards.push({
+    type: "polr-ytube-search-card",
+    name: "PoLR YouTube Search",
+    description: "Requires the ytube_media_player integration",
+});
+
 let PoLRYTubePageTabs = class PoLRYTubePageTabs extends s {
     constructor() {
         super(...arguments);
@@ -866,9 +846,6 @@ PoLRYTubePageTabs = __decorate([
     e$1("polr-ytube-page-tabs")
 ], PoLRYTubePageTabs);
 
-class PoLRYTubeItem {
-}
-
 let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s {
     constructor() {
         super(...arguments);
@@ -876,11 +853,7 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s {
         this._browseHistory = [];
     }
     firstUpdated(_changedProperties) {
-        const item = new PoLRYTubeItem();
-        item.media_content_id = "";
-        item.media_content_type = "mood_overview";
-        item.title = "For you";
-        this._browse(item);
+        this._browse(this.initialAction);
     }
     render() {
         if (this._state == 1 /* PoLRYTubeState.INITAL */) {
@@ -996,9 +969,15 @@ __decorate([
 __decorate([
     t()
 ], PoLRYTubeBrowser.prototype, "_browseHistory", void 0);
+__decorate([
+    t()
+], PoLRYTubeBrowser.prototype, "initialAction", void 0);
 PoLRYTubeBrowser = __decorate([
     e$1("polr-ytube-browser")
 ], PoLRYTubeBrowser);
+
+class PoLRYTubeItem {
+}
 
 class PoLRYTubePlayingCard extends s {
     constructor() {
@@ -1022,8 +1001,6 @@ class PoLRYTubePlayingCard extends s {
         this._config = structuredClone(config);
         if (!("header" in this._config))
             this._config.header = "YouTube Music";
-        if (!("searchTitle" in this._config))
-            this._config.searchTitle = "Search";
         if (!("icon" in this._config))
             this._config.searchTitle = "mdi:speaker";
     }
@@ -1056,11 +1033,15 @@ class PoLRYTubePlayingCard extends s {
     }
     _renderTab() {
         if (this._page == 2 /* PoLRYTubeTab.FOR_YOU */) {
+            const item = new PoLRYTubeItem();
+            item.media_content_id = "";
+            item.media_content_type = "mood_overview";
+            item.title = "For You";
             return x `
                 <polr-ytube-browser
                     .hass=${this._hass}
-                    .elements=${this._forYouItems}
-                    .entity=${this._entity}></polr-ytube-browser>
+                    .entity=${this._entity}
+                    .initialAction=${item}></polr-ytube-browser>
             `;
         }
         if (this._page == 4 /* PoLRYTubeTab.SEARCH */) {
@@ -1142,6 +1123,7 @@ class PoLRYTubePlayingCard extends s {
                     </div>
                     <div class="info-container">
                         <div class="primary">${this._config.header}</div>
+                        ${this._getFullTitle()}
                     </div>
                 </div>
                 <div class="content">
@@ -1152,6 +1134,9 @@ class PoLRYTubePlayingCard extends s {
                 </div>
             </ha-card>
         `;
+    }
+    _getFullTitle() {
+        return x ``;
     }
     async _changeTab(page) {
         this._page = page;
@@ -1251,6 +1236,9 @@ class PoLRYTubePlayingCard extends s {
 
                 .primary {
                     font-weight: bold;
+                }
+                .secondary {
+                    font-size: 12px;
                 }
 
                 .content {
