@@ -1,4 +1,4 @@
-import { LitElement, html, css, CSSResultGroup } from "lit";
+import { LitElement, html, css, CSSResultGroup, PropertyValues } from "lit";
 import { property, state } from "lit/decorators.js";
 import "./elements/polr-ytube-search";
 import "./elements/polr-ytube-page-tabs";
@@ -22,11 +22,12 @@ export class PoLRYTubePlayingCard extends LitElement {
     @property() _config: any = {};
     @property() _hass: any;
     @property() _entity: any;
-    @state() _runOnce: boolean = false;
-    @property() _currentlyPlayingItems: any = [];
+    @state() _currentlyPlayingItems: any = [];
     @property() _forYouItems: PoLRYTubeItem[] = [];
     @state() _browseHistory: PoLRYTubeItem[] = [];
-    @state() _cardState: PoLRCurrentState = PoLRCurrentState.INITAL;
+    @property() _currentlyPlayingState: PoLRCurrentState =
+        PoLRCurrentState.INITAL;
+    @property() _forYouState: PoLRCurrentState = PoLRCurrentState.INITAL;
     @property() _page: PoLRYTubePage = PoLRYTubePage.CURRENTLY_PLAYING;
 
     static getConfigElement() {}
@@ -50,18 +51,43 @@ export class PoLRYTubePlayingCard extends LitElement {
     set hass(hass) {
         this._hass = hass;
 
-        this._entity = structuredClone(
-            this._hass["states"][this._config["entity_id"]]
+        if (
+            this._hasEntityChanged(
+                this._entity,
+                this._hass["states"][this._config["entity_id"]]
+            )
+        ) {
+            this._entity = structuredClone(
+                this._hass["states"][this._config["entity_id"]]
+            );
+
+            if (this._entity["state"] == "off") {
+                this._currentlyPlayingState = PoLRCurrentState.INITAL;
+            } else {
+                this._getCurrentlyPlayingItems();
+            }
+        }
+    }
+
+    shouldUpdate(changedProperties: Map<string, any>) {
+        const _hass = changedProperties.get("_hass");
+        if (_hass != null) {
+            return this._hasEntityChanged(
+                this._entity,
+                _hass["states"][this._config["entity_id"]]
+            );
+        }
+        return true;
+    }
+
+    private _hasEntityChanged(current, updated) {
+        // console.log({
+        //     current: current?.attributes?.media_title,
+        //     updated: updated?.attributes?.media_title,
+        // });
+        return (
+            current?.attributes?.media_title != updated?.attributes?.media_title
         );
-
-        if (this._entity["state"] == "off") {
-            this._cardState = PoLRCurrentState.INITAL;
-        }
-
-        if (!this._runOnce) {
-            this._getCurrentlyPlayingItems();
-            this._runOnce = true;
-        }
     }
 
     private _renderBackButton() {
@@ -88,6 +114,30 @@ export class PoLRYTubePlayingCard extends LitElement {
 
     _renderItems() {
         if (this._page == PoLRYTubePage.FOR_YOU) {
+            if (this._forYouState == PoLRCurrentState.INITAL) {
+                return html``;
+            }
+
+            if (this._forYouState == PoLRCurrentState.NO_RESULTS) {
+                return html`
+                    ${this._renderBackButton()}
+                    <div class="no-results">No songs found.</div>
+                `;
+            }
+
+            if (this._forYouState == PoLRCurrentState.LOADING) {
+                return html`
+                    ${this._renderBackButton()}
+                    <div class="loading">Loading...</div>
+                `;
+            }
+
+            if (this._forYouState == PoLRCurrentState.ERROR) {
+                return html`
+                    ${this._renderBackButton()}
+                    <div class="error">An error occurred.</div>
+                `;
+            }
             return html`
                 ${this._renderBackButton()}
                 <polr-ytube-list
@@ -109,15 +159,15 @@ export class PoLRYTubePlayingCard extends LitElement {
         }
 
         if (this._page == PoLRYTubePage.CURRENTLY_PLAYING) {
-            if (this._cardState == PoLRCurrentState.INITAL) {
+            if (this._currentlyPlayingState == PoLRCurrentState.INITAL) {
                 return html``;
             }
 
-            if (this._cardState == PoLRCurrentState.NO_RESULTS) {
+            if (this._currentlyPlayingState == PoLRCurrentState.NO_RESULTS) {
                 return html` <div class="no-results">No songs found.</div>`;
             }
 
-            if (this._cardState == PoLRCurrentState.ERROR) {
+            if (this._currentlyPlayingState == PoLRCurrentState.ERROR) {
                 return html` <div class="error">An error occurred.</div>`;
             }
 
@@ -125,8 +175,7 @@ export class PoLRYTubePlayingCard extends LitElement {
                 <polr-ytube-list
                     .hass=${this._hass}
                     .elements=${this._currentlyPlayingItems}
-                    .entity=${this._entity}
-                    @update=${this._getCurrentlyPlayingItems}></polr-ytube-list>
+                    .entity=${this._entity}></polr-ytube-list>
             `;
         }
     }
@@ -261,24 +310,24 @@ export class PoLRYTubePlayingCard extends LitElement {
             }
 
             if (this._currentlyPlayingItems.length == 0)
-                this._cardState = PoLRCurrentState.NO_RESULTS;
+                this._currentlyPlayingState = PoLRCurrentState.NO_RESULTS;
 
             if (this._currentlyPlayingItems.length > 0)
-                this._cardState = PoLRCurrentState.HAS_RESULTS;
+                this._currentlyPlayingState = PoLRCurrentState.HAS_RESULTS;
         } catch (e) {
             console.error(e);
-            this._cardState = PoLRCurrentState.ERROR;
+            this._currentlyPlayingState = PoLRCurrentState.ERROR;
         }
     }
 
     private async _handleBrowse(event) {
         const element = event.detail.action;
-
         this._browse(element);
     }
 
     async _browse(element: PoLRYTubeItem) {
         this._browseHistory.push(element);
+        this._forYouState = PoLRCurrentState.LOADING;
 
         try {
             const response = await this._hass.callWS({
@@ -289,7 +338,9 @@ export class PoLRYTubePlayingCard extends LitElement {
             });
 
             this._forYouItems = response["children"];
+            this._forYouState = PoLRCurrentState.HAS_RESULTS;
         } catch (e) {
+            this._forYouState = PoLRCurrentState.ERROR;
             console.error(
                 e,
                 element.media_content_type,
@@ -370,11 +421,20 @@ export class PoLRYTubePlayingCard extends LitElement {
             align-items: center;
             gap: 12px;
         }
+
         .breadcrumb {
             display: block;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+        }
+
+        .loading,
+        .error {
+            display: grid;
+            align-items: center;
+            justify-items: center;
+            height: 100px;
         }
     `;
 }

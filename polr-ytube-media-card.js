@@ -443,7 +443,6 @@ let PoLRYTubeList = class PoLRYTubeList extends s {
         const id = element.media_content_type == "track"
             ? element.media_content_id
             : this.entity["attributes"]["videoId"];
-        console.log(id);
         return x `
             <mwc-button @click=${() => this._startRadio(id)}>
                 Radio
@@ -562,9 +561,9 @@ let PoLRYTubeList = class PoLRYTubeList extends s {
 
                 .empty {
                     display: block;
-                    background-color: rgba(100, 100, 100, 0.3);
+                    background-color: rgba(111, 111, 111, 0.2);
                     border-radius: 12px;
-                    height: 100%;
+                    height: 40px;
                 }
 
                 .current {
@@ -576,13 +575,13 @@ let PoLRYTubeList = class PoLRYTubeList extends s {
 };
 __decorate([
     n$1()
-], PoLRYTubeList.prototype, "elements", void 0);
-__decorate([
-    n$1()
 ], PoLRYTubeList.prototype, "entity", void 0);
 __decorate([
     n$1()
 ], PoLRYTubeList.prototype, "hass", void 0);
+__decorate([
+    n$1()
+], PoLRYTubeList.prototype, "elements", void 0);
 __decorate([
     t()
 ], PoLRYTubeList.prototype, "_browseHistory", void 0);
@@ -871,11 +870,11 @@ class PoLRYTubePlayingCard extends s {
     constructor() {
         super(...arguments);
         this._config = {};
-        this._runOnce = false;
         this._currentlyPlayingItems = [];
         this._forYouItems = [];
         this._browseHistory = [];
-        this._cardState = 1 /* PoLRCurrentState.INITAL */;
+        this._currentlyPlayingState = 1 /* PoLRCurrentState.INITAL */;
+        this._forYouState = 1 /* PoLRCurrentState.INITAL */;
         this._page = 1 /* PoLRYTubePage.CURRENTLY_PLAYING */;
     }
     static getConfigElement() { }
@@ -896,14 +895,30 @@ class PoLRYTubePlayingCard extends s {
     }
     set hass(hass) {
         this._hass = hass;
-        this._entity = structuredClone(this._hass["states"][this._config["entity_id"]]);
-        if (this._entity["state"] == "off") {
-            this._cardState = 1 /* PoLRCurrentState.INITAL */;
+        if (this._hasEntityChanged(this._entity, this._hass["states"][this._config["entity_id"]])) {
+            this._entity = structuredClone(this._hass["states"][this._config["entity_id"]]);
+            if (this._entity["state"] == "off") {
+                this._currentlyPlayingState = 1 /* PoLRCurrentState.INITAL */;
+            }
+            else {
+                this._getCurrentlyPlayingItems();
+            }
         }
-        if (!this._runOnce) {
-            this._getCurrentlyPlayingItems();
-            this._runOnce = true;
+    }
+    shouldUpdate(changedProperties) {
+        const _hass = changedProperties.get("_hass");
+        if (_hass != null) {
+            return this._hasEntityChanged(this._entity, _hass["states"][this._config["entity_id"]]);
         }
+        return true;
+    }
+    _hasEntityChanged(current, updated) {
+        var _a, _b;
+        // console.log({
+        //     current: current?.attributes?.media_title,
+        //     updated: updated?.attributes?.media_title,
+        // });
+        return (((_a = current === null || current === void 0 ? void 0 : current.attributes) === null || _a === void 0 ? void 0 : _a.media_title) != ((_b = updated === null || updated === void 0 ? void 0 : updated.attributes) === null || _b === void 0 ? void 0 : _b.media_title));
     }
     _renderBackButton() {
         if (this._browseHistory.length <= 1)
@@ -924,6 +939,27 @@ class PoLRYTubePlayingCard extends s {
     }
     _renderItems() {
         if (this._page == 2 /* PoLRYTubePage.FOR_YOU */) {
+            if (this._forYouState == 1 /* PoLRCurrentState.INITAL */) {
+                return x ``;
+            }
+            if (this._forYouState == 8 /* PoLRCurrentState.NO_RESULTS */) {
+                return x `
+                    ${this._renderBackButton()}
+                    <div class="no-results">No songs found.</div>
+                `;
+            }
+            if (this._forYouState == 2 /* PoLRCurrentState.LOADING */) {
+                return x `
+                    ${this._renderBackButton()}
+                    <div class="loading">Loading...</div>
+                `;
+            }
+            if (this._forYouState == 16 /* PoLRCurrentState.ERROR */) {
+                return x `
+                    ${this._renderBackButton()}
+                    <div class="error">An error occurred.</div>
+                `;
+            }
             return x `
                 ${this._renderBackButton()}
                 <polr-ytube-list
@@ -943,21 +979,20 @@ class PoLRYTubePlayingCard extends s {
             `;
         }
         if (this._page == 1 /* PoLRYTubePage.CURRENTLY_PLAYING */) {
-            if (this._cardState == 1 /* PoLRCurrentState.INITAL */) {
+            if (this._currentlyPlayingState == 1 /* PoLRCurrentState.INITAL */) {
                 return x ``;
             }
-            if (this._cardState == 8 /* PoLRCurrentState.NO_RESULTS */) {
+            if (this._currentlyPlayingState == 8 /* PoLRCurrentState.NO_RESULTS */) {
                 return x ` <div class="no-results">No songs found.</div>`;
             }
-            if (this._cardState == 16 /* PoLRCurrentState.ERROR */) {
+            if (this._currentlyPlayingState == 16 /* PoLRCurrentState.ERROR */) {
                 return x ` <div class="error">An error occurred.</div>`;
             }
             return x `
                 <polr-ytube-list
                     .hass=${this._hass}
                     .elements=${this._currentlyPlayingItems}
-                    .entity=${this._entity}
-                    @update=${this._getCurrentlyPlayingItems}></polr-ytube-list>
+                    .entity=${this._entity}></polr-ytube-list>
             `;
         }
     }
@@ -1072,13 +1107,13 @@ class PoLRYTubePlayingCard extends s {
                 this._currentlyPlayingItems = response["children"];
             }
             if (this._currentlyPlayingItems.length == 0)
-                this._cardState = 8 /* PoLRCurrentState.NO_RESULTS */;
+                this._currentlyPlayingState = 8 /* PoLRCurrentState.NO_RESULTS */;
             if (this._currentlyPlayingItems.length > 0)
-                this._cardState = 4 /* PoLRCurrentState.HAS_RESULTS */;
+                this._currentlyPlayingState = 4 /* PoLRCurrentState.HAS_RESULTS */;
         }
         catch (e) {
             console.error(e);
-            this._cardState = 16 /* PoLRCurrentState.ERROR */;
+            this._currentlyPlayingState = 16 /* PoLRCurrentState.ERROR */;
         }
     }
     async _handleBrowse(event) {
@@ -1087,6 +1122,7 @@ class PoLRYTubePlayingCard extends s {
     }
     async _browse(element) {
         this._browseHistory.push(element);
+        this._forYouState = 2 /* PoLRCurrentState.LOADING */;
         try {
             const response = await this._hass.callWS({
                 type: "media_player/browse_media",
@@ -1095,8 +1131,10 @@ class PoLRYTubePlayingCard extends s {
                 media_content_id: element.media_content_id,
             });
             this._forYouItems = response["children"];
+            this._forYouState = 4 /* PoLRCurrentState.HAS_RESULTS */;
         }
         catch (e) {
+            this._forYouState = 16 /* PoLRCurrentState.ERROR */;
             console.error(e, element.media_content_type, element.media_content_id);
         }
     }
@@ -1172,11 +1210,20 @@ PoLRYTubePlayingCard.styles = i$2 `
             align-items: center;
             gap: 12px;
         }
+
         .breadcrumb {
             display: block;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+        }
+
+        .loading,
+        .error {
+            display: grid;
+            align-items: center;
+            justify-items: center;
+            height: 100px;
         }
     `;
 __decorate([
@@ -1190,9 +1237,6 @@ __decorate([
 ], PoLRYTubePlayingCard.prototype, "_entity", void 0);
 __decorate([
     t()
-], PoLRYTubePlayingCard.prototype, "_runOnce", void 0);
-__decorate([
-    n$1()
 ], PoLRYTubePlayingCard.prototype, "_currentlyPlayingItems", void 0);
 __decorate([
     n$1()
@@ -1201,8 +1245,11 @@ __decorate([
     t()
 ], PoLRYTubePlayingCard.prototype, "_browseHistory", void 0);
 __decorate([
-    t()
-], PoLRYTubePlayingCard.prototype, "_cardState", void 0);
+    n$1()
+], PoLRYTubePlayingCard.prototype, "_currentlyPlayingState", void 0);
+__decorate([
+    n$1()
+], PoLRYTubePlayingCard.prototype, "_forYouState", void 0);
 __decorate([
     n$1()
 ], PoLRYTubePlayingCard.prototype, "_page", void 0);

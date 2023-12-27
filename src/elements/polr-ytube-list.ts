@@ -12,9 +12,9 @@ export const enum PoLRYTubeState {
 
 @customElement("polr-ytube-list")
 export class PoLRYTubeList extends LitElement {
-    @property() public elements: PoLRYTubeItem[];
     @property() public entity: any;
     @property() public hass: any;
+    @property() public elements: PoLRYTubeItem[];
     @state() private _browseHistory: PoLRYTubeItem[] = [];
 
     private _is_current(element: PoLRYTubeItem): boolean {
@@ -60,8 +60,6 @@ export class PoLRYTubeList extends LitElement {
             element.media_content_type == "track"
                 ? element.media_content_id
                 : this.entity["attributes"]["videoId"];
-
-        console.log(id);
 
         return html`
             <mwc-button @click=${() => this._startRadio(id)}>
@@ -195,9 +193,9 @@ export class PoLRYTubeList extends LitElement {
 
                 .empty {
                     display: block;
-                    background-color: rgba(100, 100, 100, 0.3);
+                    background-color: rgba(111, 111, 111, 0.2);
                     border-radius: 12px;
-                    height: 100%;
+                    height: 40px;
                 }
 
                 .current {
