@@ -227,7 +227,7 @@ export class PoLRYTubePlayingCard extends LitElement {
     }
 
     async _getCurrentlyPlayingItems() {
-        console.debug("_getCurrentlyPlaying called");
+        //console.debug("_getCurrentlyPlaying called");
 
         if (["off", "unavailable"].includes(this._entity["state"])) {
             this._currentlyPlayingItems = [];

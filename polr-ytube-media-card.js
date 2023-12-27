@@ -881,7 +881,6 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s {
         item.media_content_type = "mood_overview";
         item.title = "For you";
         this._browse(item);
-        console.log("here");
     }
     render() {
         if (this._state == 1 /* PoLRYTubeState.INITAL */) {
@@ -1170,7 +1169,7 @@ class PoLRYTubePlayingCard extends s {
         }
     }
     async _getCurrentlyPlayingItems() {
-        console.debug("_getCurrentlyPlaying called");
+        //console.debug("_getCurrentlyPlaying called");
         if (["off", "unavailable"].includes(this._entity["state"])) {
             this._currentlyPlayingItems = [];
             return;

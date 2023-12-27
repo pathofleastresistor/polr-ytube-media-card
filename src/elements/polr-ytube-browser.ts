@@ -26,7 +26,6 @@ export class PoLRYTubeBrowser extends LitElement {
         item.media_content_type = "mood_overview";
         item.title = "For you";
         this._browse(item);
-        console.log("here");
     }
 
     render() {
