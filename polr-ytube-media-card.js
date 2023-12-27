@@ -464,6 +464,9 @@ let PoLRYTubeList = class PoLRYTubeList extends s {
     }
     render() {
         //console.debug(this.elements);
+        var _a;
+        if (this.elements == null || ((_a = this.elements) === null || _a === void 0 ? void 0 : _a.length) == 0)
+            return x ``;
         const renderedElements = this.elements.map((element) => {
             return x `
                 <div

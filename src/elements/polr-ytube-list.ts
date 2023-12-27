@@ -88,6 +88,8 @@ export class PoLRYTubeList extends LitElement {
     render() {
         //console.debug(this.elements);
 
+        if (this.elements == null || this.elements?.length == 0) return html``;
+
         const renderedElements = this.elements.map((element) => {
             return html`
                 <div
