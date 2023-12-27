@@ -216,16 +216,32 @@ export class PoLRYTubePlayingCard extends LitElement {
         }
     }
 
+    _renderIcon() {
+        if (
+            "entity_picture_local" in this._entity?.attributes &&
+            this._entity?.attributes.entity_picture_local != null
+        )
+            return html`<img
+                src="${this._entity.attributes.entity_picture_local}" /> `;
+
+        if (
+            "entity_picture" in this._entity?.attributes &&
+            this._entity?.attributes.entity_picture != null
+        )
+            return html`<img
+                src="${this._entity.attributes.entity_picture}" /> `;
+
+        return html`<ha-icon icon="${this._config.icon}"></ha-icon> `;
+    }
+
     render() {
         return html`
             <ha-card>
                 <div class="header">
-                    <div class="icon-container">
-                        <ha-icon icon="${this._config.icon}"></ha-icon>
-                    </div>
+                    <div class="icon-container">${this._renderIcon()}</div>
                     <div class="info-container">
                         <div class="primary">${this._config.header}</div>
-                        ${this._getFullTitle()}
+                        ${this._renderSecondary()}
                     </div>
                     <div class="action-container">
                         ${this._renderLikeButton()}
@@ -244,7 +260,7 @@ export class PoLRYTubePlayingCard extends LitElement {
         `;
     }
 
-    _getFullTitle() {
+    _renderSecondary() {
         // TODO: Implement a title
         if (this._entity?.state == "off") return html``;
 
@@ -356,6 +372,7 @@ export class PoLRYTubePlayingCard extends LitElement {
                     gap: 12px;
                     align-items: center;
                 }
+
                 .icon-container {
                     display: flex;
                     height: 40px;
@@ -365,18 +382,25 @@ export class PoLRYTubePlayingCard extends LitElement {
                     place-content: center;
                     align-items: center;
                 }
+                .icon-container > img {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 12px;
+                }
 
                 .info-container {
                     display: flex;
                     flex-direction: column;
                     justify-content: center;
                 }
+
                 .action-container {
                 }
 
                 .primary {
                     font-weight: bold;
                 }
+
                 .secondary {
                     font-size: 12px;
                 }

@@ -1151,16 +1151,26 @@ class PoLRYTubePlayingCard extends s {
             `;
         }
     }
+    _renderIcon() {
+        var _a, _b, _c, _d;
+        if ("entity_picture_local" in ((_a = this._entity) === null || _a === void 0 ? void 0 : _a.attributes) &&
+            ((_b = this._entity) === null || _b === void 0 ? void 0 : _b.attributes.entity_picture_local) != null)
+            return x `<img
+                src="${this._entity.attributes.entity_picture_local}" /> `;
+        if ("entity_picture" in ((_c = this._entity) === null || _c === void 0 ? void 0 : _c.attributes) &&
+            ((_d = this._entity) === null || _d === void 0 ? void 0 : _d.attributes.entity_picture) != null)
+            return x `<img
+                src="${this._entity.attributes.entity_picture}" /> `;
+        return x `<ha-icon icon="${this._config.icon}"></ha-icon> `;
+    }
     render() {
         return x `
             <ha-card>
                 <div class="header">
-                    <div class="icon-container">
-                        <ha-icon icon="${this._config.icon}"></ha-icon>
-                    </div>
+                    <div class="icon-container">${this._renderIcon()}</div>
                     <div class="info-container">
                         <div class="primary">${this._config.header}</div>
-                        ${this._getFullTitle()}
+                        ${this._renderSecondary()}
                     </div>
                     <div class="action-container">
                         ${this._renderLikeButton()}
@@ -1175,7 +1185,7 @@ class PoLRYTubePlayingCard extends s {
             </ha-card>
         `;
     }
-    _getFullTitle() {
+    _renderSecondary() {
         var _a, _b, _c;
         // TODO: Implement a title
         if (((_a = this._entity) === null || _a === void 0 ? void 0 : _a.state) == "off")
@@ -1271,6 +1281,7 @@ class PoLRYTubePlayingCard extends s {
                     gap: 12px;
                     align-items: center;
                 }
+
                 .icon-container {
                     display: flex;
                     height: 40px;
@@ -1280,18 +1291,25 @@ class PoLRYTubePlayingCard extends s {
                     place-content: center;
                     align-items: center;
                 }
+                .icon-container > img {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 12px;
+                }
 
                 .info-container {
                     display: flex;
                     flex-direction: column;
                     justify-content: center;
                 }
+
                 .action-container {
                 }
 
                 .primary {
                     font-weight: bold;
                 }
+
                 .secondary {
                     font-size: 12px;
                 }
