@@ -996,7 +996,11 @@ class PoLRYTubePlayingCard extends s {
     }
     static getConfigElement() { }
     static getStubConfig() {
-        return {};
+        return {
+            entity_id: "media_player.ytube_music_player",
+            showHeader: "true",
+            header: "YouTube Music",
+        };
     }
     setConfig(config) {
         if (!config.entity_id) {
