@@ -616,7 +616,6 @@ PoLRYTubeSearch.styles = i$2 `
         }
 
         .results {
-            max-height: 400px;
             overflow: scroll;
         }
 
@@ -625,7 +624,6 @@ PoLRYTubeSearch.styles = i$2 `
             display: grid;
             grid-template-columns: 40px 1fr min-content min-content;
             align-items: center;
-            font-size: 12px;
             gap: 8px;
         }
 
@@ -836,32 +834,6 @@ class PoLRYTubePlayingCard extends s {
         }
     }
     _renderItems() {
-        if (this._cardState == 1 /* PoLRCurrentState.INITAL */) {
-            return x ``;
-        }
-        if (this._cardState == 8 /* PoLRCurrentState.NO_RESULTS */) {
-            return x ` <div class="no-results">No songs found.</div>`;
-        }
-        if (this._cardState == 16 /* PoLRCurrentState.ERROR */) {
-            return x ` <div class="error">An error occurred.</div>`;
-        }
-        if (this._page == 1 /* PoLRYTubePage.CURRENTLY_PLAYING */) {
-            const elements = this._response.map((str) => {
-                return x `
-                    <div
-                        class="result ${parseInt(str["media_content_id"]) - 1 ==
-                    this._entity["attributes"]["current_track"]
-                    ? "current_track"
-                    : ""}">
-                        <div class="title">${str["title"]}</div>
-                        ${this._renderMoreButton(str)}
-                        ${this._renderRadioButton(str["media_content_id"] - 1, this._entity["attributes"]["current_track"], str["media_content_type"], str["media_content_id"])}
-                        ${this._renderPlayButton(str)}
-                    </div>
-                `;
-            });
-            return elements;
-        }
         if (this._page == 2 /* PoLRYTubePage.FOR_YOU */) {
             const elements = [];
             if (this._lastBrowseAction.length > 1) {
@@ -900,6 +872,32 @@ class PoLRYTubePlayingCard extends s {
                 entity_id: this._config["entity_id"],
             }}></polr-ytube-search>
             `;
+        }
+        if (this._cardState == 1 /* PoLRCurrentState.INITAL */) {
+            return x ``;
+        }
+        if (this._cardState == 8 /* PoLRCurrentState.NO_RESULTS */) {
+            return x ` <div class="no-results">No songs found.</div>`;
+        }
+        if (this._cardState == 16 /* PoLRCurrentState.ERROR */) {
+            return x ` <div class="error">An error occurred.</div>`;
+        }
+        if (this._page == 1 /* PoLRYTubePage.CURRENTLY_PLAYING */) {
+            const elements = this._response.map((str) => {
+                return x `
+                    <div
+                        class="result ${parseInt(str["media_content_id"]) - 1 ==
+                    this._entity["attributes"]["current_track"]
+                    ? "current_track"
+                    : ""}">
+                        <div class="title">${str["title"]}</div>
+                        ${this._renderMoreButton(str)}
+                        ${this._renderRadioButton(str["media_content_id"] - 1, this._entity["attributes"]["current_track"], str["media_content_type"], str["media_content_id"])}
+                        ${this._renderPlayButton(str)}
+                    </div>
+                `;
+            });
+            return elements;
         }
     }
     _renderPlayButton(str) {
@@ -1113,6 +1111,31 @@ class PoLRYTubePlayingCard extends s {
             return;
         if (selectedSource == currentSource)
             return;
+        // var res = await this._hass.callWS({
+        //     type: "execute_script",
+        //     sequence: [
+        //         {
+        //             service: "media_player.turn_on",
+        //             target: {
+        //                 entity_id: this._config.entity_id,
+        //             },
+        //         },
+        //         {
+        //             service: "media_player.select_source",
+        //             target: {
+        //                 entity_id: this._config.entity_id,
+        //             },
+        //             data: {
+        //                 source: (
+        //                     this.shadowRoot.querySelector("#source") as any
+        //                 ).value,
+        //             },
+        //         },
+        //         {
+        //             stop: "done",
+        //         },
+        //     ],
+        // });
         this._hass.callService("media_player", "select_source", {
             entity_id: this._config.entity_id,
             source: this.shadowRoot.querySelector("#source").value,

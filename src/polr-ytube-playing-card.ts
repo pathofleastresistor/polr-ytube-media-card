@@ -73,41 +73,6 @@ export class PoLRYTubePlayingCard extends LitElement {
     }
 
     _renderItems() {
-        if (this._cardState == PoLRCurrentState.INITAL) {
-            return html``;
-        }
-
-        if (this._cardState == PoLRCurrentState.NO_RESULTS) {
-            return html` <div class="no-results">No songs found.</div>`;
-        }
-
-        if (this._cardState == PoLRCurrentState.ERROR) {
-            return html` <div class="error">An error occurred.</div>`;
-        }
-
-        if (this._page == PoLRYTubePage.CURRENTLY_PLAYING) {
-            const elements = this._response.map((str) => {
-                return html`
-                    <div
-                        class="result ${parseInt(str["media_content_id"]) - 1 ==
-                        this._entity["attributes"]["current_track"]
-                            ? "current_track"
-                            : ""}">
-                        <div class="title">${str["title"]}</div>
-                        ${this._renderMoreButton(str)}
-                        ${this._renderRadioButton(
-                            str["media_content_id"] - 1,
-                            this._entity["attributes"]["current_track"],
-                            str["media_content_type"],
-                            str["media_content_id"]
-                        )}
-                        ${this._renderPlayButton(str)}
-                    </div>
-                `;
-            });
-            return elements;
-        }
-
         if (this._page == PoLRYTubePage.FOR_YOU) {
             const elements = [];
             if (this._lastBrowseAction.length > 1) {
@@ -158,6 +123,41 @@ export class PoLRYTubePlayingCard extends LitElement {
                         entity_id: this._config["entity_id"],
                     }}></polr-ytube-search>
             `;
+        }
+
+        if (this._cardState == PoLRCurrentState.INITAL) {
+            return html``;
+        }
+
+        if (this._cardState == PoLRCurrentState.NO_RESULTS) {
+            return html` <div class="no-results">No songs found.</div>`;
+        }
+
+        if (this._cardState == PoLRCurrentState.ERROR) {
+            return html` <div class="error">An error occurred.</div>`;
+        }
+
+        if (this._page == PoLRYTubePage.CURRENTLY_PLAYING) {
+            const elements = this._response.map((str) => {
+                return html`
+                    <div
+                        class="result ${parseInt(str["media_content_id"]) - 1 ==
+                        this._entity["attributes"]["current_track"]
+                            ? "current_track"
+                            : ""}">
+                        <div class="title">${str["title"]}</div>
+                        ${this._renderMoreButton(str)}
+                        ${this._renderRadioButton(
+                            str["media_content_id"] - 1,
+                            this._entity["attributes"]["current_track"],
+                            str["media_content_type"],
+                            str["media_content_id"]
+                        )}
+                        ${this._renderPlayButton(str)}
+                    </div>
+                `;
+            });
+            return elements;
         }
     }
 
@@ -413,6 +413,31 @@ export class PoLRYTubePlayingCard extends LitElement {
         if (selectedSource == "") return;
         if (selectedSource == currentSource) return;
 
+        // var res = await this._hass.callWS({
+        //     type: "execute_script",
+        //     sequence: [
+        //         {
+        //             service: "media_player.turn_on",
+        //             target: {
+        //                 entity_id: this._config.entity_id,
+        //             },
+        //         },
+        //         {
+        //             service: "media_player.select_source",
+        //             target: {
+        //                 entity_id: this._config.entity_id,
+        //             },
+        //             data: {
+        //                 source: (
+        //                     this.shadowRoot.querySelector("#source") as any
+        //                 ).value,
+        //             },
+        //         },
+        //         {
+        //             stop: "done",
+        //         },
+        //     ],
+        // });
         this._hass.callService("media_player", "select_source", {
             entity_id: this._config.entity_id,
             source: (this.shadowRoot.querySelector("#source") as any).value,

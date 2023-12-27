@@ -250,7 +250,6 @@ export class PoLRYTubeSearch extends LitElement {
         }
 
         .results {
-            max-height: 400px;
             overflow: scroll;
         }
 
@@ -259,7 +258,6 @@ export class PoLRYTubeSearch extends LitElement {
             display: grid;
             grid-template-columns: 40px 1fr min-content min-content;
             align-items: center;
-            font-size: 12px;
             gap: 8px;
         }
 
