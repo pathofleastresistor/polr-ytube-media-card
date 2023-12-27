@@ -802,6 +802,13 @@ let PoLRYTubePageTabs = class PoLRYTubePageTabs extends s {
                     @click=${() => this.setActive(4 /* PoLRYTubePage.SEARCH */)}>
                     Search
                 </div>
+                <div
+                    class="tab ${this._active == 8 /* PoLRYTubePage.YOURS */
+            ? "active"
+            : "inactive"}"
+                    @click=${() => this.setActive(8 /* PoLRYTubePage.YOURS */)}>
+                    Yours
+                </div>
             </div>
         `;
     }
@@ -817,7 +824,7 @@ let PoLRYTubePageTabs = class PoLRYTubePageTabs extends s {
 PoLRYTubePageTabs.styles = i$2 `
         .tab-container {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
             font-size: 13px;
             text-transform: uppercase;
             justify-items: stretch;
@@ -984,10 +991,7 @@ class PoLRYTubePlayingCard extends s {
         super(...arguments);
         this._config = {};
         this._currentlyPlayingItems = [];
-        this._forYouItems = [];
-        this._browseHistory = [];
         this._currentlyPlayingState = 1 /* PoLRCurrentState.INITAL */;
-        this._forYouState = 1 /* PoLRCurrentState.INITAL */;
         this._page = 1 /* PoLRYTubeTab.CURRENTLY_PLAYING */;
     }
     static getConfigElement() { }
@@ -1037,6 +1041,16 @@ class PoLRYTubePlayingCard extends s {
             item.media_content_id = "";
             item.media_content_type = "mood_overview";
             item.title = "For You";
+            return x `
+                <polr-ytube-browser
+                    .hass=${this._hass}
+                    .entity=${this._entity}
+                    .initialAction=${item}></polr-ytube-browser>
+            `;
+        }
+        if (this._page == 8 /* PoLRYTubeTab.YOURS */) {
+            const item = new PoLRYTubeItem();
+            item.title = "Yours";
             return x `
                 <polr-ytube-browser
                     .hass=${this._hass}
@@ -1144,13 +1158,6 @@ class PoLRYTubePlayingCard extends s {
         switch (page) {
             case 1 /* PoLRYTubeTab.CURRENTLY_PLAYING */:
                 this._getCurrentlyPlayingItems();
-                break;
-            case 2 /* PoLRYTubeTab.FOR_YOU */:
-                if (this._forYouItems.length == 0) ;
-                this._page = 2 /* PoLRYTubeTab.FOR_YOU */;
-                break;
-            case 4 /* PoLRYTubeTab.SEARCH */:
-                this._page = 4 /* PoLRYTubeTab.SEARCH */;
                 break;
         }
     }
@@ -1277,16 +1284,7 @@ __decorate([
 ], PoLRYTubePlayingCard.prototype, "_currentlyPlayingItems", void 0);
 __decorate([
     n$1()
-], PoLRYTubePlayingCard.prototype, "_forYouItems", void 0);
-__decorate([
-    t()
-], PoLRYTubePlayingCard.prototype, "_browseHistory", void 0);
-__decorate([
-    n$1()
 ], PoLRYTubePlayingCard.prototype, "_currentlyPlayingState", void 0);
-__decorate([
-    n$1()
-], PoLRYTubePlayingCard.prototype, "_forYouState", void 0);
 __decorate([
     n$1()
 ], PoLRYTubePlayingCard.prototype, "_page", void 0);

@@ -5,6 +5,7 @@ export const enum PoLRYTubePage {
     CURRENTLY_PLAYING = 1,
     FOR_YOU = 2,
     SEARCH = 4,
+    YOURS = 8,
 }
 
 @customElement("polr-ytube-page-tabs")
@@ -35,6 +36,13 @@ export class PoLRYTubePageTabs extends LitElement {
                     @click=${() => this.setActive(PoLRYTubePage.SEARCH)}>
                     Search
                 </div>
+                <div
+                    class="tab ${this._active == PoLRYTubePage.YOURS
+                        ? "active"
+                        : "inactive"}"
+                    @click=${() => this.setActive(PoLRYTubePage.YOURS)}>
+                    Yours
+                </div>
             </div>
         `;
     }
@@ -54,7 +62,7 @@ export class PoLRYTubePageTabs extends LitElement {
     static styles = css`
         .tab-container {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
             font-size: 13px;
             text-transform: uppercase;
             justify-items: stretch;

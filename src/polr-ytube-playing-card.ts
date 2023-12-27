@@ -18,6 +18,7 @@ export const enum PoLRYTubeTab {
     CURRENTLY_PLAYING = 1,
     FOR_YOU = 2,
     SEARCH = 4,
+    YOURS = 8,
 }
 
 export class PoLRYTubePlayingCard extends LitElement {
@@ -25,11 +26,8 @@ export class PoLRYTubePlayingCard extends LitElement {
     @property() _hass: any;
     @property() _entity: any;
     @state() _currentlyPlayingItems: any = [];
-    @property() _forYouItems: PoLRYTubeItem[] = [];
-    @state() _browseHistory: PoLRYTubeItem[] = [];
     @property() _currentlyPlayingState: PoLRCurrentState =
         PoLRCurrentState.INITAL;
-    @property() _forYouState: PoLRCurrentState = PoLRCurrentState.INITAL;
     @property() _page: PoLRYTubeTab = PoLRYTubeTab.CURRENTLY_PLAYING;
 
     static getConfigElement() {}
@@ -96,6 +94,17 @@ export class PoLRYTubePlayingCard extends LitElement {
             item.media_content_id = "";
             item.media_content_type = "mood_overview";
             item.title = "For You";
+
+            return html`
+                <polr-ytube-browser
+                    .hass=${this._hass}
+                    .entity=${this._entity}
+                    .initialAction=${item}></polr-ytube-browser>
+            `;
+        }
+        if (this._page == PoLRYTubeTab.YOURS) {
+            const item = new PoLRYTubeItem();
+            item.title = "Yours";
 
             return html`
                 <polr-ytube-browser
@@ -222,16 +231,6 @@ export class PoLRYTubePlayingCard extends LitElement {
         switch (page) {
             case PoLRYTubeTab.CURRENTLY_PLAYING:
                 this._getCurrentlyPlayingItems();
-                break;
-
-            case PoLRYTubeTab.FOR_YOU:
-                if (this._forYouItems.length == 0) {
-                }
-                this._page = PoLRYTubeTab.FOR_YOU;
-                break;
-
-            case PoLRYTubeTab.SEARCH:
-                this._page = PoLRYTubeTab.SEARCH;
                 break;
         }
     }
