@@ -84,7 +84,9 @@ export class PoLRYTubePlayingCard extends LitElement {
         //     updated: updated?.attributes?.media_title,
         // });
         return (
-            current?.attributes?.media_title != updated?.attributes?.media_title
+            current?.attributes?.media_title !=
+                updated?.attributes?.media_title ||
+            current?.attributes?.likeStatus != updated?.attributes?.likeStatus
         );
     }
 
@@ -195,6 +197,25 @@ export class PoLRYTubePlayingCard extends LitElement {
         `;
     }
 
+    _renderLikeButton() {
+        if (this._entity?.state == "off") return html``;
+        if (!("likeStatus" in this._entity["attributes"])) return html``;
+
+        if (this._entity?.attributes?.likeStatus == "LIKE") {
+            return html`
+                <mwc-button @click=${() => this._likeSong("thumb_middle")}>
+                    <ha-icon icon="mdi:thumb-up"></ha-icon>
+                </mwc-button>
+            `;
+        } else {
+            return html`
+                <mwc-button @click=${() => this._likeSong("thumb_up")}>
+                    <ha-icon icon="mdi:thumb-up-outline"></ha-icon>
+                </mwc-button>
+            `;
+        }
+    }
+
     render() {
         return html`
             <ha-card>
@@ -205,6 +226,9 @@ export class PoLRYTubePlayingCard extends LitElement {
                     <div class="info-container">
                         <div class="primary">${this._config.header}</div>
                         ${this._getFullTitle()}
+                    </div>
+                    <div class="action-container">
+                        ${this._renderLikeButton()}
                     </div>
                 </div>
                 <div class="content">
@@ -222,7 +246,22 @@ export class PoLRYTubePlayingCard extends LitElement {
 
     _getFullTitle() {
         // TODO: Implement a title
-        return html``;
+        if (this._entity?.state == "off") return html``;
+
+        const items = [];
+        if (
+            "media_title" in this._entity?.attributes &&
+            this._entity.attributes.media_title != ""
+        )
+            items.push(this._entity.attributes.media_title);
+
+        if (
+            "media_artist" in this._entity?.attributes &&
+            this._entity.attributes.media_artist != ""
+        )
+            items.push(this._entity.attributes.media_artist);
+
+        return html` <div class="secondary">${items.join(" - ")}</div> `;
     }
 
     async _changeTab(page: PoLRYTubeTab) {
@@ -277,6 +316,15 @@ export class PoLRYTubePlayingCard extends LitElement {
         }
     }
 
+    async _likeSong(rating) {
+        console.log(rating);
+        await this._hass.callService("ytube_music_player", "rate_track", {
+            entity_id: this._config.entity_id,
+            rating: rating,
+        });
+        this.requestUpdate();
+    }
+
     async _selectSource(ev) {
         const selectedSource = (this.shadowRoot.querySelector("#source") as any)
             .value;
@@ -304,8 +352,9 @@ export class PoLRYTubePlayingCard extends LitElement {
                 .header {
                     display: grid;
                     padding: 12px 12px 0 12px;
-                    grid-template-columns: 40px auto;
+                    grid-template-columns: 40px auto 70px;
                     gap: 12px;
+                    align-items: center;
                 }
                 .icon-container {
                     display: flex;
@@ -321,6 +370,8 @@ export class PoLRYTubePlayingCard extends LitElement {
                     display: flex;
                     flex-direction: column;
                     justify-content: center;
+                }
+                .action-container {
                 }
 
                 .primary {

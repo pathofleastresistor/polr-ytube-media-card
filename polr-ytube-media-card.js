@@ -1028,12 +1028,14 @@ class PoLRYTubePlayingCard extends s {
         return true;
     }
     _hasEntityChanged(current, updated) {
-        var _a, _b;
+        var _a, _b, _c, _d;
         // console.log({
         //     current: current?.attributes?.media_title,
         //     updated: updated?.attributes?.media_title,
         // });
-        return (((_a = current === null || current === void 0 ? void 0 : current.attributes) === null || _a === void 0 ? void 0 : _a.media_title) != ((_b = updated === null || updated === void 0 ? void 0 : updated.attributes) === null || _b === void 0 ? void 0 : _b.media_title));
+        return (((_a = current === null || current === void 0 ? void 0 : current.attributes) === null || _a === void 0 ? void 0 : _a.media_title) !=
+            ((_b = updated === null || updated === void 0 ? void 0 : updated.attributes) === null || _b === void 0 ? void 0 : _b.media_title) ||
+            ((_c = current === null || current === void 0 ? void 0 : current.attributes) === null || _c === void 0 ? void 0 : _c.likeStatus) != ((_d = updated === null || updated === void 0 ? void 0 : updated.attributes) === null || _d === void 0 ? void 0 : _d.likeStatus));
     }
     _renderTab() {
         if (this._page == 2 /* PoLRYTubeTab.FOR_YOU */) {
@@ -1128,6 +1130,27 @@ class PoLRYTubePlayingCard extends s {
             </div>
         `;
     }
+    _renderLikeButton() {
+        var _a, _b, _c;
+        if (((_a = this._entity) === null || _a === void 0 ? void 0 : _a.state) == "off")
+            return x ``;
+        if (!("likeStatus" in this._entity["attributes"]))
+            return x ``;
+        if (((_c = (_b = this._entity) === null || _b === void 0 ? void 0 : _b.attributes) === null || _c === void 0 ? void 0 : _c.likeStatus) == "LIKE") {
+            return x `
+                <mwc-button @click=${() => this._likeSong("thumb_middle")}>
+                    <ha-icon icon="mdi:thumb-up"></ha-icon>
+                </mwc-button>
+            `;
+        }
+        else {
+            return x `
+                <mwc-button @click=${() => this._likeSong("thumb_up")}>
+                    <ha-icon icon="mdi:thumb-up-outline"></ha-icon>
+                </mwc-button>
+            `;
+        }
+    }
     render() {
         return x `
             <ha-card>
@@ -1138,6 +1161,9 @@ class PoLRYTubePlayingCard extends s {
                     <div class="info-container">
                         <div class="primary">${this._config.header}</div>
                         ${this._getFullTitle()}
+                    </div>
+                    <div class="action-container">
+                        ${this._renderLikeButton()}
                     </div>
                 </div>
                 <div class="content">
@@ -1150,8 +1176,18 @@ class PoLRYTubePlayingCard extends s {
         `;
     }
     _getFullTitle() {
+        var _a, _b, _c;
         // TODO: Implement a title
-        return x ``;
+        if (((_a = this._entity) === null || _a === void 0 ? void 0 : _a.state) == "off")
+            return x ``;
+        const items = [];
+        if ("media_title" in ((_b = this._entity) === null || _b === void 0 ? void 0 : _b.attributes) &&
+            this._entity.attributes.media_title != "")
+            items.push(this._entity.attributes.media_title);
+        if ("media_artist" in ((_c = this._entity) === null || _c === void 0 ? void 0 : _c.attributes) &&
+            this._entity.attributes.media_artist != "")
+            items.push(this._entity.attributes.media_artist);
+        return x ` <div class="secondary">${items.join(" - ")}</div> `;
     }
     async _changeTab(page) {
         this._page = page;
@@ -1197,6 +1233,14 @@ class PoLRYTubePlayingCard extends s {
             this._currentlyPlayingState = 16 /* PoLRCurrentState.ERROR */;
         }
     }
+    async _likeSong(rating) {
+        console.log(rating);
+        await this._hass.callService("ytube_music_player", "rate_track", {
+            entity_id: this._config.entity_id,
+            rating: rating,
+        });
+        this.requestUpdate();
+    }
     async _selectSource(ev) {
         const selectedSource = this.shadowRoot.querySelector("#source")
             .value;
@@ -1223,8 +1267,9 @@ class PoLRYTubePlayingCard extends s {
                 .header {
                     display: grid;
                     padding: 12px 12px 0 12px;
-                    grid-template-columns: 40px auto;
+                    grid-template-columns: 40px auto 70px;
                     gap: 12px;
+                    align-items: center;
                 }
                 .icon-container {
                     display: flex;
@@ -1240,6 +1285,8 @@ class PoLRYTubePlayingCard extends s {
                     display: flex;
                     flex-direction: column;
                     justify-content: center;
+                }
+                .action-container {
                 }
 
                 .primary {
