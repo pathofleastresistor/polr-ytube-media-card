@@ -866,6 +866,138 @@ PoLRYTubePageTabs = __decorate([
 class PoLRYTubeItem {
 }
 
+let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s {
+    constructor() {
+        super(...arguments);
+        this._state = 1 /* PoLRYTubeState.INITAL */;
+        this._browseHistory = [];
+    }
+    firstUpdated(_changedProperties) {
+        const item = new PoLRYTubeItem();
+        item.media_content_id = "";
+        item.media_content_type = "mood_overview";
+        item.title = "For you";
+        this._browse(item);
+        console.log("here");
+    }
+    render() {
+        if (this._state == 1 /* PoLRYTubeState.INITAL */) {
+            return x ``;
+        }
+        if (this._state == 8 /* PoLRYTubeState.NO_RESULTS */) {
+            return x `
+                ${this._renderBackButton()}
+                <div class="no-results">No songs found.</div>
+            `;
+        }
+        if (this._state == 2 /* PoLRYTubeState.LOADING */) {
+            return x `
+                ${this._renderBackButton()}
+                <div class="loading">Loading...</div>
+            `;
+        }
+        if (this._state == 16 /* PoLRYTubeState.ERROR */) {
+            return x `
+                ${this._renderBackButton()}
+                <div class="error">An error occurred.</div>
+            `;
+        }
+        return x `
+            ${this._renderBackButton()}
+            <polr-ytube-list
+                .hass=${this.hass}
+                .elements=${this.elements}
+                .entity=${this.entity}
+                @navigate=${this._handleBrowse}></polr-ytube-list>
+        `;
+    }
+    _renderBackButton() {
+        if (this._browseHistory.length <= 1)
+            return x ``;
+        const breadcrumb = this._browseHistory
+            .map((item) => `${item.title}`)
+            .join(" > ");
+        return x `
+            <div class="back-button">
+                <mwc-button
+                    @click=${() => this._browse(this._browseHistory.pop() &&
+            this._browseHistory.pop())}
+                    >back</mwc-button
+                >
+                <div class="breadcrumb">${breadcrumb}</div>
+            </div>
+        `;
+    }
+    async _handleBrowse(event) {
+        const element = event.detail.action;
+        this._browse(element);
+    }
+    async _browse(element) {
+        this._state = 2 /* PoLRYTubeState.LOADING */;
+        this._browseHistory.push(element);
+        try {
+            const response = await this.hass.callWS({
+                type: "media_player/browse_media",
+                entity_id: this.entity["entity_id"],
+                media_content_type: element.media_content_type,
+                media_content_id: element.media_content_id,
+            });
+            this.elements = response["children"];
+            this._state = 4 /* PoLRYTubeState.HAS_RESULTS */;
+        }
+        catch (e) {
+            this._state = 16 /* PoLRYTubeState.ERROR */;
+            console.error(e, element.media_content_type, element.media_content_id);
+        }
+    }
+    static get styles() {
+        return [
+            i$2 `
+                .back-button {
+                    display: grid;
+                    padding: 12px 0;
+                    grid-template-columns: min-content 1fr;
+                    align-items: center;
+                    gap: 12px;
+                }
+
+                .breadcrumb {
+                    display: block;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+
+                .loading,
+                .error {
+                    display: grid;
+                    align-items: center;
+                    justify-items: center;
+                    height: 100px;
+                }
+            `,
+        ];
+    }
+};
+__decorate([
+    n$1()
+], PoLRYTubeBrowser.prototype, "entity", void 0);
+__decorate([
+    n$1()
+], PoLRYTubeBrowser.prototype, "hass", void 0);
+__decorate([
+    n$1()
+], PoLRYTubeBrowser.prototype, "elements", void 0);
+__decorate([
+    n$1()
+], PoLRYTubeBrowser.prototype, "_state", void 0);
+__decorate([
+    t()
+], PoLRYTubeBrowser.prototype, "_browseHistory", void 0);
+PoLRYTubeBrowser = __decorate([
+    e$1("polr-ytube-browser")
+], PoLRYTubeBrowser);
+
 class PoLRYTubePlayingCard extends s {
     constructor() {
         super(...arguments);
@@ -875,7 +1007,7 @@ class PoLRYTubePlayingCard extends s {
         this._browseHistory = [];
         this._currentlyPlayingState = 1 /* PoLRCurrentState.INITAL */;
         this._forYouState = 1 /* PoLRCurrentState.INITAL */;
-        this._page = 1 /* PoLRYTubePage.CURRENTLY_PLAYING */;
+        this._page = 1 /* PoLRYTubeTab.CURRENTLY_PLAYING */;
     }
     static getConfigElement() { }
     static getStubConfig() {
@@ -920,56 +1052,16 @@ class PoLRYTubePlayingCard extends s {
         // });
         return (((_a = current === null || current === void 0 ? void 0 : current.attributes) === null || _a === void 0 ? void 0 : _a.media_title) != ((_b = updated === null || updated === void 0 ? void 0 : updated.attributes) === null || _b === void 0 ? void 0 : _b.media_title));
     }
-    _renderBackButton() {
-        if (this._browseHistory.length <= 1)
-            return x ``;
-        const breadcrumb = this._browseHistory
-            .map((item) => `${item.title}`)
-            .join(" > ");
-        return x `
-            <div class="back-button">
-                <mwc-button
-                    @click=${() => this._browse(this._browseHistory.pop() &&
-            this._browseHistory.pop())}
-                    >back</mwc-button
-                >
-                <div class="breadcrumb">${breadcrumb}</div>
-            </div>
-        `;
-    }
-    _renderItems() {
-        if (this._page == 2 /* PoLRYTubePage.FOR_YOU */) {
-            if (this._forYouState == 1 /* PoLRCurrentState.INITAL */) {
-                return x ``;
-            }
-            if (this._forYouState == 8 /* PoLRCurrentState.NO_RESULTS */) {
-                return x `
-                    ${this._renderBackButton()}
-                    <div class="no-results">No songs found.</div>
-                `;
-            }
-            if (this._forYouState == 2 /* PoLRCurrentState.LOADING */) {
-                return x `
-                    ${this._renderBackButton()}
-                    <div class="loading">Loading...</div>
-                `;
-            }
-            if (this._forYouState == 16 /* PoLRCurrentState.ERROR */) {
-                return x `
-                    ${this._renderBackButton()}
-                    <div class="error">An error occurred.</div>
-                `;
-            }
+    _renderTab() {
+        if (this._page == 2 /* PoLRYTubeTab.FOR_YOU */) {
             return x `
-                ${this._renderBackButton()}
-                <polr-ytube-list
+                <polr-ytube-browser
                     .hass=${this._hass}
                     .elements=${this._forYouItems}
-                    .entity=${this._entity}
-                    @navigate=${this._handleBrowse}></polr-ytube-list>
+                    .entity=${this._entity}></polr-ytube-browser>
             `;
         }
-        if (this._page == 4 /* PoLRYTubePage.SEARCH */) {
+        if (this._page == 4 /* PoLRYTubeTab.SEARCH */) {
             return x `
                 <polr-ytube-search
                     ._hass=${this._hass}
@@ -978,7 +1070,7 @@ class PoLRYTubePlayingCard extends s {
             }}></polr-ytube-search>
             `;
         }
-        if (this._page == 1 /* PoLRYTubePage.CURRENTLY_PLAYING */) {
+        if (this._page == 1 /* PoLRYTubeTab.CURRENTLY_PLAYING */) {
             if (this._currentlyPlayingState == 1 /* PoLRCurrentState.INITAL */) {
                 return x ``;
             }
@@ -1054,7 +1146,7 @@ class PoLRYTubePlayingCard extends s {
                     ${this._renderSourceSelctor()}
                     <polr-ytube-page-tabs
                         @tabChange=${(ev) => this._changeTab(ev.detail.tab)}></polr-ytube-page-tabs>
-                    <div class="results">${this._renderItems()}</div>
+                    <div class="results">${this._renderTab()}</div>
                 </div>
             </ha-card>
         `;
@@ -1062,21 +1154,15 @@ class PoLRYTubePlayingCard extends s {
     async _changeTab(page) {
         this._page = page;
         switch (page) {
-            case 1 /* PoLRYTubePage.CURRENTLY_PLAYING */:
+            case 1 /* PoLRYTubeTab.CURRENTLY_PLAYING */:
                 this._getCurrentlyPlayingItems();
                 break;
-            case 2 /* PoLRYTubePage.FOR_YOU */:
-                if (this._forYouItems.length == 0) {
-                    const item = new PoLRYTubeItem();
-                    item.media_content_id = "";
-                    item.media_content_type = "mood_overview";
-                    item.title = "For you";
-                    this._browse(item);
-                }
-                this._page = 2 /* PoLRYTubePage.FOR_YOU */;
+            case 2 /* PoLRYTubeTab.FOR_YOU */:
+                if (this._forYouItems.length == 0) ;
+                this._page = 2 /* PoLRYTubeTab.FOR_YOU */;
                 break;
-            case 4 /* PoLRYTubePage.SEARCH */:
-                this._page = 4 /* PoLRYTubePage.SEARCH */;
+            case 4 /* PoLRYTubeTab.SEARCH */:
+                this._page = 4 /* PoLRYTubeTab.SEARCH */;
                 break;
         }
     }
@@ -1116,28 +1202,6 @@ class PoLRYTubePlayingCard extends s {
             this._currentlyPlayingState = 16 /* PoLRCurrentState.ERROR */;
         }
     }
-    async _handleBrowse(event) {
-        const element = event.detail.action;
-        this._browse(element);
-    }
-    async _browse(element) {
-        this._browseHistory.push(element);
-        this._forYouState = 2 /* PoLRCurrentState.LOADING */;
-        try {
-            const response = await this._hass.callWS({
-                type: "media_player/browse_media",
-                entity_id: this._config.entity_id,
-                media_content_type: element.media_content_type,
-                media_content_id: element.media_content_id,
-            });
-            this._forYouItems = response["children"];
-            this._forYouState = 4 /* PoLRCurrentState.HAS_RESULTS */;
-        }
-        catch (e) {
-            this._forYouState = 16 /* PoLRCurrentState.ERROR */;
-            console.error(e, element.media_content_type, element.media_content_id);
-        }
-    }
     async _selectSource(ev) {
         const selectedSource = this.shadowRoot.querySelector("#source")
             .value;
@@ -1151,81 +1215,63 @@ class PoLRYTubePlayingCard extends s {
             source: this.shadowRoot.querySelector("#source").value,
         });
     }
+    static get styles() {
+        return [
+            i$2 `
+                :host {
+                }
+
+                ha-card {
+                    overflow: hidden;
+                }
+
+                .header {
+                    display: grid;
+                    padding: 12px 12px 0 12px;
+                    grid-template-columns: 40px auto;
+                    gap: 12px;
+                }
+                .icon-container {
+                    display: flex;
+                    height: 40px;
+                    width: 40px;
+                    border-radius: 50%;
+                    background: rgba(111, 111, 111, 0.2);
+                    place-content: center;
+                    align-items: center;
+                }
+
+                .info-container {
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                }
+
+                .primary {
+                    font-weight: bold;
+                }
+
+                .content {
+                    padding: 24px 12px;
+                    display: grid;
+                    gap: 12px;
+                }
+
+                .source {
+                    display: grid;
+                    align-items: center;
+                    border-top: 2px rgba(111, 111, 111, 0.2) solid;
+                    border-bottom: 2px rgba(111, 111, 111, 0.2) solid;
+                    padding: 12px 0;
+                }
+
+                polr-ytube-page-tabs {
+                    padding: 12px;
+                }
+            `,
+        ];
+    }
 }
-PoLRYTubePlayingCard.styles = i$2 `
-        :host {
-        }
-
-        ha-card {
-            overflow: hidden;
-        }
-
-        .header {
-            display: grid;
-            padding: 12px 12px 0 12px;
-            grid-template-columns: 40px auto;
-            gap: 12px;
-        }
-        .icon-container {
-            display: flex;
-            height: 40px;
-            width: 40px;
-            border-radius: 50%;
-            background: rgba(111, 111, 111, 0.2);
-            place-content: center;
-            align-items: center;
-        }
-
-        .info-container {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .primary {
-            font-weight: bold;
-        }
-
-        .content {
-            padding: 24px 12px;
-            display: grid;
-            gap: 12px;
-        }
-
-        .source {
-            display: grid;
-            align-items: center;
-            border-top: 2px rgba(111, 111, 111, 0.2) solid;
-            border-bottom: 2px rgba(111, 111, 111, 0.2) solid;
-            padding: 12px 0;
-        }
-
-        polr-ytube-page-tabs {
-            padding: 12px;
-        }
-        .back-button {
-            display: grid;
-            padding: 12px 0;
-            grid-template-columns: min-content 1fr;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .breadcrumb {
-            display: block;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .loading,
-        .error {
-            display: grid;
-            align-items: center;
-            justify-items: center;
-            height: 100px;
-        }
-    `;
 __decorate([
     n$1()
 ], PoLRYTubePlayingCard.prototype, "_config", void 0);

@@ -3,6 +3,7 @@ import { property, state } from "lit/decorators.js";
 import "./elements/polr-ytube-search";
 import "./elements/polr-ytube-page-tabs";
 import "./elements/polr-ytube-list";
+import "./elements/polr-ytube-browser";
 import { PoLRYTubeItem } from "./utils/polr-ytube-item";
 
 export const enum PoLRCurrentState {
@@ -12,7 +13,7 @@ export const enum PoLRCurrentState {
     NO_RESULTS = 8,
     ERROR = 16,
 }
-export const enum PoLRYTubePage {
+export const enum PoLRYTubeTab {
     CURRENTLY_PLAYING = 1,
     FOR_YOU = 2,
     SEARCH = 4,
@@ -28,7 +29,7 @@ export class PoLRYTubePlayingCard extends LitElement {
     @property() _currentlyPlayingState: PoLRCurrentState =
         PoLRCurrentState.INITAL;
     @property() _forYouState: PoLRCurrentState = PoLRCurrentState.INITAL;
-    @property() _page: PoLRYTubePage = PoLRYTubePage.CURRENTLY_PLAYING;
+    @property() _page: PoLRYTubeTab = PoLRYTubeTab.CURRENTLY_PLAYING;
 
     static getConfigElement() {}
 
@@ -90,65 +91,17 @@ export class PoLRYTubePlayingCard extends LitElement {
         );
     }
 
-    private _renderBackButton() {
-        if (this._browseHistory.length <= 1) return html``;
-
-        const breadcrumb = this._browseHistory
-            .map((item) => `${item.title}`)
-            .join(" > ");
-
-        return html`
-            <div class="back-button">
-                <mwc-button
-                    @click=${() =>
-                        this._browse(
-                            this._browseHistory.pop() &&
-                                this._browseHistory.pop()
-                        )}
-                    >back</mwc-button
-                >
-                <div class="breadcrumb">${breadcrumb}</div>
-            </div>
-        `;
-    }
-
-    _renderItems() {
-        if (this._page == PoLRYTubePage.FOR_YOU) {
-            if (this._forYouState == PoLRCurrentState.INITAL) {
-                return html``;
-            }
-
-            if (this._forYouState == PoLRCurrentState.NO_RESULTS) {
-                return html`
-                    ${this._renderBackButton()}
-                    <div class="no-results">No songs found.</div>
-                `;
-            }
-
-            if (this._forYouState == PoLRCurrentState.LOADING) {
-                return html`
-                    ${this._renderBackButton()}
-                    <div class="loading">Loading...</div>
-                `;
-            }
-
-            if (this._forYouState == PoLRCurrentState.ERROR) {
-                return html`
-                    ${this._renderBackButton()}
-                    <div class="error">An error occurred.</div>
-                `;
-            }
+    _renderTab() {
+        if (this._page == PoLRYTubeTab.FOR_YOU) {
             return html`
-                ${this._renderBackButton()}
-                <polr-ytube-list
+                <polr-ytube-browser
                     .hass=${this._hass}
                     .elements=${this._forYouItems}
-                    .entity=${this._entity}
-                    @navigate=${this._handleBrowse}></polr-ytube-list>
+                    .entity=${this._entity}></polr-ytube-browser>
             `;
         }
 
-        if (this._page == PoLRYTubePage.SEARCH) {
+        if (this._page == PoLRYTubeTab.SEARCH) {
             return html`
                 <polr-ytube-search
                     ._hass=${this._hass}
@@ -158,7 +111,7 @@ export class PoLRYTubePlayingCard extends LitElement {
             `;
         }
 
-        if (this._page == PoLRYTubePage.CURRENTLY_PLAYING) {
+        if (this._page == PoLRYTubeTab.CURRENTLY_PLAYING) {
             if (this._currentlyPlayingState == PoLRCurrentState.INITAL) {
                 return html``;
             }
@@ -247,33 +200,28 @@ export class PoLRYTubePlayingCard extends LitElement {
                             this._changeTab(
                                 ev.detail.tab
                             )}></polr-ytube-page-tabs>
-                    <div class="results">${this._renderItems()}</div>
+                    <div class="results">${this._renderTab()}</div>
                 </div>
             </ha-card>
         `;
     }
 
-    async _changeTab(page: PoLRYTubePage) {
+    async _changeTab(page: PoLRYTubeTab) {
         this._page = page;
 
         switch (page) {
-            case PoLRYTubePage.CURRENTLY_PLAYING:
+            case PoLRYTubeTab.CURRENTLY_PLAYING:
                 this._getCurrentlyPlayingItems();
                 break;
 
-            case PoLRYTubePage.FOR_YOU:
+            case PoLRYTubeTab.FOR_YOU:
                 if (this._forYouItems.length == 0) {
-                    const item = new PoLRYTubeItem();
-                    item.media_content_id = "";
-                    item.media_content_type = "mood_overview";
-                    item.title = "For you";
-                    this._browse(item);
                 }
-                this._page = PoLRYTubePage.FOR_YOU;
+                this._page = PoLRYTubeTab.FOR_YOU;
                 break;
 
-            case PoLRYTubePage.SEARCH:
-                this._page = PoLRYTubePage.SEARCH;
+            case PoLRYTubeTab.SEARCH:
+                this._page = PoLRYTubeTab.SEARCH;
                 break;
         }
     }
@@ -320,35 +268,6 @@ export class PoLRYTubePlayingCard extends LitElement {
         }
     }
 
-    private async _handleBrowse(event) {
-        const element = event.detail.action;
-        this._browse(element);
-    }
-
-    async _browse(element: PoLRYTubeItem) {
-        this._browseHistory.push(element);
-        this._forYouState = PoLRCurrentState.LOADING;
-
-        try {
-            const response = await this._hass.callWS({
-                type: "media_player/browse_media",
-                entity_id: this._config.entity_id,
-                media_content_type: element.media_content_type,
-                media_content_id: element.media_content_id,
-            });
-
-            this._forYouItems = response["children"];
-            this._forYouState = PoLRCurrentState.HAS_RESULTS;
-        } catch (e) {
-            this._forYouState = PoLRCurrentState.ERROR;
-            console.error(
-                e,
-                element.media_content_type,
-                element.media_content_id
-            );
-        }
-    }
-
     async _selectSource(ev) {
         const selectedSource = (this.shadowRoot.querySelector("#source") as any)
             .value;
@@ -363,80 +282,62 @@ export class PoLRYTubePlayingCard extends LitElement {
         });
     }
 
-    static styles = css`
-        :host {
-        }
+    static get styles(): CSSResultGroup {
+        return [
+            css`
+                :host {
+                }
 
-        ha-card {
-            overflow: hidden;
-        }
+                ha-card {
+                    overflow: hidden;
+                }
 
-        .header {
-            display: grid;
-            padding: 12px 12px 0 12px;
-            grid-template-columns: 40px auto;
-            gap: 12px;
-        }
-        .icon-container {
-            display: flex;
-            height: 40px;
-            width: 40px;
-            border-radius: 50%;
-            background: rgba(111, 111, 111, 0.2);
-            place-content: center;
-            align-items: center;
-        }
+                .header {
+                    display: grid;
+                    padding: 12px 12px 0 12px;
+                    grid-template-columns: 40px auto;
+                    gap: 12px;
+                }
+                .icon-container {
+                    display: flex;
+                    height: 40px;
+                    width: 40px;
+                    border-radius: 50%;
+                    background: rgba(111, 111, 111, 0.2);
+                    place-content: center;
+                    align-items: center;
+                }
 
-        .info-container {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
+                .info-container {
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                }
 
-        .primary {
-            font-weight: bold;
-        }
+                .primary {
+                    font-weight: bold;
+                }
 
-        .content {
-            padding: 24px 12px;
-            display: grid;
-            gap: 12px;
-        }
+                .content {
+                    padding: 24px 12px;
+                    display: grid;
+                    gap: 12px;
+                }
 
-        .source {
-            display: grid;
-            align-items: center;
-            border-top: 2px rgba(111, 111, 111, 0.2) solid;
-            border-bottom: 2px rgba(111, 111, 111, 0.2) solid;
-            padding: 12px 0;
-        }
+                .source {
+                    display: grid;
+                    align-items: center;
+                    border-top: 2px rgba(111, 111, 111, 0.2) solid;
+                    border-bottom: 2px rgba(111, 111, 111, 0.2) solid;
+                    padding: 12px 0;
+                }
 
-        polr-ytube-page-tabs {
-            padding: 12px;
-        }
-        .back-button {
-            display: grid;
-            padding: 12px 0;
-            grid-template-columns: min-content 1fr;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .breadcrumb {
-            display: block;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .loading,
-        .error {
-            display: grid;
-            align-items: center;
-            justify-items: center;
-            height: 100px;
-        }
-    `;
+                polr-ytube-page-tabs {
+                    padding: 12px;
+                }
+            `,
+        ];
+    }
 }
 
 customElements.define("polr-ytube-playing-card", PoLRYTubePlayingCard);

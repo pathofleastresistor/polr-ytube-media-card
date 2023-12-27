@@ -1,4 +1,4 @@
-import { LitElement, html, css, CSSResultGroup, PropertyValueMap } from "lit";
+import { LitElement, html, css, CSSResultGroup } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { PoLRYTubeItem } from "../utils/polr-ytube-item";
 
