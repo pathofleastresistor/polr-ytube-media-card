@@ -1,5 +1,7 @@
 import { LitElement, html, css, CSSResultGroup } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
+import "../elements/polr-ytube-list";
+import { PoLRYTubeItem } from "../utils/polr-ytube-item";
 
 export const enum PoLRMediaSearchState {
     CLEAR = 1,
@@ -18,19 +20,10 @@ export const enum PoLRMediaSearchAction {
 export class PoLRYTubeSearch extends LitElement {
     @property() public _config: any = {};
     @property() public _hass: any;
-    @property() private _runOnce: boolean = false;
     @state() private _response: any = {};
     @state() private _action: PoLRMediaSearchAction =
         PoLRMediaSearchAction.SEARCH;
     @property() private _resultsState = PoLRMediaSearchState.CLEAR;
-
-    static getConfigElement() {
-        // return document.createElement("polr-ytube-search-card-editor");
-    }
-
-    static getStubConfig() {
-        return {};
-    }
 
     setConfig(config: any) {
         if (!config.entity_id) {
@@ -45,42 +38,20 @@ export class PoLRYTubeSearch extends LitElement {
     }
 
     set hass(hass) {
-        if (!this._runOnce) {
-            this._hass = hass;
-            this._runOnce = true;
-        }
+        this._hass = hass;
     }
 
     _renderResponse() {
         if (this._resultsState == PoLRMediaSearchState.CLEAR) return html``;
 
         if (this._resultsState == PoLRMediaSearchState.HAS_RESULTS) {
-            const elements = this._response["children"]
-                ?.filter(
-                    (result) => true //result["can_play"] && !result["can_expand"]
-                )
-                .map((str) => {
-                    return html`
-                        <div class="result">
-                            <img src="${str["thumbnail"]}" />
-                            <div class="title">${str["title"]}</div>
-                            <mwc-button
-                                @click=${() =>
-                                    this._play(
-                                        str["media_content_type"],
-                                        str["media_content_id"]
-                                    )}>
-                                Play
-                            </mwc-button>
-                            <mwc-button
-                                @click=${() =>
-                                    this._startRadio(str["media_content_id"])}>
-                                Radio
-                            </mwc-button>
-                        </div>
-                    `;
-                });
-            return elements;
+            const elements = this._response["children"];
+            return html`
+                <polr-ytube-list
+                    .hass=${this._hass}
+                    .entity=${this._hass["states"][this._config.entity_id]}
+                    .elements="${elements}"></polr-ytube-list>
+            `;
         }
 
         if (this._resultsState == PoLRMediaSearchState.LOADING) {
@@ -108,23 +79,11 @@ export class PoLRYTubeSearch extends LitElement {
                 ></mwc-button>
             `;
     }
+
     render() {
         const elements = this._response["children"];
-        const header = this._config["showHeader"]
-            ? html`
-                  <div class="header">
-                      <div class="icon-container">
-                          <ha-icon icon="${this._config.icon}"></ha-icon>
-                      </div>
-                      <div class="info-container">
-                          <div class="primary">${this._config.header}</div>
-                      </div>
-                  </div>
-              `
-            : html``;
 
         return html`
-            ${header}
             <div class="content">
                 <div class="search">
                     <div class="filter">
@@ -206,30 +165,6 @@ export class PoLRYTubeSearch extends LitElement {
         this._action = PoLRMediaSearchAction.SEARCH;
     }
 
-    async _play(media_content_type, media_content_id) {
-        this._hass.callService("media_player", "play_media", {
-            entity_id: this._config.entity_id,
-            media_content_id: media_content_id,
-            media_content_type: media_content_type,
-        });
-    }
-
-    async _startRadio(media_content_id) {
-        // await this._hass.callService("ytube_music_player", "start_radio", {
-        //     entity_id: this._config.entity_id,
-        //     interrupt: false,
-        // });
-        this._hass.callService("media_player", "shuffle_set", {
-            entity_id: this._config.entity_id,
-            shuffle: false,
-        });
-        this._hass.callService("media_player", "play_media", {
-            entity_id: this._config.entity_id,
-            media_content_id: media_content_id,
-            media_content_type: "vid_channel",
-        });
-    }
-
     static styles = css`
         :host {
             --mdc-typography-subtitle1-font-size: 12px;
@@ -246,68 +181,12 @@ export class PoLRYTubeSearch extends LitElement {
             gap: 4px;
         }
 
-        .search > mwc-button {
-        }
-
-        .results {
-            overflow: scroll;
-        }
-
-        .result {
-            padding: 12px 0;
-            display: grid;
-            grid-template-columns: 40px 1fr min-content min-content;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .result img {
-            width: 40px;
-            height: 40px;
-        }
-
         .loading {
             height: 50px;
             text-align: center;
             display: grid;
             align-items: center;
             padding: 12px 0;
-        }
-
-        .header {
-            display: grid;
-            height: 40px;
-            padding: 12px 12px 0 12px;
-            grid-template-columns: min-content auto 40px;
-            gap: 4px;
-        }
-
-        .icon-container {
-            display: flex;
-            height: 40px;
-            width: 40px;
-            border-radius: 50%;
-            background: rgba(111, 111, 111, 0.2);
-            place-content: center;
-            align-items: center;
-            margin-right: 12px;
-        }
-
-        .info-container {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .primary {
-            font-weight: bold;
-        }
-
-        .action-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
         }
 
         .content {
