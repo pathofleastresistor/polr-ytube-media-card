@@ -190,13 +190,13 @@ export class PoLRYTubeList extends LitElement {
                 .element img {
                     width: 40px;
                     height: 40px;
-                    border-radius: 5px;
+                    border-radius: 5%;
                 }
 
                 .empty {
                     display: block;
                     background-color: rgba(111, 111, 111, 0.2);
-                    border-radius: 12px;
+                    border-radius: 5%;
                     height: 40px;
                 }
 

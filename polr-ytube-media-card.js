@@ -231,13 +231,13 @@ let PoLRYTubeList = class PoLRYTubeList extends s {
                 .element img {
                     width: 40px;
                     height: 40px;
-                    border-radius: 5px;
+                    border-radius: 5%;
                 }
 
                 .empty {
                     display: block;
                     background-color: rgba(111, 111, 111, 0.2);
-                    border-radius: 12px;
+                    border-radius: 5%;
                     height: 40px;
                 }
 
@@ -1153,12 +1153,10 @@ class PoLRYTubePlayingCard extends s {
     }
     _renderIcon() {
         var _a, _b, _c, _d;
-        if ("entity_picture_local" in ((_a = this._entity) === null || _a === void 0 ? void 0 : _a.attributes) &&
-            ((_b = this._entity) === null || _b === void 0 ? void 0 : _b.attributes.entity_picture_local) != null)
+        if (((_b = (_a = this._entity) === null || _a === void 0 ? void 0 : _a.attributes) === null || _b === void 0 ? void 0 : _b.entity_picture_local) != null)
             return x `<img
                 src="${this._entity.attributes.entity_picture_local}" /> `;
-        if ("entity_picture" in ((_c = this._entity) === null || _c === void 0 ? void 0 : _c.attributes) &&
-            ((_d = this._entity) === null || _d === void 0 ? void 0 : _d.attributes.entity_picture) != null)
+        if (((_d = (_c = this._entity) === null || _c === void 0 ? void 0 : _c.attributes) === null || _d === void 0 ? void 0 : _d.entity_picture) != null)
             return x `<img
                 src="${this._entity.attributes.entity_picture}" /> `;
         return x `<ha-icon icon="${this._config.icon}"></ha-icon> `;
@@ -1294,7 +1292,7 @@ class PoLRYTubePlayingCard extends s {
                 .icon-container > img {
                     width: 40px;
                     height: 40px;
-                    border-radius: 12px;
+                    border-radius: 5%;
                 }
 
                 .info-container {

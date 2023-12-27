@@ -217,17 +217,11 @@ export class PoLRYTubePlayingCard extends LitElement {
     }
 
     _renderIcon() {
-        if (
-            "entity_picture_local" in this._entity?.attributes &&
-            this._entity?.attributes.entity_picture_local != null
-        )
+        if (this._entity?.attributes?.entity_picture_local != null)
             return html`<img
                 src="${this._entity.attributes.entity_picture_local}" /> `;
 
-        if (
-            "entity_picture" in this._entity?.attributes &&
-            this._entity?.attributes.entity_picture != null
-        )
+        if (this._entity?.attributes?.entity_picture != null)
             return html`<img
                 src="${this._entity.attributes.entity_picture}" /> `;
 
@@ -385,7 +379,7 @@ export class PoLRYTubePlayingCard extends LitElement {
                 .icon-container > img {
                     width: 40px;
                     height: 40px;
-                    border-radius: 12px;
+                    border-radius: 5%;
                 }
 
                 .info-container {
