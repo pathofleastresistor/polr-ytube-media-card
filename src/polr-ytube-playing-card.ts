@@ -1,6 +1,5 @@
-import { LitElement, html, css, CSSResultGroup, PropertyValues } from "lit";
+import { LitElement, html, css, CSSResultGroup, PropertyValueMap } from "lit";
 import { property, state } from "lit/decorators.js";
-import { classMap } from "lit/directives/class-map";
 import "./elements/polr-ytube-search";
 import "./elements/polr-ytube-page-tabs";
 import "./elements/polr-ytube-list";
@@ -29,6 +28,8 @@ export class PoLRYTubePlayingCard extends LitElement {
     @property() _currentlyPlayingState: PoLRCurrentState =
         PoLRCurrentState.INITAL;
     @property() _page: PoLRYTubeTab = PoLRYTubeTab.CURRENTLY_PLAYING;
+    @state() _menuButton: any;
+    @state() _menu: any;
 
     static getConfigElement() {}
 
@@ -82,6 +83,13 @@ export class PoLRYTubePlayingCard extends LitElement {
         return true;
     }
 
+    protected firstUpdated(
+        _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
+    ): void {
+        this._menuButton = this.renderRoot.querySelector("#menuButton");
+        this._menu = this.renderRoot.querySelector("#menu");
+    }
+
     private _hasEntityChanged(current, updated) {
         return (
             current?.attributes?.media_title !=
@@ -108,15 +116,23 @@ export class PoLRYTubePlayingCard extends LitElement {
 
         if (this._entity?.attributes?.likeStatus == "LIKE") {
             return html`
-                <mwc-button @click=${() => this._likeSong("thumb_middle")}>
-                    <ha-icon icon="mdi:thumb-up"></ha-icon>
-                </mwc-button>
+                <mwc-icon-button @click=${() => this._likeSong("thumb_middle")}>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <title>thumb-up</title>
+                        <path
+                            d="M23,10C23,8.89 22.1,8 21,8H14.68L15.64,3.43C15.66,3.33 15.67,3.22 15.67,3.11C15.67,2.7 15.5,2.32 15.23,2.05L14.17,1L7.59,7.58C7.22,7.95 7,8.45 7,9V19A2,2 0 0,0 9,21H18C18.83,21 19.54,20.5 19.84,19.78L22.86,12.73C22.95,12.5 23,12.26 23,12V10M1,21H5V9H1V21Z" />
+                    </svg>
+                </mwc-icon-button>
             `;
         } else {
             return html`
-                <mwc-button @click=${() => this._likeSong("thumb_up")}>
-                    <ha-icon icon="mdi:thumb-up-outline"></ha-icon>
-                </mwc-button>
+                <mwc-icon-button @click=${() => this._likeSong("thumb_up")}>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <title>thumb-up-outline</title>
+                        <path
+                            d="M5,9V21H1V9H5M9,21A2,2 0 0,1 7,19V9C7,8.45 7.22,7.95 7.59,7.59L14.17,1L15.23,2.06C15.5,2.33 15.67,2.7 15.67,3.11L15.64,3.43L14.69,8H21C22.11,8 23,8.9 23,10V12C23,12.26 22.95,12.5 22.86,12.73L19.84,19.78C19.54,20.5 18.83,21 18,21H9M9,19H18.03L21,12V10H12.21L13.34,4.68L9,9.03V19Z" />
+                    </svg>
+                </mwc-icon-button>
             `;
         }
     }
@@ -164,30 +180,41 @@ export class PoLRYTubePlayingCard extends LitElement {
         });
 
         return html`
-            <div class="source">
-                <ha-control-select-menu
-                    id="source"
-                    show-arrow
-                    hide-label
+            <div class="source" style="position: relative;">
+                <mwc-icon-button id="menuButton" @click=${this._toggleMenu}>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <title>dots-vertical</title>
+                        <path
+                            d="M12,16A2,2 0 0,1 14,18A2,2 0 0,1 12,20A2,2 0 0,1 10,18A2,2 0 0,1 12,16M12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12A2,2 0 0,1 12,10M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4Z" />
+                    </svg>
+                </mwc-icon-button>
+                <mwc-menu
+                    id="menu"
+                    .anchor=${this._menuButton}
+                    @selected=${this._selectSource}
+                    corner="BOTTOM_END"
+                    menuCorner="END"
                     naturalmenuwidth
-                    fixedmenuposition
-                    @selected=${this._selectSource}>
-                    <ha-svg-icon
-                        slot="icon"
-                        path="M12,12A3,3 0 0,0 9,15A3,3 0 0,0 12,18A3,3 0 0,0 15,15A3,3 0 0,0 12,12M12,20A5,5 0 0,1 7,15A5,5 0 0,1 12,10A5,5 0 0,1 17,15A5,5 0 0,1 12,20M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8C10.89,8 10,7.1 10,6C10,4.89 10.89,4 12,4M17,2H7C5.89,2 5,2.89 5,4V20A2,2 0 0,0 7,22H17A2,2 0 0,0 19,20V4C19,2.89 18.1,2 17,2Z"></ha-svg-icon>
+                    fixed>
                     ${media_players.map((item) =>
                         item[0] ==
                         this._entity["attributes"]["remote_player_id"]
-                            ? html`<ha-list-item selected value=${item[0]}>
+                            ? html`<mwc-list-item selected value=${item[0]}>
                                   ${item[1]}
-                              </ha-list-item> `
-                            : html`<ha-list-item value=${item[0]}
-                                  >${item[1]}</ha-list-item
+                              </mwc-list-item> `
+                            : html`<mwc-list-item value=${item[0]}
+                                  >${item[1]}</mwc-list-item
                               > `
                     )}
-                </ha-control-select-menu>
+                </mwc-menu>
             </div>
         `;
+    }
+    _toggleMenu() {
+        this._menu.show();
+    }
+    _menuAction(ev) {
+        console.log(ev);
     }
 
     _renderTab() {
@@ -258,11 +285,13 @@ export class PoLRYTubePlayingCard extends LitElement {
                         ${this._renderSecondary()}
                     </div>
                     <div class="action-container">
-                        ${this._renderLikeButton()}
+                        <div class="actions">
+                            ${this._renderLikeButton()}
+                            ${this._renderSourceSelctor()}
+                        </div>
                     </div>
                 </div>
                 <div class="content">
-                    ${this._renderSourceSelctor()}
                     <polr-ytube-page-tabs
                         @tabChange=${(ev) =>
                             this._changeTab(
@@ -336,8 +365,8 @@ export class PoLRYTubePlayingCard extends LitElement {
     }
 
     async _selectSource(ev) {
-        const selectedSource = (this.shadowRoot.querySelector("#source") as any)
-            .value;
+        console.log(this._menu.selected.value);
+        const selectedSource = this._menu.selected.value;
         const currentSource = this._entity["attributes"]["remote_player_id"];
 
         if (selectedSource == "") return;
@@ -345,7 +374,7 @@ export class PoLRYTubePlayingCard extends LitElement {
 
         this._hass.callService("media_player", "select_source", {
             entity_id: this._config.entity_id,
-            source: (this.shadowRoot.querySelector("#source") as any).value,
+            source: selectedSource,
         });
     }
 
@@ -405,12 +434,12 @@ export class PoLRYTubePlayingCard extends LitElement {
                     gap: 12px;
                 }
 
+                .actions {
+                    display: flex;
+                    justify-content: flex-end;
+                }
                 .source {
-                    display: grid;
-                    align-items: center;
-                    border-top: 2px rgba(111, 111, 111, 0.2) solid;
-                    border-bottom: 2px rgba(111, 111, 111, 0.2) solid;
-                    padding: 12px 0;
+                    position: relative;
                 }
             `,
         ];
