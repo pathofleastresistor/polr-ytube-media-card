@@ -2,6 +2,7 @@ import { LitElement, html, css, CSSResultGroup } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import "../elements/polr-ytube-list";
 import { PoLRYTubeItem } from "../utils/polr-ytube-item";
+import "@material/mwc-textfield";
 
 export const enum PoLRMediaSearchState {
     CLEAR = 1,
@@ -86,26 +87,13 @@ export class PoLRYTubeSearch extends LitElement {
         return html`
             <div class="content">
                 <div class="search">
-                    <div class="filter">
-                        <ha-select
-                            id="filter"
-                            naturalmenuwidth
-                            fixedmenuposition>
-                            <mwc-list-item value="albums">Albums</mwc-list-item>
-                            <mwc-list-item value="playlists"
-                                >Playlists</mwc-list-item
-                            >
-                            <mwc-list-item selected value="songs"
-                                >Songs</mwc-list-item
-                            >
-                        </ha-select>
-                    </div>
-                    <ha-textfield
-                        type="text"
+                    <mwc-textfield
+                        label="Search"
+                        type="search"
                         id="query"
-                        label="${this._config["searchTitle"]}"
-                        @keyup="${this.handleKey}"></ha-textfield>
-                    ${this._renderAction()}
+                        @keyup="${this.handleKey}">
+                        <ha-icon slot="icon" icon="mdi:magnify"></ha-icon>
+                    </mwc-textfield>
                 </div>
                 <div class="results">${this._renderResponse()}</div>
             </div>
@@ -148,12 +136,10 @@ export class PoLRYTubeSearch extends LitElement {
         this._resultsState = PoLRMediaSearchState.LOADING;
         this._action = PoLRMediaSearchAction.CLEAR;
 
-        const filter = (this.shadowRoot.querySelector("#filter") as any).value;
         await this._hass.callService("ytube_music_player", "search", {
             entity_id: this._config.entity_id,
             query: (this.shadowRoot.querySelector("#query") as any).value,
-            filter: filter,
-            limit: 50,
+            limit: 100,
         });
 
         this._fetchResults();
@@ -176,7 +162,7 @@ export class PoLRYTubeSearch extends LitElement {
 
         .search {
             display: grid;
-            grid-template-columns: min-content 1fr min-content;
+            grid-template-columns: 1fr;
             align-items: center;
             gap: 4px;
         }

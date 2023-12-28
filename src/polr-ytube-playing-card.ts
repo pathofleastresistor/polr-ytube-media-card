@@ -90,7 +90,7 @@ export class PoLRYTubePlayingCard extends LitElement {
     protected firstUpdated(
         _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
     ): void {
-        // (async () => await loadHaForm())();
+        //(async () => await loadHaForm())();
 
         this._menuButton = this.renderRoot.querySelector("#menuButton");
         this._menu = this.renderRoot.querySelector("#menu");
