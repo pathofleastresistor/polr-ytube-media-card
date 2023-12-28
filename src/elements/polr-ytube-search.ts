@@ -1,8 +1,8 @@
-import { LitElement, html, css, CSSResultGroup } from "lit";
+import { LitElement, html, css, CSSResultGroup, PropertyValueMap } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import "../elements/polr-ytube-list";
-import { PoLRYTubeItem } from "../utils/polr-ytube-item";
 import "@material/mwc-textfield";
+import "@material/mwc-select";
 
 export const enum PoLRMediaSearchState {
     CLEAR = 1,
@@ -25,6 +25,7 @@ export class PoLRYTubeSearch extends LitElement {
     @state() private _action: PoLRMediaSearchAction =
         PoLRMediaSearchAction.SEARCH;
     @property() private _resultsState = PoLRMediaSearchState.CLEAR;
+    @state() private _filter: any;
 
     setConfig(config: any) {
         if (!config.entity_id) {
@@ -40,6 +41,10 @@ export class PoLRYTubeSearch extends LitElement {
 
     set hass(hass) {
         this._hass = hass;
+    }
+
+    protected firstUpdated(_changedProperties): void {
+        this._filter = this.renderRoot.querySelector("#filter");
     }
 
     _renderResponse() {
@@ -94,6 +99,20 @@ export class PoLRYTubeSearch extends LitElement {
                         @keyup="${this.handleKey}">
                         <ha-icon slot="icon" icon="mdi:magnify"></ha-icon>
                     </mwc-textfield>
+                    <mwc-select
+                        id="filter"
+                        label="Filter"
+                        fixedMenuPosition
+                        naturalMenuWidth>
+                        <mwc-list-item value="all"> All </mwc-list-item>
+                        <mwc-list-item value="artists"> Artists </mwc-list-item>
+                        <mwc-list-item selected value="songs">
+                            Songs
+                        </mwc-list-item>
+                        <mwc-list-item selected value="playlists">
+                            Playlists
+                        </mwc-list-item>
+                    </mwc-select>
                 </div>
                 <div class="results">${this._renderResponse()}</div>
             </div>
@@ -136,11 +155,23 @@ export class PoLRYTubeSearch extends LitElement {
         this._resultsState = PoLRMediaSearchState.LOADING;
         this._action = PoLRMediaSearchAction.CLEAR;
 
-        await this._hass.callService("ytube_music_player", "search", {
-            entity_id: this._config.entity_id,
-            query: (this.shadowRoot.querySelector("#query") as any).value,
-            limit: 100,
-        });
+        const data =
+            this._filter.selected.value == "all"
+                ? {
+                      entity_id: this._config.entity_id,
+                      query: (this.shadowRoot.querySelector("#query") as any)
+                          .value,
+                      limit: 50,
+                  }
+                : {
+                      entity_id: this._config.entity_id,
+                      query: (this.shadowRoot.querySelector("#query") as any)
+                          .value,
+                      filter: this._filter.selected.value,
+                      limit: 50,
+                  };
+
+        await this._hass.callService("ytube_music_player", "search", data);
 
         this._fetchResults();
     }
@@ -162,7 +193,7 @@ export class PoLRYTubeSearch extends LitElement {
 
         .search {
             display: grid;
-            grid-template-columns: 1fr;
+            grid-template-columns: 1fr min-content min-content;
             align-items: center;
             gap: 4px;
         }
@@ -176,7 +207,7 @@ export class PoLRYTubeSearch extends LitElement {
         }
 
         .content {
-            padding: 12px 12px 12px 12px;
+            padding: 0 12px;
         }
 
         select {

@@ -409,7 +409,7 @@ export class PoLRYTubePlayingCard extends LitElement {
                 .header {
                     display: grid;
                     padding: 12px 12px 0 12px;
-                    grid-template-columns: 40px auto 70px;
+                    grid-template-columns: 40px auto min-content;
                     gap: 12px;
                     align-items: center;
                 }

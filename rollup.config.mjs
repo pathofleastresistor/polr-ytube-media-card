@@ -11,6 +11,11 @@ const dev = process.env.ROLLUP_WATCH;
 const IGNORED_FILES = [
     "@material/mwc-ripple/mwc-ripple.js",
     "@material/mwc-notched-outline/mwc-notched-outline.js",
+    "@material/mwc-list/mwc-list.js",
+    "@material/mwc-list/mwc-list-item.js",
+    "@material/mwc-menu/mwc-menu-surface.js",
+    "@material/mwc-menu/mwc-menu.js",
+    "@material/mwc-icon/mwc-icon.js",
 ];
 
 export default {
