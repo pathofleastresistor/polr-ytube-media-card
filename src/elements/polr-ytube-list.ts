@@ -29,8 +29,11 @@ export class PoLRYTubeList extends LitElement {
     }
 
     private _renderThumbnail(element: PoLRYTubeItem) {
-        if (element.thumbnail == "")
-            return html`<div class="empty thumbnail"></div>`;
+        if (element.thumbnail == "") {
+            return html`<div class="empty thumbnail">
+                <ha-icon icon="mdi:music-box"></ha-icon>
+            </div>`;
+        }
 
         return html` <img class="thumbnail" src="${element.thumbnail}" /> `;
     }
@@ -194,10 +197,12 @@ export class PoLRYTubeList extends LitElement {
                 }
 
                 .empty {
-                    display: block;
+                    display: flex;
                     background-color: rgba(111, 111, 111, 0.2);
                     border-radius: 5%;
                     height: 40px;
+                    align-items: center;
+                    justify-content: center;
                 }
 
                 .current {

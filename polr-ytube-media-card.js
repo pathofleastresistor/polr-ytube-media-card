@@ -89,8 +89,11 @@ let PoLRYTubeList = class PoLRYTubeList extends s {
         return false;
     }
     _renderThumbnail(element) {
-        if (element.thumbnail == "")
-            return x `<div class="empty thumbnail"></div>`;
+        if (element.thumbnail == "") {
+            return x `<div class="empty thumbnail">
+                <ha-icon icon="mdi:music-box"></ha-icon>
+            </div>`;
+        }
         return x ` <img class="thumbnail" src="${element.thumbnail}" /> `;
     }
     _renderMoreButton(element) {
@@ -235,10 +238,12 @@ let PoLRYTubeList = class PoLRYTubeList extends s {
                 }
 
                 .empty {
-                    display: block;
+                    display: flex;
                     background-color: rgba(111, 111, 111, 0.2);
                     border-radius: 5%;
                     height: 40px;
+                    align-items: center;
+                    justify-content: center;
                 }
 
                 .current {
