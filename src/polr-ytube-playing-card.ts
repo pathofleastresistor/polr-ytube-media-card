@@ -205,7 +205,10 @@ export class PoLRYTubePlayingCard extends LitElement {
                     ${media_players.map((item) =>
                         item[0] ==
                         this._entity["attributes"]["remote_player_id"]
-                            ? html`<mwc-list-item selected value=${item[0]}>
+                            ? html`<mwc-list-item
+                                  selected
+                                  activated
+                                  value=${item[0]}>
                                   ${item[1]}
                               </mwc-list-item> `
                             : html`<mwc-list-item value=${item[0]}

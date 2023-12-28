@@ -7104,7 +7104,10 @@ class PoLRYTubePlayingCard extends s$1 {
                     fixed>
                     ${media_players.map((item) => item[0] ==
             this._entity["attributes"]["remote_player_id"]
-            ? x `<mwc-list-item selected value=${item[0]}>
+            ? x `<mwc-list-item
+                                  selected
+                                  activated
+                                  value=${item[0]}>
                                   ${item[1]}
                               </mwc-list-item> `
             : x `<mwc-list-item value=${item[0]}
