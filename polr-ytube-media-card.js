@@ -4193,6 +4193,7 @@ let PoLRYTubeSearch = class PoLRYTubeSearch extends s$1 {
                         label="Search"
                         type="search"
                         id="query"
+                        outlined
                         @keyup="${this.handleKey}">
                         <ha-icon slot="icon" icon="mdi:magnify"></ha-icon>
                     </mwc-textfield>
