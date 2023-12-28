@@ -5,6 +5,9 @@ import "./elements/polr-ytube-page-tabs";
 import "./elements/polr-ytube-list";
 import "./elements/polr-ytube-browser";
 import { PoLRYTubeItem } from "./utils/polr-ytube-item";
+import { loadHaForm } from "./utils/load-ha-form.js";
+import "@material/mwc-tab-bar";
+import "@material/mwc-tab";
 
 export const enum PoLRCurrentState {
     INITAL = 1,
@@ -14,10 +17,10 @@ export const enum PoLRCurrentState {
     ERROR = 16,
 }
 export const enum PoLRYTubeTab {
-    CURRENTLY_PLAYING = 1,
-    FOR_YOU = 2,
-    SEARCH = 4,
-    YOURS = 8,
+    CURRENTLY_PLAYING = 0,
+    FOR_YOU = 1,
+    SEARCH = 2,
+    YOURS = 3,
 }
 
 export class PoLRYTubePlayingCard extends LitElement {
@@ -66,6 +69,7 @@ export class PoLRYTubePlayingCard extends LitElement {
 
             if (this._entity["state"] == "off") {
                 this._currentlyPlayingState = PoLRCurrentState.INITAL;
+                this._changeTab(PoLRYTubeTab.FOR_YOU);
             } else {
                 this._getCurrentlyPlayingItems();
             }
@@ -86,6 +90,8 @@ export class PoLRYTubePlayingCard extends LitElement {
     protected firstUpdated(
         _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
     ): void {
+        // (async () => await loadHaForm())();
+
         this._menuButton = this.renderRoot.querySelector("#menuButton");
         this._menu = this.renderRoot.querySelector("#menu");
     }
@@ -210,9 +216,11 @@ export class PoLRYTubePlayingCard extends LitElement {
             </div>
         `;
     }
+
     _toggleMenu() {
         this._menu.show();
     }
+
     _menuAction(ev) {
         console.log(ev);
     }
@@ -292,23 +300,39 @@ export class PoLRYTubePlayingCard extends LitElement {
                     </div>
                 </div>
                 <div class="content">
-                    <polr-ytube-page-tabs
-                        @tabChange=${(ev) =>
-                            this._changeTab(
-                                ev.detail.tab
-                            )}></polr-ytube-page-tabs>
+                    <mwc-tab-bar
+                        activeIndex=${this._page}
+                        @MDCTabBar:activated="${(ev) =>
+                            this._changeTab(ev.detail.index)}">
+                        <mwc-tab label="Playing"></mwc-tab>
+                        <mwc-tab label="For You"></mwc-tab>
+                        <mwc-tab label="Search"></mwc-tab>
+                        <mwc-tab label="Yours"></mwc-tab>
+                    </mwc-tab-bar>
+
                     <div class="results">${this._renderTab()}</div>
                 </div>
             </ha-card>
         `;
     }
 
-    async _changeTab(page: PoLRYTubeTab) {
-        this._page = page;
-
-        switch (page) {
-            case PoLRYTubeTab.CURRENTLY_PLAYING:
+    async _changeTab(index: any) {
+        switch (index) {
+            case 0:
+                this._page = PoLRYTubeTab.CURRENTLY_PLAYING;
                 this._getCurrentlyPlayingItems();
+                break;
+            case 1:
+                this._page = PoLRYTubeTab.FOR_YOU;
+                break;
+            case 2:
+                this._page = PoLRYTubeTab.SEARCH;
+                break;
+            case 3:
+                this._page = PoLRYTubeTab.YOURS;
+                break;
+
+            default:
                 break;
         }
     }
