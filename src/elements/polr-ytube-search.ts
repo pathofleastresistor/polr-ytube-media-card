@@ -93,12 +93,11 @@ export class PoLRYTubeSearch extends LitElement {
             <div class="content">
                 <div class="search">
                     <mwc-textfield
-                        label="Search"
+                        label="Search "
                         type="search"
                         id="query"
                         outlined
                         @keyup="${this.handleKey}">
-                        <ha-icon slot="icon" icon="mdi:magnify"></ha-icon>
                     </mwc-textfield>
                     <mwc-select
                         id="filter"
