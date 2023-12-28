@@ -5244,9 +5244,6 @@ class PoLRYTubePlayingCard extends s$1 {
     _toggleMenu() {
         this._menu.show();
     }
-    _menuAction(ev) {
-        console.log(ev);
-    }
     _renderTab() {
         if (this._page == 1 /* PoLRYTubeTab.FOR_YOU */) {
             const item = new PoLRYTubeItem();
@@ -5382,7 +5379,6 @@ class PoLRYTubePlayingCard extends s$1 {
         }
     }
     async _likeSong(rating) {
-        console.log(rating);
         await this._hass.callService("ytube_music_player", "rate_track", {
             entity_id: this._config.entity_id,
             rating: rating,
@@ -5390,7 +5386,6 @@ class PoLRYTubePlayingCard extends s$1 {
         this.requestUpdate();
     }
     async _selectSource(ev) {
-        console.log(this._menu.selected.value);
         const selectedSource = this._menu.selected.value;
         const currentSource = this._entity["attributes"]["remote_player_id"];
         if (selectedSource == "")

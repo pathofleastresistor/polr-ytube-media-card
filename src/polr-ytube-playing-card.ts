@@ -221,10 +221,6 @@ export class PoLRYTubePlayingCard extends LitElement {
         this._menu.show();
     }
 
-    _menuAction(ev) {
-        console.log(ev);
-    }
-
     _renderTab() {
         if (this._page == PoLRYTubeTab.FOR_YOU) {
             const item = new PoLRYTubeItem();
@@ -380,7 +376,6 @@ export class PoLRYTubePlayingCard extends LitElement {
     }
 
     async _likeSong(rating) {
-        console.log(rating);
         await this._hass.callService("ytube_music_player", "rate_track", {
             entity_id: this._config.entity_id,
             rating: rating,
@@ -389,7 +384,6 @@ export class PoLRYTubePlayingCard extends LitElement {
     }
 
     async _selectSource(ev) {
-        console.log(this._menu.selected.value);
         const selectedSource = this._menu.selected.value;
         const currentSource = this._entity["attributes"]["remote_player_id"];
 
