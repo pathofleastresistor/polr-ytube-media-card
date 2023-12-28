@@ -83,15 +83,111 @@ export class PoLRYTubePlayingCard extends LitElement {
     }
 
     private _hasEntityChanged(current, updated) {
-        // console.log({
-        //     current: current?.attributes?.media_title,
-        //     updated: updated?.attributes?.media_title,
-        // });
         return (
             current?.attributes?.media_title !=
                 updated?.attributes?.media_title ||
             current?.attributes?.likeStatus != updated?.attributes?.likeStatus
         );
+    }
+
+    _renderIcon() {
+        if (this._entity?.attributes?.entity_picture_local != null)
+            return html`<img
+                src="${this._entity.attributes.entity_picture_local}" /> `;
+
+        if (this._entity?.attributes?.entity_picture != null)
+            return html`<img
+                src="${this._entity.attributes.entity_picture}" /> `;
+
+        return html`<ha-icon icon="${this._config.icon}"></ha-icon> `;
+    }
+
+    _renderLikeButton() {
+        if (this._entity?.state == "off") return html``;
+        if (!("likeStatus" in this._entity["attributes"])) return html``;
+
+        if (this._entity?.attributes?.likeStatus == "LIKE") {
+            return html`
+                <mwc-button @click=${() => this._likeSong("thumb_middle")}>
+                    <ha-icon icon="mdi:thumb-up"></ha-icon>
+                </mwc-button>
+            `;
+        } else {
+            return html`
+                <mwc-button @click=${() => this._likeSong("thumb_up")}>
+                    <ha-icon icon="mdi:thumb-up-outline"></ha-icon>
+                </mwc-button>
+            `;
+        }
+    }
+
+    _renderSecondary() {
+        // TODO: Implement a title
+        if (this._entity?.state == "off") return html``;
+
+        const items = [];
+        if (
+            "media_title" in this._entity?.attributes &&
+            this._entity.attributes.media_title != ""
+        )
+            items.push(this._entity.attributes.media_title);
+
+        if (
+            "media_artist" in this._entity?.attributes &&
+            this._entity.attributes.media_artist != ""
+        )
+            items.push(this._entity.attributes.media_artist);
+
+        return html` <div class="secondary">${items.join(" - ")}</div> `;
+    }
+
+    _renderSourceSelctor() {
+        const media_players = [];
+
+        for (const [key, value] of Object.entries(this._hass["states"])) {
+            if (key.startsWith("media_player")) {
+                // Skip ytube_media_player entities
+                if ("remote_player_id" in value["attributes"]) continue;
+
+                media_players.push([key, value["attributes"]["friendly_name"]]);
+            }
+        }
+
+        media_players.sort(function (a, b) {
+            if (a[1] < b[1]) {
+                return -1;
+            }
+            if (a[1] > b[1]) {
+                return 1;
+            }
+            return 0;
+        });
+
+        return html`
+            <div class="source">
+                <ha-control-select-menu
+                    id="source"
+                    show-arrow
+                    hide-label
+                    naturalmenuwidth
+                    fixedmenuposition
+                    @selected=${this._selectSource}>
+                    <ha-svg-icon
+                        slot="icon"
+                        path="M12,12A3,3 0 0,0 9,15A3,3 0 0,0 12,18A3,3 0 0,0 15,15A3,3 0 0,0 12,12M12,20A5,5 0 0,1 7,15A5,5 0 0,1 12,10A5,5 0 0,1 17,15A5,5 0 0,1 12,20M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8C10.89,8 10,7.1 10,6C10,4.89 10.89,4 12,4M17,2H7C5.89,2 5,2.89 5,4V20A2,2 0 0,0 7,22H17A2,2 0 0,0 19,20V4C19,2.89 18.1,2 17,2Z"></ha-svg-icon>
+                    ${media_players.map((item) =>
+                        item[0] ==
+                        this._entity["attributes"]["remote_player_id"]
+                            ? html`<ha-list-item selected value=${item[0]}>
+                                  ${item[1]}
+                              </ha-list-item> `
+                            : html`<ha-list-item value=${item[0]}
+                                  >${item[1]}</ha-list-item
+                              > `
+                    )}
+                </ha-control-select-menu>
+            </div>
+        `;
     }
 
     _renderTab() {
@@ -152,86 +248,6 @@ export class PoLRYTubePlayingCard extends LitElement {
         }
     }
 
-    _renderSourceSelctor() {
-        const media_players = [];
-
-        for (const [key, value] of Object.entries(this._hass["states"])) {
-            if (key.startsWith("media_player")) {
-                // Skip ytube_media_player entities
-                if ("remote_player_id" in value["attributes"]) continue;
-
-                media_players.push([key, value["attributes"]["friendly_name"]]);
-            }
-        }
-
-        media_players.sort(function (a, b) {
-            if (a[1] < b[1]) {
-                return -1;
-            }
-            if (a[1] > b[1]) {
-                return 1;
-            }
-            return 0;
-        });
-
-        return html`
-            <div class="source">
-                <ha-control-select-menu
-                    id="source"
-                    show-arrow
-                    hide-label
-                    naturalmenuwidth
-                    fixedmenuposition
-                    @selected=${this._selectSource}>
-                    <ha-svg-icon
-                        slot="icon"
-                        path="M12,12A3,3 0 0,0 9,15A3,3 0 0,0 12,18A3,3 0 0,0 15,15A3,3 0 0,0 12,12M12,20A5,5 0 0,1 7,15A5,5 0 0,1 12,10A5,5 0 0,1 17,15A5,5 0 0,1 12,20M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8C10.89,8 10,7.1 10,6C10,4.89 10.89,4 12,4M17,2H7C5.89,2 5,2.89 5,4V20A2,2 0 0,0 7,22H17A2,2 0 0,0 19,20V4C19,2.89 18.1,2 17,2Z"></ha-svg-icon>
-                    ${media_players.map((item) =>
-                        item[0] ==
-                        this._entity["attributes"]["remote_player_id"]
-                            ? html`<ha-list-item selected value=${item[0]}>
-                                  ${item[1]}
-                              </ha-list-item> `
-                            : html`<ha-list-item value=${item[0]}
-                                  >${item[1]}</ha-list-item
-                              > `
-                    )}
-                </ha-control-select-menu>
-            </div>
-        `;
-    }
-
-    _renderLikeButton() {
-        if (this._entity?.state == "off") return html``;
-        if (!("likeStatus" in this._entity["attributes"])) return html``;
-
-        if (this._entity?.attributes?.likeStatus == "LIKE") {
-            return html`
-                <mwc-button @click=${() => this._likeSong("thumb_middle")}>
-                    <ha-icon icon="mdi:thumb-up"></ha-icon>
-                </mwc-button>
-            `;
-        } else {
-            return html`
-                <mwc-button @click=${() => this._likeSong("thumb_up")}>
-                    <ha-icon icon="mdi:thumb-up-outline"></ha-icon>
-                </mwc-button>
-            `;
-        }
-    }
-
-    _renderIcon() {
-        if (this._entity?.attributes?.entity_picture_local != null)
-            return html`<img
-                src="${this._entity.attributes.entity_picture_local}" /> `;
-
-        if (this._entity?.attributes?.entity_picture != null)
-            return html`<img
-                src="${this._entity.attributes.entity_picture}" /> `;
-
-        return html`<ha-icon icon="${this._config.icon}"></ha-icon> `;
-    }
-
     render() {
         return html`
             <ha-card>
@@ -256,26 +272,6 @@ export class PoLRYTubePlayingCard extends LitElement {
                 </div>
             </ha-card>
         `;
-    }
-
-    _renderSecondary() {
-        // TODO: Implement a title
-        if (this._entity?.state == "off") return html``;
-
-        const items = [];
-        if (
-            "media_title" in this._entity?.attributes &&
-            this._entity.attributes.media_title != ""
-        )
-            items.push(this._entity.attributes.media_title);
-
-        if (
-            "media_artist" in this._entity?.attributes &&
-            this._entity.attributes.media_artist != ""
-        )
-            items.push(this._entity.attributes.media_artist);
-
-        return html` <div class="secondary">${items.join(" - ")}</div> `;
     }
 
     async _changeTab(page: PoLRYTubeTab) {
@@ -404,7 +400,7 @@ export class PoLRYTubePlayingCard extends LitElement {
                 }
 
                 .content {
-                    padding: 24px 12px;
+                    padding: 12px;
                     display: grid;
                     gap: 12px;
                 }
@@ -415,10 +411,6 @@ export class PoLRYTubePlayingCard extends LitElement {
                     border-top: 2px rgba(111, 111, 111, 0.2) solid;
                     border-bottom: 2px rgba(111, 111, 111, 0.2) solid;
                     padding: 12px 0;
-                }
-
-                polr-ytube-page-tabs {
-                    padding: 12px;
                 }
             `,
         ];
