@@ -1,12 +1,13 @@
 import { LitElement, html, css, CSSResultGroup, nothing } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
-import { PoLRYTubeItem } from "../utils/polr-ytube-item";
+import { customElement, property } from "lit/decorators.js";
+import { PoLRYTubeItem, PoLRYTubeListState } from "../utils/utils";
 
 @customElement("polr-ytube-list")
 export class PoLRYTubeList extends LitElement {
     @property() public entity: any;
     @property() public hass: any;
     @property() public elements: PoLRYTubeItem[];
+    @property() public state: PoLRYTubeListState;
 
     private _is_current(element: PoLRYTubeItem): boolean {
         if (this.entity == null) return false;
@@ -21,7 +22,7 @@ export class PoLRYTubeList extends LitElement {
 
     private _renderThumbnail(element: PoLRYTubeItem) {
         if (element.thumbnail == "") {
-            return html`<div class="empty thumbnail">
+            return html`<div class="empty-thumbnail thumbnail">
                 <ha-icon icon="mdi:music-box"></ha-icon>
             </div>`;
         }
@@ -79,30 +80,42 @@ export class PoLRYTubeList extends LitElement {
     }
 
     render() {
-        if (this.elements == null || this.elements?.length == 0) return html``;
+        if (this.state == PoLRYTubeListState.LOADING) {
+            return html`<div class="loading">Loading...</div>`;
+        }
 
-        const renderedElements = this.elements.map((element) => {
-            return html`
-                <div
-                    class="element ${this._is_current(element)
-                        ? "current"
-                        : ""}">
-                    ${this._renderThumbnail(element)}
-                    <div class="info">${element.title}</div>
-                    <div class="actions">
-                        ${this._renderMoreButton(element)}
-                        ${this._renderRadioButton(element)}
-                        ${this._renderPlayButton(element)}
+        if (this.state == PoLRYTubeListState.NO_RESULTS) {
+            return html`<div class="empty">No results</div>`;
+        }
+
+        if (this.state == PoLRYTubeListState.ERROR) {
+            return html`<div class="error">Unknown Error</div>`;
+        }
+
+        if (this.state == PoLRYTubeListState.HAS_RESULTS) {
+            const renderedElements = this.elements.map((element) => {
+                return html`
+                    <div
+                        class="element ${this._is_current(element)
+                            ? "current"
+                            : ""}">
+                        ${this._renderThumbnail(element)}
+                        <div class="info">${element.title}</div>
+                        <div class="actions">
+                            ${this._renderMoreButton(element)}
+                            ${this._renderRadioButton(element)}
+                            ${this._renderPlayButton(element)}
+                        </div>
                     </div>
+                `;
+            });
+
+            return html`
+                <div class="list-container">
+                    <div class="elements">${renderedElements}</div>
                 </div>
             `;
-        });
-
-        return html`
-            <div class="list-container">
-                <div class="elements">${renderedElements}</div>
-            </div>
-        `;
+        }
     }
 
     private async _fireNavigateEvent(element: PoLRYTubeItem) {
@@ -127,8 +140,6 @@ export class PoLRYTubeList extends LitElement {
             media_content_id: media_content_id,
             media_content_type: "vid_channel",
         });
-
-        this.dispatchEvent(new CustomEvent("update"));
         return;
     }
 
@@ -151,9 +162,6 @@ export class PoLRYTubeList extends LitElement {
     static get styles(): CSSResultGroup {
         return [
             css`
-                :host {
-                }
-
                 .elements {
                     height: 400px;
                     overflow: scroll;
@@ -183,7 +191,7 @@ export class PoLRYTubeList extends LitElement {
                     border-radius: 5%;
                 }
 
-                .empty {
+                .empty-thumbnail {
                     display: flex;
                     background-color: rgba(111, 111, 111, 0.2);
                     border-radius: 5%;
@@ -194,6 +202,15 @@ export class PoLRYTubeList extends LitElement {
 
                 .current {
                     background-color: rgba(111, 111, 111, 0.2);
+                }
+
+                .empty,
+                .loading,
+                .error {
+                    display: grid;
+                    align-items: center;
+                    justify-items: center;
+                    height: 100px;
                 }
             `,
         ];

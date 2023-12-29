@@ -166,7 +166,7 @@ let PoLRYTubeList = class PoLRYTubeList extends s$1 {
     }
     _renderThumbnail(element) {
         if (element.thumbnail == "") {
-            return x `<div class="empty thumbnail">
+            return x `<div class="empty-thumbnail thumbnail">
                 <ha-icon icon="mdi:music-box"></ha-icon>
             </div>`;
         }
@@ -216,30 +216,38 @@ let PoLRYTubeList = class PoLRYTubeList extends s$1 {
         return A;
     }
     render() {
-        var _a;
-        if (this.elements == null || ((_a = this.elements) === null || _a === void 0 ? void 0 : _a.length) == 0)
-            return x ``;
-        const renderedElements = this.elements.map((element) => {
-            return x `
-                <div
-                    class="element ${this._is_current(element)
-                ? "current"
-                : ""}">
-                    ${this._renderThumbnail(element)}
-                    <div class="info">${element.title}</div>
-                    <div class="actions">
-                        ${this._renderMoreButton(element)}
-                        ${this._renderRadioButton(element)}
-                        ${this._renderPlayButton(element)}
+        if (this.state == 4 /* PoLRYTubeListState.LOADING */) {
+            return x `<div class="loading">Loading...</div>`;
+        }
+        if (this.state == 8 /* PoLRYTubeListState.NO_RESULTS */) {
+            return x `<div class="empty">No results</div>`;
+        }
+        if (this.state == 16 /* PoLRYTubeListState.ERROR */) {
+            return x `<div class="error">Unknown Error</div>`;
+        }
+        if (this.state == 2 /* PoLRYTubeListState.HAS_RESULTS */) {
+            const renderedElements = this.elements.map((element) => {
+                return x `
+                    <div
+                        class="element ${this._is_current(element)
+                    ? "current"
+                    : ""}">
+                        ${this._renderThumbnail(element)}
+                        <div class="info">${element.title}</div>
+                        <div class="actions">
+                            ${this._renderMoreButton(element)}
+                            ${this._renderRadioButton(element)}
+                            ${this._renderPlayButton(element)}
+                        </div>
                     </div>
+                `;
+            });
+            return x `
+                <div class="list-container">
+                    <div class="elements">${renderedElements}</div>
                 </div>
             `;
-        });
-        return x `
-            <div class="list-container">
-                <div class="elements">${renderedElements}</div>
-            </div>
-        `;
+        }
     }
     async _fireNavigateEvent(element) {
         this.dispatchEvent(new CustomEvent("navigate", {
@@ -259,7 +267,6 @@ let PoLRYTubeList = class PoLRYTubeList extends s$1 {
             media_content_id: media_content_id,
             media_content_type: "vid_channel",
         });
-        this.dispatchEvent(new CustomEvent("update"));
         return;
     }
     async _play(element) {
@@ -281,9 +288,6 @@ let PoLRYTubeList = class PoLRYTubeList extends s$1 {
     static get styles() {
         return [
             i$4 `
-                :host {
-                }
-
                 .elements {
                     height: 400px;
                     overflow: scroll;
@@ -313,7 +317,7 @@ let PoLRYTubeList = class PoLRYTubeList extends s$1 {
                     border-radius: 5%;
                 }
 
-                .empty {
+                .empty-thumbnail {
                     display: flex;
                     background-color: rgba(111, 111, 111, 0.2);
                     border-radius: 5%;
@@ -324,6 +328,15 @@ let PoLRYTubeList = class PoLRYTubeList extends s$1 {
 
                 .current {
                     background-color: rgba(111, 111, 111, 0.2);
+                }
+
+                .empty,
+                .loading,
+                .error {
+                    display: grid;
+                    align-items: center;
+                    justify-items: center;
+                    height: 100px;
                 }
             `,
         ];
@@ -338,6 +351,9 @@ __decorate([
 __decorate([
     n$1()
 ], PoLRYTubeList.prototype, "elements", void 0);
+__decorate([
+    n$1()
+], PoLRYTubeList.prototype, "state", void 0);
 PoLRYTubeList = __decorate([
     e$5("polr-ytube-list")
 ], PoLRYTubeList);
@@ -4119,32 +4135,15 @@ Select = __decorate([
 ], Select);
 
 let PoLRYTubeSearch = class PoLRYTubeSearch extends s$1 {
-    constructor() {
-        super(...arguments);
-        this._results = {};
-        this._resultsState = 1 /* PoLRYTubeListState.CLEAR */;
+    firstUpdated(_changedProperties) {
+        this._polrYTubeList = this.renderRoot.querySelector("polr-ytube-list");
     }
     _renderResults() {
-        if (this._resultsState == 1 /* PoLRYTubeListState.CLEAR */)
-            return x ``;
-        if (this._resultsState == 2 /* PoLRYTubeListState.HAS_RESULTS */) {
-            const elements = this._results["children"];
-            return x `
-                <polr-ytube-list
-                    .hass=${this._hass}
-                    .entity=${this._entity}
-                    .elements="${elements}"></polr-ytube-list>
-            `;
-        }
-        if (this._resultsState == 4 /* PoLRYTubeListState.LOADING */) {
-            return x `<div class="loading">Loading...</div>`;
-        }
-        if (this._resultsState == 8 /* PoLRYTubeListState.NO_RESULTS */) {
-            return x `<div class="empty">No results</div>`;
-        }
-        if (this._resultsState == 16 /* PoLRYTubeListState.ERROR */) {
-            return x `<div class="error">Unknown Error</div>`;
-        }
+        return x `
+            <polr-ytube-list
+                .hass=${this._hass}
+                .entity=${this._entity}></polr-ytube-list>
+        `;
     }
     render() {
         return x `
@@ -4178,26 +4177,28 @@ let PoLRYTubeSearch = class PoLRYTubeSearch extends s$1 {
     }
     async _fetchResults() {
         var _a, _b;
+        this._polrYTubeList.state = 4 /* PoLRYTubeListState.LOADING */;
         try {
-            this._results = await this._hass.callWS({
+            let response = await this._hass.callWS({
                 type: "media_player/browse_media",
                 entity_id: (_a = this._entity) === null || _a === void 0 ? void 0 : _a.entity_id,
                 media_content_type: "search",
                 media_content_id: "",
             });
-            if (((_b = this._results["children"]) === null || _b === void 0 ? void 0 : _b.length) > 0) {
+            if (((_b = response["children"]) === null || _b === void 0 ? void 0 : _b.length) > 0) {
                 // TODO: Move to ytube_music_player component,
                 //       instead of handling in frontend
                 // Filter out community playlists of podcast
-                this._results["children"].filter((el) => !el["media_content_id"].startsWith("MPSP"));
-                this._resultsState = 2 /* PoLRYTubeListState.HAS_RESULTS */;
+                response["children"].filter((el) => !el["media_content_id"].startsWith("MPSP"));
+                this._polrYTubeList.state = 2 /* PoLRYTubeListState.HAS_RESULTS */;
+                this._polrYTubeList.elements = response["children"];
             }
             else
-                this._resultsState = 8 /* PoLRYTubeListState.NO_RESULTS */;
+                this._polrYTubeList.state = 8 /* PoLRYTubeListState.NO_RESULTS */;
         }
         catch (e) {
-            this._resultsState = 16 /* PoLRYTubeListState.ERROR */;
-            console.error(e, this._resultsState);
+            this._polrYTubeList.state = 16 /* PoLRYTubeListState.ERROR */;
+            console.error(e);
         }
     }
     handleKey(ev) {
@@ -4206,7 +4207,7 @@ let PoLRYTubeSearch = class PoLRYTubeSearch extends s$1 {
     }
     async _search() {
         var _a, _b;
-        this._resultsState = 4 /* PoLRYTubeListState.LOADING */;
+        this._polrYTubeList.state = 4 /* PoLRYTubeListState.LOADING */;
         const query = this.shadowRoot.querySelector("#query").value;
         const filter = this.renderRoot.querySelector("#filter")
             .selected.value;
@@ -4237,16 +4238,6 @@ PoLRYTubeSearch.styles = i$4 `
             align-items: center;
             gap: 4px;
         }
-
-        .empty,
-        .error,
-        .loading {
-            height: 50px;
-            text-align: center;
-            display: grid;
-            align-items: center;
-            padding: 12px 0;
-        }
     `;
 __decorate([
     n$1()
@@ -4256,10 +4247,7 @@ __decorate([
 ], PoLRYTubeSearch.prototype, "_entity", void 0);
 __decorate([
     t$1()
-], PoLRYTubeSearch.prototype, "_results", void 0);
-__decorate([
-    n$1()
-], PoLRYTubeSearch.prototype, "_resultsState", void 0);
+], PoLRYTubeSearch.prototype, "_polrYTubeList", void 0);
 PoLRYTubeSearch = __decorate([
     e$5("polr-ytube-search")
 ], PoLRYTubeSearch);
@@ -4573,49 +4561,25 @@ window.customCards.push({
 });
 
 let PoLRYTubePlaying = class PoLRYTubePlaying extends s$1 {
-    constructor() {
-        super(...arguments);
-        this._results = {};
-        this._resultsState = 1 /* PoLRYTubeListState.CLEAR */;
-    }
-    _renderResults() {
-        if (this._resultsState == 1 /* PoLRYTubeListState.CLEAR */)
-            return x ``;
-        if (this._resultsState == 2 /* PoLRYTubeListState.HAS_RESULTS */) {
-            const elements = this._results["children"];
-            return x `
-                <polr-ytube-list
-                    .hass=${this._hass}
-                    .entity=${this._entity}
-                    .elements="${elements}"></polr-ytube-list>
-            `;
-        }
-        if (this._resultsState == 4 /* PoLRYTubeListState.LOADING */) {
-            return x `<div class="loading">Loading...</div>`;
-        }
-        if (this._resultsState == 8 /* PoLRYTubeListState.NO_RESULTS */) {
-            return x `<div class="empty">No results</div>`;
-        }
-        if (this._resultsState == 16 /* PoLRYTubeListState.ERROR */) {
-            return x `<div class="error">Unknown Error</div>`;
-        }
-    }
     firstUpdated(_changedProperties) {
+        this._polrYTubeList = this.renderRoot.querySelector("polr-ytube-list");
         this._getCurrentlyPlayingItems();
     }
     render() {
         return x `
-            <div class="content">
-                <div class="results">${this._renderResults()}</div>
-            </div>
+            <polr-ytube-list
+                .hass=${this._hass}
+                .entity=${this._entity}></polr-ytube-list>
         `;
     }
     async _getCurrentlyPlayingItems() {
         var _a;
-        const media_type = this._entity["attributes"]["_media_type"];
+        let media_type = this._entity["attributes"]["_media_type"];
+        let results;
         try {
+            this._polrYTubeList.state = 4 /* PoLRYTubeListState.LOADING */;
             if (["vid_channel", "playlist", "track"].includes(media_type)) {
-                this._results = await this._hass.callWS({
+                results = await this._hass.callWS({
                     type: "media_player/browse_media",
                     entity_id: this._entity["entity_id"],
                     media_content_type: "cur_playlists",
@@ -4623,38 +4587,34 @@ let PoLRYTubePlaying = class PoLRYTubePlaying extends s$1 {
                 });
             }
             if (["album"].includes(media_type)) {
-                this._results = await this._hass.callWS({
+                results = await this._hass.callWS({
                     type: "media_player/browse_media",
                     entity_id: this._entity["entity_id"],
                     media_content_type: "album_of_track",
                     media_content_id: "1",
                 });
             }
-            if (((_a = this._results["children"]) === null || _a === void 0 ? void 0 : _a.length) > 0) {
-                this._resultsState = 2 /* PoLRYTubeListState.HAS_RESULTS */;
+            //console.log(results);
+            if (((_a = results === null || results === void 0 ? void 0 : results.children) === null || _a === void 0 ? void 0 : _a.length) > 0) {
+                this._polrYTubeList.elements = results.children;
+                this._polrYTubeList.state = 2 /* PoLRYTubeListState.HAS_RESULTS */;
             }
-            else
-                this._resultsState = 8 /* PoLRYTubeListState.NO_RESULTS */;
+            else {
+                this._polrYTubeList.elements = [];
+                this._polrYTubeList.state = 8 /* PoLRYTubeListState.NO_RESULTS */;
+            }
             this.requestUpdate();
         }
         catch (e) {
             console.error(e);
-            this._resultsState = 16 /* PoLRYTubeListState.ERROR */;
+            this._polrYTubeList.state = 16 /* PoLRYTubeListState.ERROR */;
         }
     }
     refresh() {
         this._getCurrentlyPlayingItems();
     }
 };
-PoLRYTubePlaying.styles = i$4 `
-        .loading {
-            height: 50px;
-            text-align: center;
-            display: grid;
-            align-items: center;
-            padding: 12px 0;
-        }
-    `;
+PoLRYTubePlaying.styles = i$4 ``;
 __decorate([
     t$1()
 ], PoLRYTubePlaying.prototype, "_hass", void 0);
@@ -4663,10 +4623,7 @@ __decorate([
 ], PoLRYTubePlaying.prototype, "_entity", void 0);
 __decorate([
     t$1()
-], PoLRYTubePlaying.prototype, "_results", void 0);
-__decorate([
-    t$1()
-], PoLRYTubePlaying.prototype, "_resultsState", void 0);
+], PoLRYTubePlaying.prototype, "_polrYTubeList", void 0);
 PoLRYTubePlaying = __decorate([
     e$5("polr-ytube-playing")
 ], PoLRYTubePlaying);
@@ -4674,41 +4631,19 @@ PoLRYTubePlaying = __decorate([
 let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
     constructor() {
         super(...arguments);
-        this._state = 1 /* PoLRYTubeState.INITAL */;
         this._browseHistory = [];
     }
     firstUpdated(_changedProperties) {
+        this._polrYTubeList = this.renderRoot.querySelector("polr-ytube-list");
         this._browse(this.initialAction);
     }
     render() {
-        if (this._state == 1 /* PoLRYTubeState.INITAL */) {
-            return x ``;
-        }
-        if (this._state == 8 /* PoLRYTubeState.NO_RESULTS */) {
-            return x `
-                ${this._renderBackButton()}
-                <div class="no-results">No songs found.</div>
-            `;
-        }
-        if (this._state == 2 /* PoLRYTubeState.LOADING */) {
-            return x `
-                ${this._renderBackButton()}
-                <div class="loading">Loading...</div>
-            `;
-        }
-        if (this._state == 16 /* PoLRYTubeState.ERROR */) {
-            return x `
-                ${this._renderBackButton()}
-                <div class="error">An error occurred.</div>
-            `;
-        }
         return x `
             ${this._renderBackButton()}
             <polr-ytube-list
                 .hass=${this.hass}
-                .elements=${this.elements}
                 .entity=${this.entity}
-                @navigate=${this._handleBrowse}></polr-ytube-list>
+                @navigate=${(ev) => this._browse(ev.detail.action)}></polr-ytube-list>
         `;
     }
     _renderBackButton() {
@@ -4732,12 +4667,8 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
             </div>
         `;
     }
-    async _handleBrowse(event) {
-        const element = event.detail.action;
-        this._browse(element);
-    }
     async _browse(element) {
-        this._state = 2 /* PoLRYTubeState.LOADING */;
+        this._polrYTubeList.state = 4 /* PoLRYTubeListState.LOADING */;
         this._browseHistory.push(element);
         try {
             const response = await this.hass.callWS({
@@ -4746,11 +4677,12 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
                 media_content_type: element.media_content_type,
                 media_content_id: element.media_content_id,
             });
-            this.elements = response["children"];
-            this._state = 4 /* PoLRYTubeState.HAS_RESULTS */;
+            this._polrYTubeList.elements = response["children"];
+            this._polrYTubeList.state = 2 /* PoLRYTubeListState.HAS_RESULTS */;
+            this.requestUpdate();
         }
         catch (e) {
-            this._state = 16 /* PoLRYTubeState.ERROR */;
+            this._polrYTubeList.state = 16 /* PoLRYTubeListState.ERROR */;
             console.error(e, element.media_content_type, element.media_content_id);
         }
     }
@@ -4771,14 +4703,6 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
                     overflow: hidden;
                     text-overflow: ellipsis;
                 }
-
-                .loading,
-                .error {
-                    display: grid;
-                    align-items: center;
-                    justify-items: center;
-                    height: 100px;
-                }
             `,
         ];
     }
@@ -4790,17 +4714,14 @@ __decorate([
     n$1()
 ], PoLRYTubeBrowser.prototype, "hass", void 0);
 __decorate([
-    n$1()
-], PoLRYTubeBrowser.prototype, "elements", void 0);
-__decorate([
-    n$1()
-], PoLRYTubeBrowser.prototype, "_state", void 0);
+    t$1()
+], PoLRYTubeBrowser.prototype, "initialAction", void 0);
 __decorate([
     t$1()
 ], PoLRYTubeBrowser.prototype, "_browseHistory", void 0);
 __decorate([
     t$1()
-], PoLRYTubeBrowser.prototype, "initialAction", void 0);
+], PoLRYTubeBrowser.prototype, "_polrYTubeList", void 0);
 PoLRYTubeBrowser = __decorate([
     e$5("polr-ytube-browser")
 ], PoLRYTubeBrowser);
@@ -6934,18 +6855,18 @@ class PoLRYTubePlayingCard extends s$1 {
             }
         }
     }
+    firstUpdated(_changedProperties) {
+        // (async () => await loadHaForm())();
+        this._menuButton = this.renderRoot.querySelector("#menuButton");
+        this._menu = this.renderRoot.querySelector("#menu");
+        this._playing = this.renderRoot.querySelector("#playing");
+    }
     shouldUpdate(changedProperties) {
         const _hass = changedProperties.get("_hass");
         if (_hass != null) {
             return this._hasEntityChanged(this._entity, _hass["states"][this._config["entity_id"]]);
         }
         return true;
-    }
-    firstUpdated(_changedProperties) {
-        // (async () => await loadHaForm())();
-        this._menuButton = this.renderRoot.querySelector("#menuButton");
-        this._menu = this.renderRoot.querySelector("#menu");
-        this._playing = this.renderRoot.querySelector("#playing");
     }
     _hasEntityChanged(current, updated) {
         var _a, _b, _c, _d;

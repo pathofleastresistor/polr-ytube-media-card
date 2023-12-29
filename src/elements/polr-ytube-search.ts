@@ -1,6 +1,7 @@
 import { LitElement, html, css, CSSResultGroup, PropertyValueMap } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { PoLRYTubeListState } from "../utils/utils";
+import { PoLRYTubeList } from "../elements/polr-ytube-list";
 import "../elements/polr-ytube-list";
 import "@material/mwc-textfield";
 import "@material/mwc-select";
@@ -9,33 +10,18 @@ import "@material/mwc-select";
 export class PoLRYTubeSearch extends LitElement {
     @property() public _hass: any;
     @state() public _entity: any;
-    @state() private _results: any = {};
-    @property() private _resultsState = PoLRYTubeListState.CLEAR;
+    @state() private _polrYTubeList: PoLRYTubeList;
+
+    protected firstUpdated(_changedProperties): void {
+        this._polrYTubeList = this.renderRoot.querySelector("polr-ytube-list");
+    }
 
     _renderResults() {
-        if (this._resultsState == PoLRYTubeListState.CLEAR) return html``;
-
-        if (this._resultsState == PoLRYTubeListState.HAS_RESULTS) {
-            const elements = this._results["children"];
-            return html`
-                <polr-ytube-list
-                    .hass=${this._hass}
-                    .entity=${this._entity}
-                    .elements="${elements}"></polr-ytube-list>
-            `;
-        }
-
-        if (this._resultsState == PoLRYTubeListState.LOADING) {
-            return html`<div class="loading">Loading...</div>`;
-        }
-
-        if (this._resultsState == PoLRYTubeListState.NO_RESULTS) {
-            return html`<div class="empty">No results</div>`;
-        }
-
-        if (this._resultsState == PoLRYTubeListState.ERROR) {
-            return html`<div class="error">Unknown Error</div>`;
-        }
+        return html`
+            <polr-ytube-list
+                .hass=${this._hass}
+                .entity=${this._entity}></polr-ytube-list>
+        `;
     }
 
     render() {
@@ -70,26 +56,30 @@ export class PoLRYTubeSearch extends LitElement {
     }
 
     async _fetchResults() {
+        this._polrYTubeList.state = PoLRYTubeListState.LOADING;
+
         try {
-            this._results = await this._hass.callWS({
+            let response = await this._hass.callWS({
                 type: "media_player/browse_media",
                 entity_id: this._entity?.entity_id,
                 media_content_type: "search",
                 media_content_id: "",
             });
 
-            if (this._results["children"]?.length > 0) {
+            if (response["children"]?.length > 0) {
                 // TODO: Move to ytube_music_player component,
                 //       instead of handling in frontend
                 // Filter out community playlists of podcast
-                this._results["children"].filter(
+                response["children"].filter(
                     (el) => !el["media_content_id"].startsWith("MPSP")
                 );
-                this._resultsState = PoLRYTubeListState.HAS_RESULTS;
-            } else this._resultsState = PoLRYTubeListState.NO_RESULTS;
+
+                this._polrYTubeList.state = PoLRYTubeListState.HAS_RESULTS;
+                this._polrYTubeList.elements = response["children"];
+            } else this._polrYTubeList.state = PoLRYTubeListState.NO_RESULTS;
         } catch (e) {
-            this._resultsState = PoLRYTubeListState.ERROR;
-            console.error(e, this._resultsState);
+            this._polrYTubeList.state = PoLRYTubeListState.ERROR;
+            console.error(e);
         }
     }
 
@@ -98,7 +88,7 @@ export class PoLRYTubeSearch extends LitElement {
     }
 
     async _search() {
-        this._resultsState = PoLRYTubeListState.LOADING;
+        this._polrYTubeList.state = PoLRYTubeListState.LOADING;
         const query = (this.shadowRoot.querySelector("#query") as any).value;
         const filter = (this.renderRoot.querySelector("#filter") as any)
             .selected.value;
@@ -129,16 +119,6 @@ export class PoLRYTubeSearch extends LitElement {
             grid-template-columns: 1fr min-content min-content;
             align-items: center;
             gap: 4px;
-        }
-
-        .empty,
-        .error,
-        .loading {
-            height: 50px;
-            text-align: center;
-            display: grid;
-            align-items: center;
-            padding: 12px 0;
         }
     `;
 }

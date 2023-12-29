@@ -5,21 +5,7 @@ import "../elements/polr-ytube-search";
 import "../elements/polr-ytube-browser";
 import "../shared/polr-tab-bar";
 import "../shared/polr-tab";
-import { PoLRYTubeItem } from "../utils/polr-ytube-item";
-//import { loadHaForm } from "./utils/load-ha-form.js";
-export const enum PoLRCurrentState {
-    INITAL = 1,
-    LOADING = 2,
-    HAS_RESULTS = 4,
-    NO_RESULTS = 8,
-    ERROR = 16,
-}
-export const enum PoLRYTubeTab {
-    CURRENTLY_PLAYING = 0,
-    FOR_YOU = 1,
-    SEARCH = 2,
-    YOURS = 3,
-}
+import { PoLRYTubeItem, PoLRYTubeTab } from "../utils/utils";
 
 export class PoLRYTubePlayingCard extends LitElement {
     @property() _config: any = {};
@@ -68,6 +54,16 @@ export class PoLRYTubePlayingCard extends LitElement {
         }
     }
 
+    protected firstUpdated(
+        _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
+    ): void {
+        // (async () => await loadHaForm())();
+
+        this._menuButton = this.renderRoot.querySelector("#menuButton");
+        this._menu = this.renderRoot.querySelector("#menu");
+        this._playing = this.renderRoot.querySelector("#playing");
+    }
+
     shouldUpdate(changedProperties: Map<string, any>) {
         const _hass = changedProperties.get("_hass");
         if (_hass != null) {
@@ -77,16 +73,6 @@ export class PoLRYTubePlayingCard extends LitElement {
             );
         }
         return true;
-    }
-
-    protected firstUpdated(
-        _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
-    ): void {
-        // (async () => await loadHaForm())();
-
-        this._menuButton = this.renderRoot.querySelector("#menuButton");
-        this._menu = this.renderRoot.querySelector("#menu");
-        this._playing = this.renderRoot.querySelector("#playing");
     }
 
     private _hasEntityChanged(current, updated) {
