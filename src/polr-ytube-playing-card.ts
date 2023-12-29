@@ -1,13 +1,13 @@
 import { LitElement, html, css, CSSResultGroup, PropertyValueMap } from "lit";
 import { property, state } from "lit/decorators.js";
-import "./elements/polr-ytube-search";
-import "./elements/polr-ytube-page-tabs";
 import "./elements/polr-ytube-list";
+import "./elements/polr-ytube-search";
 import "./elements/polr-ytube-browser";
+import "./shared/polr-tab-bar";
+import "./shared/polr-tab";
 import { PoLRYTubeItem } from "./utils/polr-ytube-item";
-import { loadHaForm } from "./utils/load-ha-form.js";
-import "@material/mwc-tab-bar";
-import "@material/mwc-tab";
+//import { loadHaForm } from "./utils/load-ha-form.js";
+//import "./elements/polr-ytube-page-tabs";
 
 export const enum PoLRCurrentState {
     INITAL = 1,
@@ -90,7 +90,7 @@ export class PoLRYTubePlayingCard extends LitElement {
     protected firstUpdated(
         _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
     ): void {
-        //(async () => await loadHaForm())();
+        // (async () => await loadHaForm())();
 
         this._menuButton = this.renderRoot.querySelector("#menuButton");
         this._menu = this.renderRoot.querySelector("#menu");
@@ -299,15 +299,15 @@ export class PoLRYTubePlayingCard extends LitElement {
                     </div>
                 </div>
                 <div class="content">
-                    <mwc-tab-bar
+                    <polr-tab-bar
                         activeIndex=${this._page}
                         @MDCTabBar:activated="${(ev) =>
                             this._changeTab(ev.detail.index)}">
-                        <mwc-tab label="Playing"></mwc-tab>
-                        <mwc-tab label="For You"></mwc-tab>
-                        <mwc-tab label="Search"></mwc-tab>
-                        <mwc-tab label="Yours"></mwc-tab>
-                    </mwc-tab-bar>
+                        <polr-tab label="Playing"></polr-tab>
+                        <polr-tab label="For You"></polr-tab>
+                        <polr-tab label="Search"></polr-tab>
+                        <polr-tab label="Yours"></polr-tab>
+                    </polr-tab-bar>
 
                     <div class="results">${this._renderTab()}</div>
                 </div>

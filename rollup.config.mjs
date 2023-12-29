@@ -16,6 +16,9 @@ const IGNORED_FILES = [
     "@material/mwc-menu/mwc-menu-surface.js",
     "@material/mwc-menu/mwc-menu.js",
     "@material/mwc-icon/mwc-icon.js",
+    "@material/mwc-tab/mwc-tab.js",
+    "@material/mwc-tab-indicator/mwc-tab-indicator.js",
+    "@material/mwc-tab-scroller/mwc-tab-scroller.js",
 ];
 
 export default {
