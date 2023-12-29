@@ -12,46 +12,18 @@ export const enum PoLRMediaSearchState {
     ERROR = 16,
 }
 
-export const enum PoLRMediaSearchAction {
-    SEARCH = 1,
-    CLEAR = 2,
-}
-
 @customElement("polr-ytube-search")
 export class PoLRYTubeSearch extends LitElement {
     @property() public _config: any = {};
     @property() public _hass: any;
-    @state() private _response: any = {};
-    @state() private _action: PoLRMediaSearchAction =
-        PoLRMediaSearchAction.SEARCH;
+    @state() private _results: any = {};
     @property() private _resultsState = PoLRMediaSearchState.CLEAR;
-    @state() private _filter: any;
 
-    setConfig(config: any) {
-        if (!config.entity_id) {
-            throw new Error("entity_id must be specified");
-        }
-
-        this._config = structuredClone(config);
-        if (!("header" in this._config)) this._config.header = "YouTube Search";
-        if (!("showHeader" in this._config)) this._config.showHeader = false;
-        if (!("searchTitle" in this._config))
-            this._config.searchTitle = "Search";
-    }
-
-    set hass(hass) {
-        this._hass = hass;
-    }
-
-    protected firstUpdated(_changedProperties): void {
-        this._filter = this.renderRoot.querySelector("#filter");
-    }
-
-    _renderResponse() {
+    _renderResults() {
         if (this._resultsState == PoLRMediaSearchState.CLEAR) return html``;
 
         if (this._resultsState == PoLRMediaSearchState.HAS_RESULTS) {
-            const elements = this._response["children"];
+            const elements = this._results["children"];
             return html`
                 <polr-ytube-list
                     .hass=${this._hass}
@@ -73,22 +45,7 @@ export class PoLRYTubeSearch extends LitElement {
         }
     }
 
-    _renderAction() {
-        if (this._action == PoLRMediaSearchAction.SEARCH)
-            return html` <mwc-button @click=${this._search}
-                ><ha-icon icon="mdi:magnify"></ha-icon
-            ></mwc-button>`;
-        if (this._action == PoLRMediaSearchAction.CLEAR)
-            return html`
-                <mwc-button @click=${this._clear}
-                    ><ha-icon icon="mdi:close"></ha-icon
-                ></mwc-button>
-            `;
-    }
-
     render() {
-        const elements = this._response["children"];
-
         return html`
             <div class="content">
                 <div class="search">
@@ -114,25 +71,25 @@ export class PoLRYTubeSearch extends LitElement {
                         </mwc-list-item>
                     </mwc-select>
                 </div>
-                <div class="results">${this._renderResponse()}</div>
+                <div class="results">${this._renderResults()}</div>
             </div>
         `;
     }
 
     async _fetchResults() {
         try {
-            this._response = await this._hass.callWS({
+            this._results = await this._hass.callWS({
                 type: "media_player/browse_media",
                 entity_id: this._config.entity_id,
                 media_content_type: "search",
                 media_content_id: "",
             });
 
-            if (this._response["children"]?.length > 0) {
+            if (this._results["children"]?.length > 0) {
                 // TODO: Move to ytube_music_player component,
                 //       instead of handling in frontend
                 // Filter out community playlists of podcast
-                this._response["children"].filter(
+                this._results["children"].filter(
                     (el) => !el["media_content_id"].startsWith("MPSP")
                 );
                 this._resultsState = PoLRMediaSearchState.HAS_RESULTS;
@@ -144,42 +101,33 @@ export class PoLRYTubeSearch extends LitElement {
     }
 
     handleKey(ev) {
-        const value = (this.shadowRoot.querySelector("#query") as any).value;
-        if (value == "") this._clear();
-
         if (ev.keyCode == 13) this._search();
     }
 
     async _search() {
-        this._response = {};
         this._resultsState = PoLRMediaSearchState.LOADING;
-        this._action = PoLRMediaSearchAction.CLEAR;
+        const query = (this.shadowRoot.querySelector("#query") as any).value;
+        const filter = (this.renderRoot.querySelector("#filter") as any)
+            .selected.value;
 
-        const data =
-            this._filter.selected.value == "all"
-                ? {
-                      entity_id: this._config.entity_id,
-                      query: (this.shadowRoot.querySelector("#query") as any)
-                          .value,
-                      limit: 50,
-                  }
-                : {
-                      entity_id: this._config.entity_id,
-                      query: (this.shadowRoot.querySelector("#query") as any)
-                          .value,
-                      filter: this._filter.selected.value,
-                      limit: 50,
-                  };
+        let data;
+        if (filter == "all") {
+            data = {
+                entity_id: this._config.entity_id,
+                query: query,
+                limit: 50,
+            };
+        } else {
+            data = {
+                entity_id: this._config.entity_id,
+                query: query,
+                filter: filter,
+                limit: 50,
+            };
+        }
 
         await this._hass.callService("ytube_music_player", "search", data);
-
         this._fetchResults();
-    }
-
-    private _clear() {
-        (this.shadowRoot.querySelector("#query") as any).value = "";
-        this._response = [];
-        this._action = PoLRMediaSearchAction.SEARCH;
     }
 
     static styles = css`

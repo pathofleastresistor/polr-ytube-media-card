@@ -1,2 +1,2 @@
-export { PoLRYTubeSearchCard } from "./polr-ytube-search-card";
-export { PoLRYTubePlayingCard } from "./polr-ytube-playing-card";
+export { PoLRYTubeSearchCard } from "./cards/polr-ytube-search-card";
+export { PoLRYTubePlayingCard } from "./cards/polr-ytube-playing-card";

@@ -1,4 +1,4 @@
-import { LitElement, html, css, CSSResultGroup } from "lit";
+import { LitElement, html, css, CSSResultGroup, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { PoLRYTubeItem } from "../utils/polr-ytube-item";
 
@@ -65,29 +65,32 @@ export class PoLRYTubeList extends LitElement {
     }
 
     private _renderRadioButton(element: PoLRYTubeItem) {
-        if (!(this._is_current(element) || element.media_content_id === null))
-            return html``;
-
-        const id =
+        if (
+            this._is_current(element) ||
             element.media_content_type == "track"
-                ? element.media_content_id
-                : this.entity["attributes"]["videoId"];
+        ) {
+            const id =
+                element.media_content_type == "track"
+                    ? element.media_content_id
+                    : this.entity["attributes"]["videoId"];
 
-        return html`
-            <mwc-icon-button @click=${() => this._startRadio(id)}>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <title>radio-tower</title>
-                    <path
-                        d="M12,10A2,2 0 0,1 14,12C14,12.5 13.82,12.94 13.53,13.29L16.7,22H14.57L12,14.93L9.43,22H7.3L10.47,13.29C10.18,12.94 10,12.5 10,12A2,2 0 0,1 12,10M12,8A4,4 0 0,0 8,12C8,12.5 8.1,13 8.28,13.46L7.4,15.86C6.53,14.81 6,13.47 6,12A6,6 0 0,1 12,6A6,6 0 0,1 18,12C18,13.47 17.47,14.81 16.6,15.86L15.72,13.46C15.9,13 16,12.5 16,12A4,4 0 0,0 12,8M12,4A8,8 0 0,0 4,12C4,14.36 5,16.5 6.64,17.94L5.92,19.94C3.54,18.11 2,15.23 2,12A10,10 0 0,1 12,2A10,10 0 0,1 22,12C22,15.23 20.46,18.11 18.08,19.94L17.36,17.94C19,16.5 20,14.36 20,12A8,8 0 0,0 12,4Z" />
-                </svg>
-            </mwc-icon-button>
-        `;
+            return html`
+                <mwc-icon-button @click=${() => this._startRadio(id)}>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <title>radio-tower</title>
+                        <path
+                            d="M12,10A2,2 0 0,1 14,12C14,12.5 13.82,12.94 13.53,13.29L16.7,22H14.57L12,14.93L9.43,22H7.3L10.47,13.29C10.18,12.94 10,12.5 10,12A2,2 0 0,1 12,10M12,8A4,4 0 0,0 8,12C8,12.5 8.1,13 8.28,13.46L7.4,15.86C6.53,14.81 6,13.47 6,12A6,6 0 0,1 12,6A6,6 0 0,1 18,12C18,13.47 17.47,14.81 16.6,15.86L15.72,13.46C15.9,13 16,12.5 16,12A4,4 0 0,0 12,8M12,4A8,8 0 0,0 4,12C4,14.36 5,16.5 6.64,17.94L5.92,19.94C3.54,18.11 2,15.23 2,12A10,10 0 0,1 12,2A10,10 0 0,1 22,12C22,15.23 20.46,18.11 18.08,19.94L17.36,17.94C19,16.5 20,14.36 20,12A8,8 0 0,0 12,4Z" />
+                    </svg>
+                </mwc-icon-button>
+            `;
+        }
+        return nothing;
     }
 
     render() {
-        //console.debug(this.elements);
-
         if (this.elements == null || this.elements?.length == 0) return html``;
+
+        console.log(this.elements);
 
         const renderedElements = this.elements.map((element) => {
             return html`

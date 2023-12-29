@@ -1,11 +1,11 @@
 import { LitElement, html, css, CSSResultGroup, PropertyValueMap } from "lit";
 import { property, state } from "lit/decorators.js";
-import "./elements/polr-ytube-list";
-import "./elements/polr-ytube-search";
-import "./elements/polr-ytube-browser";
-import "./shared/polr-tab-bar";
-import "./shared/polr-tab";
-import { PoLRYTubeItem } from "./utils/polr-ytube-item";
+import "../elements/polr-ytube-list";
+import "../elements/polr-ytube-search";
+import "../elements/polr-ytube-browser";
+import "../shared/polr-tab-bar";
+import "../shared/polr-tab";
+import { PoLRYTubeItem } from "../utils/polr-ytube-item";
 //import { loadHaForm } from "./utils/load-ha-form.js";
 //import "./elements/polr-ytube-page-tabs";
 

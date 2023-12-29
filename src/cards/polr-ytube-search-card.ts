@@ -1,6 +1,6 @@
 import { LitElement, html, css, CSSResultGroup } from "lit";
 import { property, state } from "lit/decorators.js";
-import "./elements/polr-ytube-search";
+import "../elements/polr-ytube-search";
 
 export const enum PoLRMediaSearchState {
     CLEAR = 1,
