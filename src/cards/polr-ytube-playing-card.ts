@@ -1,14 +1,12 @@
 import { LitElement, html, css, CSSResultGroup, PropertyValueMap } from "lit";
 import { property, state } from "lit/decorators.js";
-import "../elements/polr-ytube-list";
+import "../elements/polr-ytube-playing";
 import "../elements/polr-ytube-search";
 import "../elements/polr-ytube-browser";
 import "../shared/polr-tab-bar";
 import "../shared/polr-tab";
 import { PoLRYTubeItem } from "../utils/polr-ytube-item";
 //import { loadHaForm } from "./utils/load-ha-form.js";
-//import "./elements/polr-ytube-page-tabs";
-
 export const enum PoLRCurrentState {
     INITAL = 1,
     LOADING = 2,
@@ -27,12 +25,13 @@ export class PoLRYTubePlayingCard extends LitElement {
     @property() _config: any = {};
     @property() _hass: any;
     @property() _entity: any;
-    @state() _currentlyPlayingItems: any = [];
-    @property() _currentlyPlayingState: PoLRCurrentState =
-        PoLRCurrentState.INITAL;
-    @property() _page: PoLRYTubeTab = PoLRYTubeTab.CURRENTLY_PLAYING;
+    @property() _activeTab: PoLRYTubeTab = PoLRYTubeTab.CURRENTLY_PLAYING;
     @state() _menuButton: any;
     @state() _menu: any;
+    @state() _playing: any;
+    @state() _search: any;
+    @state() _forYou: any;
+    @state() _yours: any;
 
     static getConfigElement() {}
 
@@ -56,22 +55,15 @@ export class PoLRYTubePlayingCard extends LitElement {
 
     set hass(hass) {
         this._hass = hass;
+        const newEntity = this._hass["states"][this._config["entity_id"]];
 
-        if (
-            this._hasEntityChanged(
-                this._entity,
-                this._hass["states"][this._config["entity_id"]]
-            )
-        ) {
-            this._entity = structuredClone(
-                this._hass["states"][this._config["entity_id"]]
-            );
+        if (this._hasEntityChanged(this._entity, newEntity)) {
+            this._entity = structuredClone(newEntity);
 
             if (this._entity["state"] == "off") {
-                this._currentlyPlayingState = PoLRCurrentState.INITAL;
                 this._changeTab(PoLRYTubeTab.FOR_YOU);
             } else {
-                this._getCurrentlyPlayingItems();
+                this._playing?.refresh();
             }
         }
     }
@@ -94,6 +86,7 @@ export class PoLRYTubePlayingCard extends LitElement {
 
         this._menuButton = this.renderRoot.querySelector("#menuButton");
         this._menu = this.renderRoot.querySelector("#menu");
+        this._playing = this.renderRoot.querySelector("#playing");
     }
 
     private _hasEntityChanged(current, updated) {
@@ -187,7 +180,9 @@ export class PoLRYTubePlayingCard extends LitElement {
 
         return html`
             <div class="source" style="position: relative;">
-                <mwc-icon-button id="menuButton" @click=${this._toggleMenu}>
+                <mwc-icon-button
+                    id="menuButton"
+                    @click=${() => this._menu.show()}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                         <title>dots-vertical</title>
                         <path
@@ -220,12 +215,8 @@ export class PoLRYTubePlayingCard extends LitElement {
         `;
     }
 
-    _toggleMenu() {
-        this._menu.show();
-    }
-
     _renderTab() {
-        if (this._page == PoLRYTubeTab.FOR_YOU) {
+        if (this._activeTab == PoLRYTubeTab.FOR_YOU) {
             const item = new PoLRYTubeItem();
             item.media_content_id = "";
             item.media_content_type = "mood_overview";
@@ -238,7 +229,7 @@ export class PoLRYTubePlayingCard extends LitElement {
                     .initialAction=${item}></polr-ytube-browser>
             `;
         }
-        if (this._page == PoLRYTubeTab.YOURS) {
+        if (this._activeTab == PoLRYTubeTab.YOURS) {
             const item = new PoLRYTubeItem();
             item.title = "Yours";
 
@@ -250,34 +241,23 @@ export class PoLRYTubePlayingCard extends LitElement {
             `;
         }
 
-        if (this._page == PoLRYTubeTab.SEARCH) {
+        if (this._activeTab == PoLRYTubeTab.SEARCH) {
             return html`
                 <polr-ytube-search
                     ._hass=${this._hass}
+                    ._entity=${this._entity}
                     ._config=${{
                         entity_id: this._config["entity_id"],
                     }}></polr-ytube-search>
             `;
         }
 
-        if (this._page == PoLRYTubeTab.CURRENTLY_PLAYING) {
-            if (this._currentlyPlayingState == PoLRCurrentState.INITAL) {
-                return html``;
-            }
-
-            if (this._currentlyPlayingState == PoLRCurrentState.NO_RESULTS) {
-                return html` <div class="no-results">No songs found.</div>`;
-            }
-
-            if (this._currentlyPlayingState == PoLRCurrentState.ERROR) {
-                return html` <div class="error">An error occurred.</div>`;
-            }
-
+        if (this._activeTab == PoLRYTubeTab.CURRENTLY_PLAYING) {
             return html`
-                <polr-ytube-list
-                    .hass=${this._hass}
-                    .elements=${this._currentlyPlayingItems}
-                    .entity=${this._entity}></polr-ytube-list>
+                <polr-ytube-playing
+                    id="playing"
+                    ._hass=${this._hass}
+                    ._entity=${this._entity}></polr-ytube-playing>
             `;
         }
     }
@@ -300,7 +280,7 @@ export class PoLRYTubePlayingCard extends LitElement {
                 </div>
                 <div class="content">
                     <polr-tab-bar
-                        activeIndex=${this._page}
+                        activeIndex=${this._activeTab}
                         @MDCTabBar:activated="${(ev) =>
                             this._changeTab(ev.detail.index)}">
                         <polr-tab label="Playing"></polr-tab>
@@ -318,63 +298,21 @@ export class PoLRYTubePlayingCard extends LitElement {
     async _changeTab(index: any) {
         switch (index) {
             case 0:
-                this._page = PoLRYTubeTab.CURRENTLY_PLAYING;
-                this._getCurrentlyPlayingItems();
+                this._activeTab = PoLRYTubeTab.CURRENTLY_PLAYING;
+                //this._getCurrentlyPlayingItems();
                 break;
             case 1:
-                this._page = PoLRYTubeTab.FOR_YOU;
+                this._activeTab = PoLRYTubeTab.FOR_YOU;
                 break;
             case 2:
-                this._page = PoLRYTubeTab.SEARCH;
+                this._activeTab = PoLRYTubeTab.SEARCH;
                 break;
             case 3:
-                this._page = PoLRYTubeTab.YOURS;
+                this._activeTab = PoLRYTubeTab.YOURS;
                 break;
 
             default:
                 break;
-        }
-    }
-
-    async _getCurrentlyPlayingItems() {
-        //console.debug("_getCurrentlyPlaying called");
-
-        if (["off", "unavailable"].includes(this._entity["state"])) {
-            this._currentlyPlayingItems = [];
-            return;
-        }
-
-        const media_type = this._entity["attributes"]["_media_type"];
-
-        try {
-            if (["vid_channel", "playlist", "track"].includes(media_type)) {
-                const response = await this._hass.callWS({
-                    type: "media_player/browse_media",
-                    entity_id: this._config.entity_id,
-                    media_content_type: "cur_playlists",
-                    media_content_id: "",
-                });
-                this._currentlyPlayingItems = response["children"];
-            }
-
-            if (["album"].includes(media_type)) {
-                const response = await this._hass.callWS({
-                    type: "media_player/browse_media",
-                    entity_id: this._config.entity_id,
-                    media_content_type: "album_of_track",
-                    media_content_id: "1",
-                });
-                this._currentlyPlayingItems = response["children"];
-            }
-
-            if (this._currentlyPlayingItems.length == 0)
-                this._currentlyPlayingState = PoLRCurrentState.NO_RESULTS;
-
-            if (this._currentlyPlayingItems.length > 0)
-                this._currentlyPlayingState = PoLRCurrentState.HAS_RESULTS;
-        } catch (e) {
-            console.error(e);
-            this._currentlyPlayingState = PoLRCurrentState.ERROR;
         }
     }
 

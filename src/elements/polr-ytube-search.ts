@@ -1,46 +1,39 @@
 import { LitElement, html, css, CSSResultGroup, PropertyValueMap } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
+import { PoLRYTubeListState } from "../utils/utils";
 import "../elements/polr-ytube-list";
 import "@material/mwc-textfield";
 import "@material/mwc-select";
 
-export const enum PoLRMediaSearchState {
-    CLEAR = 1,
-    HAS_RESULTS = 2,
-    LOADING = 4,
-    NO_RESULTS = 8,
-    ERROR = 16,
-}
-
 @customElement("polr-ytube-search")
 export class PoLRYTubeSearch extends LitElement {
-    @property() public _config: any = {};
     @property() public _hass: any;
+    @state() public _entity: any;
     @state() private _results: any = {};
-    @property() private _resultsState = PoLRMediaSearchState.CLEAR;
+    @property() private _resultsState = PoLRYTubeListState.CLEAR;
 
     _renderResults() {
-        if (this._resultsState == PoLRMediaSearchState.CLEAR) return html``;
+        if (this._resultsState == PoLRYTubeListState.CLEAR) return html``;
 
-        if (this._resultsState == PoLRMediaSearchState.HAS_RESULTS) {
+        if (this._resultsState == PoLRYTubeListState.HAS_RESULTS) {
             const elements = this._results["children"];
             return html`
                 <polr-ytube-list
                     .hass=${this._hass}
-                    .entity=${this._hass["states"][this._config.entity_id]}
+                    .entity=${this._entity}
                     .elements="${elements}"></polr-ytube-list>
             `;
         }
 
-        if (this._resultsState == PoLRMediaSearchState.LOADING) {
+        if (this._resultsState == PoLRYTubeListState.LOADING) {
             return html`<div class="loading">Loading...</div>`;
         }
 
-        if (this._resultsState == PoLRMediaSearchState.NO_RESULTS) {
+        if (this._resultsState == PoLRYTubeListState.NO_RESULTS) {
             return html`<div class="empty">No results</div>`;
         }
 
-        if (this._resultsState == PoLRMediaSearchState.ERROR) {
+        if (this._resultsState == PoLRYTubeListState.ERROR) {
             return html`<div class="error">Unknown Error</div>`;
         }
     }
@@ -80,7 +73,7 @@ export class PoLRYTubeSearch extends LitElement {
         try {
             this._results = await this._hass.callWS({
                 type: "media_player/browse_media",
-                entity_id: this._config.entity_id,
+                entity_id: this._entity?.entity_id,
                 media_content_type: "search",
                 media_content_id: "",
             });
@@ -92,10 +85,10 @@ export class PoLRYTubeSearch extends LitElement {
                 this._results["children"].filter(
                     (el) => !el["media_content_id"].startsWith("MPSP")
                 );
-                this._resultsState = PoLRMediaSearchState.HAS_RESULTS;
-            } else this._resultsState = PoLRMediaSearchState.NO_RESULTS;
+                this._resultsState = PoLRYTubeListState.HAS_RESULTS;
+            } else this._resultsState = PoLRYTubeListState.NO_RESULTS;
         } catch (e) {
-            this._resultsState = PoLRMediaSearchState.ERROR;
+            this._resultsState = PoLRYTubeListState.ERROR;
             console.error(e, this._resultsState);
         }
     }
@@ -105,7 +98,7 @@ export class PoLRYTubeSearch extends LitElement {
     }
 
     async _search() {
-        this._resultsState = PoLRMediaSearchState.LOADING;
+        this._resultsState = PoLRYTubeListState.LOADING;
         const query = (this.shadowRoot.querySelector("#query") as any).value;
         const filter = (this.renderRoot.querySelector("#filter") as any)
             .selected.value;
@@ -113,13 +106,13 @@ export class PoLRYTubeSearch extends LitElement {
         let data;
         if (filter == "all") {
             data = {
-                entity_id: this._config.entity_id,
+                entity_id: this._entity?.entity_id,
                 query: query,
                 limit: 50,
             };
         } else {
             data = {
-                entity_id: this._config.entity_id,
+                entity_id: this._entity?.entity_id,
                 query: query,
                 filter: filter,
                 limit: 50,
@@ -131,14 +124,6 @@ export class PoLRYTubeSearch extends LitElement {
     }
 
     static styles = css`
-        :host {
-            --mdc-typography-subtitle1-font-size: 12px;
-        }
-
-        ha-card {
-            overflow: hidden;
-        }
-
         .search {
             display: grid;
             grid-template-columns: 1fr min-content min-content;
@@ -146,33 +131,14 @@ export class PoLRYTubeSearch extends LitElement {
             gap: 4px;
         }
 
+        .empty,
+        .error,
         .loading {
             height: 50px;
             text-align: center;
             display: grid;
             align-items: center;
             padding: 12px 0;
-        }
-
-        .content {
-            padding: 0 12px;
-        }
-
-        select {
-            appearance: none;
-            display: grid;
-            border: none;
-            padding: 10px;
-            outline: none;
-            border: 1px solid rgba(40, 40, 40, 0.3);
-            border-radius: 0.25em;
-            cursor: pointer;
-        }
-        .filter {
-            margin: 4px;
-        }
-        ha-select {
-            width: 100px;
         }
     `;
 }

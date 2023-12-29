@@ -155,10 +155,6 @@ function e$2(e){return o$1({descriptor:r=>({async get(){var r;return await this.
  */var n;null!=(null===(n=window.HTMLSlotElement)||void 0===n?void 0:n.prototype.assignedElements)?(o,n)=>o.assignedElements(n):(o,n)=>o.assignedNodes(n).filter((o=>o.nodeType===Node.ELEMENT_NODE));
 
 let PoLRYTubeList = class PoLRYTubeList extends s$1 {
-    constructor() {
-        super(...arguments);
-        this._browseHistory = [];
-    }
     _is_current(element) {
         if (this.entity == null)
             return false;
@@ -223,7 +219,6 @@ let PoLRYTubeList = class PoLRYTubeList extends s$1 {
         var _a;
         if (this.elements == null || ((_a = this.elements) === null || _a === void 0 ? void 0 : _a.length) == 0)
             return x ``;
-        console.log(this.elements);
         const renderedElements = this.elements.map((element) => {
             return x `
                 <div
@@ -343,9 +338,6 @@ __decorate([
 __decorate([
     n$1()
 ], PoLRYTubeList.prototype, "elements", void 0);
-__decorate([
-    t$1()
-], PoLRYTubeList.prototype, "_browseHistory", void 0);
 PoLRYTubeList = __decorate([
     e$5("polr-ytube-list")
 ], PoLRYTubeList);
@@ -4129,29 +4121,28 @@ Select = __decorate([
 let PoLRYTubeSearch = class PoLRYTubeSearch extends s$1 {
     constructor() {
         super(...arguments);
-        this._config = {};
         this._results = {};
-        this._resultsState = 1 /* PoLRMediaSearchState.CLEAR */;
+        this._resultsState = 1 /* PoLRYTubeListState.CLEAR */;
     }
     _renderResults() {
-        if (this._resultsState == 1 /* PoLRMediaSearchState.CLEAR */)
+        if (this._resultsState == 1 /* PoLRYTubeListState.CLEAR */)
             return x ``;
-        if (this._resultsState == 2 /* PoLRMediaSearchState.HAS_RESULTS */) {
+        if (this._resultsState == 2 /* PoLRYTubeListState.HAS_RESULTS */) {
             const elements = this._results["children"];
             return x `
                 <polr-ytube-list
                     .hass=${this._hass}
-                    .entity=${this._hass["states"][this._config.entity_id]}
+                    .entity=${this._entity}
                     .elements="${elements}"></polr-ytube-list>
             `;
         }
-        if (this._resultsState == 4 /* PoLRMediaSearchState.LOADING */) {
+        if (this._resultsState == 4 /* PoLRYTubeListState.LOADING */) {
             return x `<div class="loading">Loading...</div>`;
         }
-        if (this._resultsState == 8 /* PoLRMediaSearchState.NO_RESULTS */) {
+        if (this._resultsState == 8 /* PoLRYTubeListState.NO_RESULTS */) {
             return x `<div class="empty">No results</div>`;
         }
-        if (this._resultsState == 16 /* PoLRMediaSearchState.ERROR */) {
+        if (this._resultsState == 16 /* PoLRYTubeListState.ERROR */) {
             return x `<div class="error">Unknown Error</div>`;
         }
     }
@@ -4186,26 +4177,26 @@ let PoLRYTubeSearch = class PoLRYTubeSearch extends s$1 {
         `;
     }
     async _fetchResults() {
-        var _a;
+        var _a, _b;
         try {
             this._results = await this._hass.callWS({
                 type: "media_player/browse_media",
-                entity_id: this._config.entity_id,
+                entity_id: (_a = this._entity) === null || _a === void 0 ? void 0 : _a.entity_id,
                 media_content_type: "search",
                 media_content_id: "",
             });
-            if (((_a = this._results["children"]) === null || _a === void 0 ? void 0 : _a.length) > 0) {
+            if (((_b = this._results["children"]) === null || _b === void 0 ? void 0 : _b.length) > 0) {
                 // TODO: Move to ytube_music_player component,
                 //       instead of handling in frontend
                 // Filter out community playlists of podcast
                 this._results["children"].filter((el) => !el["media_content_id"].startsWith("MPSP"));
-                this._resultsState = 2 /* PoLRMediaSearchState.HAS_RESULTS */;
+                this._resultsState = 2 /* PoLRYTubeListState.HAS_RESULTS */;
             }
             else
-                this._resultsState = 8 /* PoLRMediaSearchState.NO_RESULTS */;
+                this._resultsState = 8 /* PoLRYTubeListState.NO_RESULTS */;
         }
         catch (e) {
-            this._resultsState = 16 /* PoLRMediaSearchState.ERROR */;
+            this._resultsState = 16 /* PoLRYTubeListState.ERROR */;
             console.error(e, this._resultsState);
         }
     }
@@ -4214,21 +4205,22 @@ let PoLRYTubeSearch = class PoLRYTubeSearch extends s$1 {
             this._search();
     }
     async _search() {
-        this._resultsState = 4 /* PoLRMediaSearchState.LOADING */;
+        var _a, _b;
+        this._resultsState = 4 /* PoLRYTubeListState.LOADING */;
         const query = this.shadowRoot.querySelector("#query").value;
         const filter = this.renderRoot.querySelector("#filter")
             .selected.value;
         let data;
         if (filter == "all") {
             data = {
-                entity_id: this._config.entity_id,
+                entity_id: (_a = this._entity) === null || _a === void 0 ? void 0 : _a.entity_id,
                 query: query,
                 limit: 50,
             };
         }
         else {
             data = {
-                entity_id: this._config.entity_id,
+                entity_id: (_b = this._entity) === null || _b === void 0 ? void 0 : _b.entity_id,
                 query: query,
                 filter: filter,
                 limit: 50,
@@ -4239,14 +4231,6 @@ let PoLRYTubeSearch = class PoLRYTubeSearch extends s$1 {
     }
 };
 PoLRYTubeSearch.styles = i$4 `
-        :host {
-            --mdc-typography-subtitle1-font-size: 12px;
-        }
-
-        ha-card {
-            overflow: hidden;
-        }
-
         .search {
             display: grid;
             grid-template-columns: 1fr min-content min-content;
@@ -4254,6 +4238,8 @@ PoLRYTubeSearch.styles = i$4 `
             gap: 4px;
         }
 
+        .empty,
+        .error,
         .loading {
             height: 50px;
             text-align: center;
@@ -4261,34 +4247,13 @@ PoLRYTubeSearch.styles = i$4 `
             align-items: center;
             padding: 12px 0;
         }
-
-        .content {
-            padding: 0 12px;
-        }
-
-        select {
-            appearance: none;
-            display: grid;
-            border: none;
-            padding: 10px;
-            outline: none;
-            border: 1px solid rgba(40, 40, 40, 0.3);
-            border-radius: 0.25em;
-            cursor: pointer;
-        }
-        .filter {
-            margin: 4px;
-        }
-        ha-select {
-            width: 100px;
-        }
     `;
 __decorate([
     n$1()
-], PoLRYTubeSearch.prototype, "_config", void 0);
-__decorate([
-    n$1()
 ], PoLRYTubeSearch.prototype, "_hass", void 0);
+__decorate([
+    t$1()
+], PoLRYTubeSearch.prototype, "_entity", void 0);
 __decorate([
     t$1()
 ], PoLRYTubeSearch.prototype, "_results", void 0);
@@ -4606,6 +4571,105 @@ window.customCards.push({
     name: "PoLR YouTube Search",
     description: "Requires the ytube_media_player integration",
 });
+
+let PoLRYTubePlaying = class PoLRYTubePlaying extends s$1 {
+    constructor() {
+        super(...arguments);
+        this._results = {};
+        this._resultsState = 1 /* PoLRYTubeListState.CLEAR */;
+    }
+    _renderResults() {
+        if (this._resultsState == 1 /* PoLRYTubeListState.CLEAR */)
+            return x ``;
+        if (this._resultsState == 2 /* PoLRYTubeListState.HAS_RESULTS */) {
+            const elements = this._results["children"];
+            return x `
+                <polr-ytube-list
+                    .hass=${this._hass}
+                    .entity=${this._entity}
+                    .elements="${elements}"></polr-ytube-list>
+            `;
+        }
+        if (this._resultsState == 4 /* PoLRYTubeListState.LOADING */) {
+            return x `<div class="loading">Loading...</div>`;
+        }
+        if (this._resultsState == 8 /* PoLRYTubeListState.NO_RESULTS */) {
+            return x `<div class="empty">No results</div>`;
+        }
+        if (this._resultsState == 16 /* PoLRYTubeListState.ERROR */) {
+            return x `<div class="error">Unknown Error</div>`;
+        }
+    }
+    firstUpdated(_changedProperties) {
+        this._getCurrentlyPlayingItems();
+    }
+    render() {
+        return x `
+            <div class="content">
+                <div class="results">${this._renderResults()}</div>
+            </div>
+        `;
+    }
+    async _getCurrentlyPlayingItems() {
+        var _a;
+        const media_type = this._entity["attributes"]["_media_type"];
+        try {
+            if (["vid_channel", "playlist", "track"].includes(media_type)) {
+                this._results = await this._hass.callWS({
+                    type: "media_player/browse_media",
+                    entity_id: this._entity["entity_id"],
+                    media_content_type: "cur_playlists",
+                    media_content_id: "",
+                });
+            }
+            if (["album"].includes(media_type)) {
+                this._results = await this._hass.callWS({
+                    type: "media_player/browse_media",
+                    entity_id: this._entity["entity_id"],
+                    media_content_type: "album_of_track",
+                    media_content_id: "1",
+                });
+            }
+            if (((_a = this._results["children"]) === null || _a === void 0 ? void 0 : _a.length) > 0) {
+                this._resultsState = 2 /* PoLRYTubeListState.HAS_RESULTS */;
+            }
+            else
+                this._resultsState = 8 /* PoLRYTubeListState.NO_RESULTS */;
+            this.requestUpdate();
+        }
+        catch (e) {
+            console.error(e);
+            this._resultsState = 16 /* PoLRYTubeListState.ERROR */;
+        }
+    }
+    refresh() {
+        this._getCurrentlyPlayingItems();
+    }
+};
+PoLRYTubePlaying.styles = i$4 `
+        .loading {
+            height: 50px;
+            text-align: center;
+            display: grid;
+            align-items: center;
+            padding: 12px 0;
+        }
+    `;
+__decorate([
+    t$1()
+], PoLRYTubePlaying.prototype, "_hass", void 0);
+__decorate([
+    t$1()
+], PoLRYTubePlaying.prototype, "_entity", void 0);
+__decorate([
+    t$1()
+], PoLRYTubePlaying.prototype, "_results", void 0);
+__decorate([
+    t$1()
+], PoLRYTubePlaying.prototype, "_resultsState", void 0);
+PoLRYTubePlaying = __decorate([
+    e$5("polr-ytube-playing")
+], PoLRYTubePlaying);
 
 let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
     constructor() {
@@ -6836,9 +6900,7 @@ class PoLRYTubePlayingCard extends s$1 {
     constructor() {
         super(...arguments);
         this._config = {};
-        this._currentlyPlayingItems = [];
-        this._currentlyPlayingState = 1 /* PoLRCurrentState.INITAL */;
-        this._page = 0 /* PoLRYTubeTab.CURRENTLY_PLAYING */;
+        this._activeTab = 0 /* PoLRYTubeTab.CURRENTLY_PLAYING */;
     }
     static getConfigElement() { }
     static getStubConfig() {
@@ -6859,15 +6921,16 @@ class PoLRYTubePlayingCard extends s$1 {
             this._config.searchTitle = "mdi:speaker";
     }
     set hass(hass) {
+        var _a;
         this._hass = hass;
-        if (this._hasEntityChanged(this._entity, this._hass["states"][this._config["entity_id"]])) {
-            this._entity = structuredClone(this._hass["states"][this._config["entity_id"]]);
+        const newEntity = this._hass["states"][this._config["entity_id"]];
+        if (this._hasEntityChanged(this._entity, newEntity)) {
+            this._entity = structuredClone(newEntity);
             if (this._entity["state"] == "off") {
-                this._currentlyPlayingState = 1 /* PoLRCurrentState.INITAL */;
                 this._changeTab(1 /* PoLRYTubeTab.FOR_YOU */);
             }
             else {
-                this._getCurrentlyPlayingItems();
+                (_a = this._playing) === null || _a === void 0 ? void 0 : _a.refresh();
             }
         }
     }
@@ -6882,6 +6945,7 @@ class PoLRYTubePlayingCard extends s$1 {
         // (async () => await loadHaForm())();
         this._menuButton = this.renderRoot.querySelector("#menuButton");
         this._menu = this.renderRoot.querySelector("#menu");
+        this._playing = this.renderRoot.querySelector("#playing");
     }
     _hasEntityChanged(current, updated) {
         var _a, _b, _c, _d;
@@ -6963,7 +7027,9 @@ class PoLRYTubePlayingCard extends s$1 {
         });
         return x `
             <div class="source" style="position: relative;">
-                <mwc-icon-button id="menuButton" @click=${this._toggleMenu}>
+                <mwc-icon-button
+                    id="menuButton"
+                    @click=${() => this._menu.show()}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                         <title>dots-vertical</title>
                         <path
@@ -6993,11 +7059,8 @@ class PoLRYTubePlayingCard extends s$1 {
             </div>
         `;
     }
-    _toggleMenu() {
-        this._menu.show();
-    }
     _renderTab() {
-        if (this._page == 1 /* PoLRYTubeTab.FOR_YOU */) {
+        if (this._activeTab == 1 /* PoLRYTubeTab.FOR_YOU */) {
             const item = new PoLRYTubeItem();
             item.media_content_id = "";
             item.media_content_type = "mood_overview";
@@ -7009,7 +7072,7 @@ class PoLRYTubePlayingCard extends s$1 {
                     .initialAction=${item}></polr-ytube-browser>
             `;
         }
-        if (this._page == 3 /* PoLRYTubeTab.YOURS */) {
+        if (this._activeTab == 3 /* PoLRYTubeTab.YOURS */) {
             const item = new PoLRYTubeItem();
             item.title = "Yours";
             return x `
@@ -7019,30 +7082,22 @@ class PoLRYTubePlayingCard extends s$1 {
                     .initialAction=${item}></polr-ytube-browser>
             `;
         }
-        if (this._page == 2 /* PoLRYTubeTab.SEARCH */) {
+        if (this._activeTab == 2 /* PoLRYTubeTab.SEARCH */) {
             return x `
                 <polr-ytube-search
                     ._hass=${this._hass}
+                    ._entity=${this._entity}
                     ._config=${{
                 entity_id: this._config["entity_id"],
             }}></polr-ytube-search>
             `;
         }
-        if (this._page == 0 /* PoLRYTubeTab.CURRENTLY_PLAYING */) {
-            if (this._currentlyPlayingState == 1 /* PoLRCurrentState.INITAL */) {
-                return x ``;
-            }
-            if (this._currentlyPlayingState == 8 /* PoLRCurrentState.NO_RESULTS */) {
-                return x ` <div class="no-results">No songs found.</div>`;
-            }
-            if (this._currentlyPlayingState == 16 /* PoLRCurrentState.ERROR */) {
-                return x ` <div class="error">An error occurred.</div>`;
-            }
+        if (this._activeTab == 0 /* PoLRYTubeTab.CURRENTLY_PLAYING */) {
             return x `
-                <polr-ytube-list
-                    .hass=${this._hass}
-                    .elements=${this._currentlyPlayingItems}
-                    .entity=${this._entity}></polr-ytube-list>
+                <polr-ytube-playing
+                    id="playing"
+                    ._hass=${this._hass}
+                    ._entity=${this._entity}></polr-ytube-playing>
             `;
         }
     }
@@ -7064,7 +7119,7 @@ class PoLRYTubePlayingCard extends s$1 {
                 </div>
                 <div class="content">
                     <polr-tab-bar
-                        activeIndex=${this._page}
+                        activeIndex=${this._activeTab}
                         @MDCTabBar:activated="${(ev) => this._changeTab(ev.detail.index)}">
                         <polr-tab label="Playing"></polr-tab>
                         <polr-tab label="For You"></polr-tab>
@@ -7080,54 +7135,18 @@ class PoLRYTubePlayingCard extends s$1 {
     async _changeTab(index) {
         switch (index) {
             case 0:
-                this._page = 0 /* PoLRYTubeTab.CURRENTLY_PLAYING */;
-                this._getCurrentlyPlayingItems();
+                this._activeTab = 0 /* PoLRYTubeTab.CURRENTLY_PLAYING */;
+                //this._getCurrentlyPlayingItems();
                 break;
             case 1:
-                this._page = 1 /* PoLRYTubeTab.FOR_YOU */;
+                this._activeTab = 1 /* PoLRYTubeTab.FOR_YOU */;
                 break;
             case 2:
-                this._page = 2 /* PoLRYTubeTab.SEARCH */;
+                this._activeTab = 2 /* PoLRYTubeTab.SEARCH */;
                 break;
             case 3:
-                this._page = 3 /* PoLRYTubeTab.YOURS */;
+                this._activeTab = 3 /* PoLRYTubeTab.YOURS */;
                 break;
-        }
-    }
-    async _getCurrentlyPlayingItems() {
-        //console.debug("_getCurrentlyPlaying called");
-        if (["off", "unavailable"].includes(this._entity["state"])) {
-            this._currentlyPlayingItems = [];
-            return;
-        }
-        const media_type = this._entity["attributes"]["_media_type"];
-        try {
-            if (["vid_channel", "playlist", "track"].includes(media_type)) {
-                const response = await this._hass.callWS({
-                    type: "media_player/browse_media",
-                    entity_id: this._config.entity_id,
-                    media_content_type: "cur_playlists",
-                    media_content_id: "",
-                });
-                this._currentlyPlayingItems = response["children"];
-            }
-            if (["album"].includes(media_type)) {
-                const response = await this._hass.callWS({
-                    type: "media_player/browse_media",
-                    entity_id: this._config.entity_id,
-                    media_content_type: "album_of_track",
-                    media_content_id: "1",
-                });
-                this._currentlyPlayingItems = response["children"];
-            }
-            if (this._currentlyPlayingItems.length == 0)
-                this._currentlyPlayingState = 8 /* PoLRCurrentState.NO_RESULTS */;
-            if (this._currentlyPlayingItems.length > 0)
-                this._currentlyPlayingState = 4 /* PoLRCurrentState.HAS_RESULTS */;
-        }
-        catch (e) {
-            console.error(e);
-            this._currentlyPlayingState = 16 /* PoLRCurrentState.ERROR */;
         }
     }
     async _likeSong(rating) {
@@ -7226,20 +7245,26 @@ __decorate([
     n$1()
 ], PoLRYTubePlayingCard.prototype, "_entity", void 0);
 __decorate([
-    t$1()
-], PoLRYTubePlayingCard.prototype, "_currentlyPlayingItems", void 0);
-__decorate([
     n$1()
-], PoLRYTubePlayingCard.prototype, "_currentlyPlayingState", void 0);
-__decorate([
-    n$1()
-], PoLRYTubePlayingCard.prototype, "_page", void 0);
+], PoLRYTubePlayingCard.prototype, "_activeTab", void 0);
 __decorate([
     t$1()
 ], PoLRYTubePlayingCard.prototype, "_menuButton", void 0);
 __decorate([
     t$1()
 ], PoLRYTubePlayingCard.prototype, "_menu", void 0);
+__decorate([
+    t$1()
+], PoLRYTubePlayingCard.prototype, "_playing", void 0);
+__decorate([
+    t$1()
+], PoLRYTubePlayingCard.prototype, "_search", void 0);
+__decorate([
+    t$1()
+], PoLRYTubePlayingCard.prototype, "_forYou", void 0);
+__decorate([
+    t$1()
+], PoLRYTubePlayingCard.prototype, "_yours", void 0);
 customElements.define("polr-ytube-playing-card", PoLRYTubePlayingCard);
 window.customCards = window.customCards || [];
 window.customCards.push({

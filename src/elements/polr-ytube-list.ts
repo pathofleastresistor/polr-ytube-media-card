@@ -2,20 +2,11 @@ import { LitElement, html, css, CSSResultGroup, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { PoLRYTubeItem } from "../utils/polr-ytube-item";
 
-export const enum PoLRYTubeState {
-    INITAL = 1,
-    LOADING = 2,
-    HAS_RESULTS = 4,
-    NO_RESULTS = 8,
-    ERROR = 16,
-}
-
 @customElement("polr-ytube-list")
 export class PoLRYTubeList extends LitElement {
     @property() public entity: any;
     @property() public hass: any;
     @property() public elements: PoLRYTubeItem[];
-    @state() private _browseHistory: PoLRYTubeItem[] = [];
 
     private _is_current(element: PoLRYTubeItem): boolean {
         if (this.entity == null) return false;
@@ -89,8 +80,6 @@ export class PoLRYTubeList extends LitElement {
 
     render() {
         if (this.elements == null || this.elements?.length == 0) return html``;
-
-        console.log(this.elements);
 
         const renderedElements = this.elements.map((element) => {
             return html`
