@@ -1,5 +1,7 @@
 import { LitElement, html, css, CSSResultGroup, PropertyValueMap } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
+import { join } from "lit/directives/join.js";
+import { map } from "lit/directives/map.js";
 import { PoLRYTubeList } from "./polr-ytube-list";
 import { PoLRYTubeItem, PoLRYTubeListState } from "../utils/utils";
 
@@ -18,7 +20,7 @@ export class PoLRYTubeBrowser extends LitElement {
 
     render() {
         return html`
-            ${this._renderBackButton()}
+            ${this._renderNavigation()}
             <polr-ytube-list
                 .hass=${this.hass}
                 .entity=${this.entity}
@@ -27,12 +29,29 @@ export class PoLRYTubeBrowser extends LitElement {
         `;
     }
 
-    private _renderBackButton() {
+    private _renderNavigation() {
         if (this._browseHistory.length <= 1) return html``;
 
-        const breadcrumb = this._browseHistory
-            .map((item) => `${item.title}`)
-            .join(" > ");
+        let breadcrumbItems;
+        if (this._browseHistory.length > 2) {
+            breadcrumbItems = [
+                this._browseHistory[0].title,
+                "...",
+                this._browseHistory[this._browseHistory.length - 1].title,
+            ];
+        } else {
+            breadcrumbItems = this._browseHistory.map((item) => item.title);
+        }
+
+        let breadcrumb = html`
+            ${join(
+                map(
+                    breadcrumbItems,
+                    (i) => html`<span class="crumb">${i}</span>`
+                ),
+                html`<span class="separator">/</span>`
+            )}
+        `;
 
         return html`
             <div class="back-button">
@@ -67,7 +86,6 @@ export class PoLRYTubeBrowser extends LitElement {
 
             this._polrYTubeList.elements = response["children"];
             this._polrYTubeList.state = PoLRYTubeListState.HAS_RESULTS;
-            this.requestUpdate();
         } catch (e) {
             this._polrYTubeList.state = PoLRYTubeListState.ERROR;
             console.error(
@@ -76,6 +94,7 @@ export class PoLRYTubeBrowser extends LitElement {
                 element.media_content_id
             );
         }
+        this.requestUpdate();
     }
 
     static get styles(): CSSResultGroup {
@@ -90,10 +109,20 @@ export class PoLRYTubeBrowser extends LitElement {
                 }
 
                 .breadcrumb {
-                    display: block;
+                    display: flex;
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
+                    align-items: center;
+                }
+                .crumb {
+                    background-color: rgba(111, 111, 111, 0.2);
+                    padding: 8px;
+                    border-radius: 12px;
+                }
+                .separator {
+                    font-weight: bold;
+                    padding: 4px;
                 }
             `,
         ];
