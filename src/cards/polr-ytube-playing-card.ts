@@ -1,10 +1,10 @@
 import { LitElement, html, css, CSSResultGroup, PropertyValueMap } from "lit";
 import { property, state } from "lit/decorators.js";
+import "../shared/polr-tab";
+import "../shared/polr-tab-bar";
 import "../elements/polr-ytube-playing";
 import "../elements/polr-ytube-search";
 import "../elements/polr-ytube-browser";
-import "../shared/polr-tab-bar";
-import "../shared/polr-tab";
 import { PoLRYTubeItem, PoLRYTubeTab } from "../utils/utils";
 
 export class PoLRYTubePlayingCard extends LitElement {
@@ -258,12 +258,11 @@ export class PoLRYTubePlayingCard extends LitElement {
                         ${this._renderSecondary()}
                     </div>
                     <div class="action-container">
-                        <div class="actions">
-                            ${this._renderLikeButton()}
-                            ${this._renderSourceSelctor()}
-                        </div>
+                        ${this._renderLikeButton()}
+                        ${this._renderSourceSelctor()}
                     </div>
                 </div>
+                </polr-header>
                 <div class="content">
                     <polr-tab-bar
                         activeIndex=${this._activeTab}
@@ -379,7 +378,7 @@ export class PoLRYTubePlayingCard extends LitElement {
                     gap: 12px;
                 }
 
-                .actions {
+                .action-container {
                     display: flex;
                     justify-content: flex-end;
                 }

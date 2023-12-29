@@ -4375,172 +4375,6 @@ window.customCards.push({
     description: "Requires the ytube_media_player integration",
 });
 
-let PoLRYTubePlaying = class PoLRYTubePlaying extends s$1 {
-    firstUpdated(_changedProperties) {
-        this._polrYTubeList = this.renderRoot.querySelector("polr-ytube-list");
-        this._getCurrentlyPlayingItems();
-    }
-    render() {
-        return x `
-            <polr-ytube-list
-                .hass=${this._hass}
-                .entity=${this._entity}></polr-ytube-list>
-        `;
-    }
-    async _getCurrentlyPlayingItems() {
-        var _a;
-        let media_type = this._entity["attributes"]["_media_type"];
-        let results;
-        try {
-            this._polrYTubeList.state = 4 /* PoLRYTubeListState.LOADING */;
-            if (["vid_channel", "playlist", "track"].includes(media_type)) {
-                results = await this._hass.callWS({
-                    type: "media_player/browse_media",
-                    entity_id: this._entity["entity_id"],
-                    media_content_type: "cur_playlists",
-                    media_content_id: "",
-                });
-            }
-            if (["album"].includes(media_type)) {
-                results = await this._hass.callWS({
-                    type: "media_player/browse_media",
-                    entity_id: this._entity["entity_id"],
-                    media_content_type: "album_of_track",
-                    media_content_id: "1",
-                });
-            }
-            //console.log(results);
-            if (((_a = results === null || results === void 0 ? void 0 : results.children) === null || _a === void 0 ? void 0 : _a.length) > 0) {
-                this._polrYTubeList.elements = results.children;
-                this._polrYTubeList.state = 2 /* PoLRYTubeListState.HAS_RESULTS */;
-            }
-            else {
-                this._polrYTubeList.elements = [];
-                this._polrYTubeList.state = 8 /* PoLRYTubeListState.NO_RESULTS */;
-            }
-            this.requestUpdate();
-        }
-        catch (e) {
-            console.error(e);
-            this._polrYTubeList.state = 16 /* PoLRYTubeListState.ERROR */;
-        }
-    }
-    refresh() {
-        this._getCurrentlyPlayingItems();
-    }
-};
-PoLRYTubePlaying.styles = i$4 ``;
-__decorate([
-    t$1()
-], PoLRYTubePlaying.prototype, "_hass", void 0);
-__decorate([
-    t$1()
-], PoLRYTubePlaying.prototype, "_entity", void 0);
-__decorate([
-    t$1()
-], PoLRYTubePlaying.prototype, "_polrYTubeList", void 0);
-PoLRYTubePlaying = __decorate([
-    e$5("polr-ytube-playing")
-], PoLRYTubePlaying);
-
-let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
-    constructor() {
-        super(...arguments);
-        this._browseHistory = [];
-    }
-    firstUpdated(_changedProperties) {
-        this._polrYTubeList = this.renderRoot.querySelector("polr-ytube-list");
-        this._browse(this.initialAction);
-    }
-    render() {
-        return x `
-            ${this._renderBackButton()}
-            <polr-ytube-list
-                .hass=${this.hass}
-                .entity=${this.entity}
-                @navigate=${(ev) => this._browse(ev.detail.action)}></polr-ytube-list>
-        `;
-    }
-    _renderBackButton() {
-        if (this._browseHistory.length <= 1)
-            return x ``;
-        const breadcrumb = this._browseHistory
-            .map((item) => `${item.title}`)
-            .join(" > ");
-        return x `
-            <div class="back-button">
-                <mwc-icon-button
-                    @click=${() => this._browse(this._browseHistory.pop() &&
-            this._browseHistory.pop())}>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <title>arrow-left</title>
-                        <path
-                            d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
-                    </svg>
-                </mwc-icon-button>
-                <div class="breadcrumb">${breadcrumb}</div>
-            </div>
-        `;
-    }
-    async _browse(element) {
-        this._polrYTubeList.state = 4 /* PoLRYTubeListState.LOADING */;
-        this._browseHistory.push(element);
-        try {
-            const response = await this.hass.callWS({
-                type: "media_player/browse_media",
-                entity_id: this.entity["entity_id"],
-                media_content_type: element.media_content_type,
-                media_content_id: element.media_content_id,
-            });
-            this._polrYTubeList.elements = response["children"];
-            this._polrYTubeList.state = 2 /* PoLRYTubeListState.HAS_RESULTS */;
-            this.requestUpdate();
-        }
-        catch (e) {
-            this._polrYTubeList.state = 16 /* PoLRYTubeListState.ERROR */;
-            console.error(e, element.media_content_type, element.media_content_id);
-        }
-    }
-    static get styles() {
-        return [
-            i$4 `
-                .back-button {
-                    display: grid;
-                    padding: 12px 0;
-                    grid-template-columns: min-content 1fr;
-                    align-items: center;
-                    gap: 12px;
-                }
-
-                .breadcrumb {
-                    display: block;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                }
-            `,
-        ];
-    }
-};
-__decorate([
-    n$1()
-], PoLRYTubeBrowser.prototype, "entity", void 0);
-__decorate([
-    n$1()
-], PoLRYTubeBrowser.prototype, "hass", void 0);
-__decorate([
-    t$1()
-], PoLRYTubeBrowser.prototype, "initialAction", void 0);
-__decorate([
-    t$1()
-], PoLRYTubeBrowser.prototype, "_browseHistory", void 0);
-__decorate([
-    t$1()
-], PoLRYTubeBrowser.prototype, "_polrYTubeList", void 0);
-PoLRYTubeBrowser = __decorate([
-    e$5("polr-ytube-browser")
-], PoLRYTubeBrowser);
-
 /**
  * @license
  * Copyright 2020 Google LLC
@@ -5022,6 +4856,13 @@ __decorate([
 
 /**
  * @license
+ * Copyright 2021 Google LLC
+ * SPDX-LIcense-Identifier: Apache-2.0
+ */
+const styles$3 = i$4 `.material-icons{font-family:var(--mdc-icon-font, "Material Icons");font-weight:normal;font-style:normal;font-size:var(--mdc-icon-size, 24px);line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;word-wrap:normal;direction:ltr;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;-moz-osx-font-smoothing:grayscale;font-feature-settings:"liga"}.mdc-tab{-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font-family:Roboto, sans-serif;font-family:var(--mdc-typography-button-font-family, var(--mdc-typography-font-family, Roboto, sans-serif));font-size:0.875rem;font-size:var(--mdc-typography-button-font-size, 0.875rem);line-height:2.25rem;line-height:var(--mdc-typography-button-line-height, 2.25rem);font-weight:500;font-weight:var(--mdc-typography-button-font-weight, 500);letter-spacing:0.0892857143em;letter-spacing:var(--mdc-typography-button-letter-spacing, 0.0892857143em);text-decoration:none;text-decoration:var(--mdc-typography-button-text-decoration, none);text-transform:uppercase;text-transform:var(--mdc-typography-button-text-transform, uppercase);position:relative}.mdc-tab .mdc-tab__text-label{color:rgba(0, 0, 0, 0.6)}.mdc-tab .mdc-tab__icon{color:rgba(0, 0, 0, 0.54);fill:currentColor}.mdc-tab.mdc-ripple-upgraded--background-focused.mdc-tab--active .mdc-tab__focus-ring,.mdc-tab:not(.mdc-ripple-upgraded):focus.mdc-tab--active .mdc-tab__focus-ring{pointer-events:none;border:2px solid transparent;border-radius:8px;box-sizing:content-box;position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);height:calc( 100% + -12px );width:calc( 100% + -8px );margin-top:-2px;z-index:2}@media screen and (forced-colors: active){.mdc-tab.mdc-ripple-upgraded--background-focused.mdc-tab--active .mdc-tab__focus-ring,.mdc-tab:not(.mdc-ripple-upgraded):focus.mdc-tab--active .mdc-tab__focus-ring{border-color:CanvasText}}.mdc-tab.mdc-ripple-upgraded--background-focused.mdc-tab--active .mdc-tab__focus-ring::after,.mdc-tab:not(.mdc-ripple-upgraded):focus.mdc-tab--active .mdc-tab__focus-ring::after{content:"";border:2px solid transparent;border-radius:10px;display:block;position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);height:calc(100% + 4px);width:calc(100% + 4px)}@media screen and (forced-colors: active){.mdc-tab.mdc-ripple-upgraded--background-focused.mdc-tab--active .mdc-tab__focus-ring::after,.mdc-tab:not(.mdc-ripple-upgraded):focus.mdc-tab--active .mdc-tab__focus-ring::after{border-color:CanvasText}}.mdc-tab.mdc-ripple-upgraded--background-focused .mdc-tab__focus-ring,.mdc-tab:not(.mdc-ripple-upgraded):focus .mdc-tab__focus-ring{pointer-events:none;border:2px solid transparent;border-radius:8px;box-sizing:content-box;position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);height:calc( 100% + -8px );width:calc( 100% + -8px );z-index:2}@media screen and (forced-colors: active){.mdc-tab.mdc-ripple-upgraded--background-focused .mdc-tab__focus-ring,.mdc-tab:not(.mdc-ripple-upgraded):focus .mdc-tab__focus-ring{border-color:CanvasText}}.mdc-tab.mdc-ripple-upgraded--background-focused .mdc-tab__focus-ring::after,.mdc-tab:not(.mdc-ripple-upgraded):focus .mdc-tab__focus-ring::after{content:"";border:2px solid transparent;border-radius:10px;display:block;position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);height:calc(100% + 4px);width:calc(100% + 4px)}@media screen and (forced-colors: active){.mdc-tab.mdc-ripple-upgraded--background-focused .mdc-tab__focus-ring::after,.mdc-tab:not(.mdc-ripple-upgraded):focus .mdc-tab__focus-ring::after{border-color:CanvasText}}.mdc-tab__content{position:relative}.mdc-tab__icon{width:24px;height:24px;font-size:24px}.mdc-tab--active .mdc-tab__text-label{color:#6200ee;color:var(--mdc-theme-primary, #6200ee)}.mdc-tab--active .mdc-tab__icon{color:#6200ee;color:var(--mdc-theme-primary, #6200ee);fill:currentColor}.mdc-tab{background:none}.mdc-tab{min-width:90px;padding-right:24px;padding-left:24px;display:flex;flex:1 0 auto;justify-content:center;box-sizing:border-box;margin:0;padding-top:0;padding-bottom:0;border:none;outline:none;text-align:center;white-space:nowrap;cursor:pointer;-webkit-appearance:none;z-index:1}.mdc-tab::-moz-focus-inner{padding:0;border:0}.mdc-tab--min-width{flex:0 1 auto}.mdc-tab__content{display:flex;align-items:center;justify-content:center;height:inherit;pointer-events:none}.mdc-tab__text-label{transition:150ms color linear;display:inline-block;line-height:1;z-index:2}.mdc-tab__icon{transition:150ms color linear;z-index:2}.mdc-tab--stacked .mdc-tab__content{flex-direction:column;align-items:center;justify-content:center}.mdc-tab--stacked .mdc-tab__text-label{padding-top:6px;padding-bottom:4px}.mdc-tab--active .mdc-tab__text-label,.mdc-tab--active .mdc-tab__icon{transition-delay:100ms}.mdc-tab:not(.mdc-tab--stacked) .mdc-tab__icon+.mdc-tab__text-label{padding-left:8px;padding-right:0}[dir=rtl] .mdc-tab:not(.mdc-tab--stacked) .mdc-tab__icon+.mdc-tab__text-label,.mdc-tab:not(.mdc-tab--stacked) .mdc-tab__icon+.mdc-tab__text-label[dir=rtl]{padding-left:0;padding-right:8px}@keyframes mdc-ripple-fg-radius-in{from{animation-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transform:translate(var(--mdc-ripple-fg-translate-start, 0)) scale(1)}to{transform:translate(var(--mdc-ripple-fg-translate-end, 0)) scale(var(--mdc-ripple-fg-scale, 1))}}@keyframes mdc-ripple-fg-opacity-in{from{animation-timing-function:linear;opacity:0}to{opacity:var(--mdc-ripple-fg-opacity, 0)}}@keyframes mdc-ripple-fg-opacity-out{from{animation-timing-function:linear;opacity:var(--mdc-ripple-fg-opacity, 0)}to{opacity:0}}.mdc-tab{--mdc-ripple-fg-size: 0;--mdc-ripple-left: 0;--mdc-ripple-top: 0;--mdc-ripple-fg-scale: 1;--mdc-ripple-fg-translate-end: 0;--mdc-ripple-fg-translate-start: 0;-webkit-tap-highlight-color:rgba(0,0,0,0)}.mdc-tab .mdc-tab__ripple::before,.mdc-tab .mdc-tab__ripple::after{position:absolute;border-radius:50%;opacity:0;pointer-events:none;content:""}.mdc-tab .mdc-tab__ripple::before{transition:opacity 15ms linear,background-color 15ms linear;z-index:1;z-index:var(--mdc-ripple-z-index, 1)}.mdc-tab .mdc-tab__ripple::after{z-index:0;z-index:var(--mdc-ripple-z-index, 0)}.mdc-tab.mdc-ripple-upgraded .mdc-tab__ripple::before{transform:scale(var(--mdc-ripple-fg-scale, 1))}.mdc-tab.mdc-ripple-upgraded .mdc-tab__ripple::after{top:0;left:0;transform:scale(0);transform-origin:center center}.mdc-tab.mdc-ripple-upgraded--unbounded .mdc-tab__ripple::after{top:var(--mdc-ripple-top, 0);left:var(--mdc-ripple-left, 0)}.mdc-tab.mdc-ripple-upgraded--foreground-activation .mdc-tab__ripple::after{animation:mdc-ripple-fg-radius-in 225ms forwards,mdc-ripple-fg-opacity-in 75ms forwards}.mdc-tab.mdc-ripple-upgraded--foreground-deactivation .mdc-tab__ripple::after{animation:mdc-ripple-fg-opacity-out 150ms;transform:translate(var(--mdc-ripple-fg-translate-end, 0)) scale(var(--mdc-ripple-fg-scale, 1))}.mdc-tab .mdc-tab__ripple::before,.mdc-tab .mdc-tab__ripple::after{top:calc(50% - 100%);left:calc(50% - 100%);width:200%;height:200%}.mdc-tab.mdc-ripple-upgraded .mdc-tab__ripple::after{width:var(--mdc-ripple-fg-size, 100%);height:var(--mdc-ripple-fg-size, 100%)}.mdc-tab .mdc-tab__ripple::before,.mdc-tab .mdc-tab__ripple::after{background-color:#6200ee;background-color:var(--mdc-ripple-color, var(--mdc-theme-primary, #6200ee))}.mdc-tab:hover .mdc-tab__ripple::before,.mdc-tab.mdc-ripple-surface--hover .mdc-tab__ripple::before{opacity:0.04;opacity:var(--mdc-ripple-hover-opacity, 0.04)}.mdc-tab.mdc-ripple-upgraded--background-focused .mdc-tab__ripple::before,.mdc-tab:not(.mdc-ripple-upgraded):focus .mdc-tab__ripple::before{transition-duration:75ms;opacity:0.12;opacity:var(--mdc-ripple-focus-opacity, 0.12)}.mdc-tab:not(.mdc-ripple-upgraded) .mdc-tab__ripple::after{transition:opacity 150ms linear}.mdc-tab:not(.mdc-ripple-upgraded):active .mdc-tab__ripple::after{transition-duration:75ms;opacity:0.12;opacity:var(--mdc-ripple-press-opacity, 0.12)}.mdc-tab.mdc-ripple-upgraded{--mdc-ripple-fg-opacity:var(--mdc-ripple-press-opacity, 0.12)}.mdc-tab__ripple{position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;will-change:transform,opacity}:host{outline:none;flex:1 0 auto;display:flex;justify-content:center;-webkit-tap-highlight-color:transparent}.mdc-tab{height:var(--mdc-tab-height, 48px);margin-left:0;margin-right:0;padding-right:var(--mdc-tab-horizontal-padding, 24px);padding-left:var(--mdc-tab-horizontal-padding, 24px)}.mdc-tab--stacked{height:var(--mdc-tab-stacked-height, 72px)}.mdc-tab::-moz-focus-inner{border:0}.mdc-tab:not(.mdc-tab--stacked) .mdc-tab__icon+.mdc-tab__text-label{padding-left:8px;padding-right:0}[dir=rtl] .mdc-tab:not(.mdc-tab--stacked) .mdc-tab__icon+.mdc-tab__text-label,.mdc-tab:not(.mdc-tab--stacked) .mdc-tab__icon+.mdc-tab__text-label[dir=rtl]{padding-left:0;padding-right:8px}.mdc-tab:not(.mdc-tab--active) .mdc-tab__text-label{color:var(--mdc-tab-text-label-color-default, rgba(0, 0, 0, 0.6))}.mdc-tab:not(.mdc-tab--active) .mdc-tab__icon{color:var(--mdc-tab-color-default, rgba(0, 0, 0, 0.54))}`;
+
+/**
+ * @license
  * Copyright 2018 Google Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -5042,7 +4883,284 @@ __decorate([
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+var cssClasses$1 = {
+    ACTIVE: 'mdc-tab-indicator--active',
+    FADE: 'mdc-tab-indicator--fade',
+    NO_TRANSITION: 'mdc-tab-indicator--no-transition',
+};
 var strings$2 = {
+    CONTENT_SELECTOR: '.mdc-tab-indicator__content',
+};
+
+/**
+ * @license
+ * Copyright 2018 Google Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+var MDCTabIndicatorFoundation = /** @class */ (function (_super) {
+    __extends(MDCTabIndicatorFoundation, _super);
+    function MDCTabIndicatorFoundation(adapter) {
+        return _super.call(this, __assign(__assign({}, MDCTabIndicatorFoundation.defaultAdapter), adapter)) || this;
+    }
+    Object.defineProperty(MDCTabIndicatorFoundation, "cssClasses", {
+        get: function () {
+            return cssClasses$1;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(MDCTabIndicatorFoundation, "strings", {
+        get: function () {
+            return strings$2;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(MDCTabIndicatorFoundation, "defaultAdapter", {
+        get: function () {
+            // tslint:disable:object-literal-sort-keys Methods should be in the same order as the adapter interface.
+            return {
+                addClass: function () { return undefined; },
+                removeClass: function () { return undefined; },
+                computeContentClientRect: function () {
+                    return ({ top: 0, right: 0, bottom: 0, left: 0, width: 0, height: 0 });
+                },
+                setContentStyleProperty: function () { return undefined; },
+            };
+            // tslint:enable:object-literal-sort-keys
+        },
+        enumerable: false,
+        configurable: true
+    });
+    MDCTabIndicatorFoundation.prototype.computeContentClientRect = function () {
+        return this.adapter.computeContentClientRect();
+    };
+    return MDCTabIndicatorFoundation;
+}(MDCFoundation));
+
+/**
+ * @license
+ * Copyright 2018 Google Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+/* istanbul ignore next: subclass is not a branch statement */
+var MDCFadingTabIndicatorFoundation = /** @class */ (function (_super) {
+    __extends(MDCFadingTabIndicatorFoundation, _super);
+    function MDCFadingTabIndicatorFoundation() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    MDCFadingTabIndicatorFoundation.prototype.activate = function () {
+        this.adapter.addClass(MDCTabIndicatorFoundation.cssClasses.ACTIVE);
+    };
+    MDCFadingTabIndicatorFoundation.prototype.deactivate = function () {
+        this.adapter.removeClass(MDCTabIndicatorFoundation.cssClasses.ACTIVE);
+    };
+    return MDCFadingTabIndicatorFoundation;
+}(MDCTabIndicatorFoundation));
+// tslint:disable-next-line:no-default-export Needed for backward compatibility with MDC Web v0.44.0 and earlier.
+var MDCFadingTabIndicatorFoundation$1 = MDCFadingTabIndicatorFoundation;
+
+/**
+ * @license
+ * Copyright 2018 Google Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+/* istanbul ignore next: subclass is not a branch statement */
+var MDCSlidingTabIndicatorFoundation = /** @class */ (function (_super) {
+    __extends(MDCSlidingTabIndicatorFoundation, _super);
+    function MDCSlidingTabIndicatorFoundation() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    MDCSlidingTabIndicatorFoundation.prototype.activate = function (previousIndicatorClientRect) {
+        // Early exit if no indicator is present to handle cases where an indicator
+        // may be activated without a prior indicator state
+        if (!previousIndicatorClientRect) {
+            this.adapter.addClass(MDCTabIndicatorFoundation.cssClasses.ACTIVE);
+            return;
+        }
+        // This animation uses the FLIP approach. You can read more about it at the link below:
+        // https://aerotwist.com/blog/flip-your-animations/
+        // Calculate the dimensions based on the dimensions of the previous indicator
+        var currentClientRect = this.computeContentClientRect();
+        var widthDelta = previousIndicatorClientRect.width / currentClientRect.width;
+        var xPosition = previousIndicatorClientRect.left - currentClientRect.left;
+        this.adapter.addClass(MDCTabIndicatorFoundation.cssClasses.NO_TRANSITION);
+        this.adapter.setContentStyleProperty('transform', "translateX(" + xPosition + "px) scaleX(" + widthDelta + ")");
+        // Force repaint before updating classes and transform to ensure the transform properly takes effect
+        this.computeContentClientRect();
+        this.adapter.removeClass(MDCTabIndicatorFoundation.cssClasses.NO_TRANSITION);
+        this.adapter.addClass(MDCTabIndicatorFoundation.cssClasses.ACTIVE);
+        this.adapter.setContentStyleProperty('transform', '');
+    };
+    MDCSlidingTabIndicatorFoundation.prototype.deactivate = function () {
+        this.adapter.removeClass(MDCTabIndicatorFoundation.cssClasses.ACTIVE);
+    };
+    return MDCSlidingTabIndicatorFoundation;
+}(MDCTabIndicatorFoundation));
+// tslint:disable-next-line:no-default-export Needed for backward compatibility with MDC Web v0.44.0 and earlier.
+var MDCSlidingTabIndicatorFoundation$1 = MDCSlidingTabIndicatorFoundation;
+
+/**
+ * @license
+ * Copyright 2018 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
+class TabIndicatorBase extends BaseElement {
+    constructor() {
+        super(...arguments);
+        this.icon = '';
+        this.fade = false;
+    }
+    get mdcFoundationClass() {
+        return this.fade ? MDCFadingTabIndicatorFoundation$1 :
+            MDCSlidingTabIndicatorFoundation$1;
+    }
+    render() {
+        const contentClasses = {
+            'mdc-tab-indicator__content--icon': this.icon,
+            'material-icons': this.icon,
+            'mdc-tab-indicator__content--underline': !this.icon,
+        };
+        return x `
+      <span class="mdc-tab-indicator ${o({
+            'mdc-tab-indicator--fade': this.fade
+        })}">
+        <span class="mdc-tab-indicator__content ${o(contentClasses)}">${this.icon}</span>
+      </span>
+      `;
+    }
+    updated(changedProperties) {
+        if (changedProperties.has('fade')) {
+            this.createFoundation();
+        }
+    }
+    createAdapter() {
+        return Object.assign(Object.assign({}, addHasRemoveClass(this.mdcRoot)), { computeContentClientRect: () => this.contentElement.getBoundingClientRect(), setContentStyleProperty: (prop, value) => this.contentElement.style.setProperty(prop, value) });
+    }
+    computeContentClientRect() {
+        return this.mdcFoundation.computeContentClientRect();
+    }
+    activate(previousIndicatorClientRect) {
+        this.mdcFoundation.activate(previousIndicatorClientRect);
+    }
+    deactivate() {
+        this.mdcFoundation.deactivate();
+    }
+}
+__decorate([
+    i$1('.mdc-tab-indicator')
+], TabIndicatorBase.prototype, "mdcRoot", void 0);
+__decorate([
+    i$1('.mdc-tab-indicator__content')
+], TabIndicatorBase.prototype, "contentElement", void 0);
+__decorate([
+    n$1()
+], TabIndicatorBase.prototype, "icon", void 0);
+__decorate([
+    n$1({ type: Boolean })
+], TabIndicatorBase.prototype, "fade", void 0);
+
+/**
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-LIcense-Identifier: Apache-2.0
+ */
+const styles$2 = i$4 `.material-icons{font-family:var(--mdc-icon-font, "Material Icons");font-weight:normal;font-style:normal;font-size:var(--mdc-icon-size, 24px);line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;word-wrap:normal;direction:ltr;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;-moz-osx-font-smoothing:grayscale;font-feature-settings:"liga"}.mdc-tab-indicator .mdc-tab-indicator__content--underline{border-color:#6200ee;border-color:var(--mdc-theme-primary, #6200ee)}.mdc-tab-indicator .mdc-tab-indicator__content--icon{color:#018786;color:var(--mdc-theme-secondary, #018786)}.mdc-tab-indicator .mdc-tab-indicator__content--underline{border-top-width:2px}.mdc-tab-indicator .mdc-tab-indicator__content--icon{height:34px;font-size:34px}.mdc-tab-indicator{display:flex;position:absolute;top:0;left:0;justify-content:center;width:100%;height:100%;pointer-events:none;z-index:1}.mdc-tab-indicator__content{transform-origin:left;opacity:0}.mdc-tab-indicator__content--underline{align-self:flex-end;box-sizing:border-box;width:100%;border-top-style:solid}.mdc-tab-indicator__content--icon{align-self:center;margin:0 auto}.mdc-tab-indicator--active .mdc-tab-indicator__content{opacity:1}.mdc-tab-indicator .mdc-tab-indicator__content{transition:250ms transform cubic-bezier(0.4, 0, 0.2, 1)}.mdc-tab-indicator--no-transition .mdc-tab-indicator__content{transition:none}.mdc-tab-indicator--fade .mdc-tab-indicator__content{transition:150ms opacity linear}.mdc-tab-indicator--active.mdc-tab-indicator--fade .mdc-tab-indicator__content{transition-delay:100ms}`;
+
+let PoLRTabIndicator = class PoLRTabIndicator extends TabIndicatorBase {
+};
+PoLRTabIndicator.styles = [styles$2];
+PoLRTabIndicator = __decorate([
+    e$5("polr-tab-indicator")
+], PoLRTabIndicator);
+
+let PoLRTab = class PoLRTab extends TabBase {
+    renderIndicator() {
+        return x `<polr-tab-indicator
+            .icon="${this.indicatorIcon}"
+            .fade="${this.isFadingIndicator}"></polr-tab-indicator>`;
+    }
+};
+PoLRTab.styles = [styles$3];
+PoLRTab = __decorate([
+    e$5("polr-tab")
+], PoLRTab);
+__decorate([i$1("polr-tab-indicator")], TabBase.prototype, "tabIndicator", void 0);
+
+/**
+ * @license
+ * Copyright 2018 Google Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+var strings$1 = {
     ARROW_LEFT_KEY: 'ArrowLeft',
     ARROW_RIGHT_KEY: 'ArrowRight',
     END_KEY: 'End',
@@ -5087,20 +5205,20 @@ var numbers = {
  */
 var ACCEPTABLE_KEYS = new Set();
 // IE11 has no support for new Set with iterable so we need to initialize this by hand
-ACCEPTABLE_KEYS.add(strings$2.ARROW_LEFT_KEY);
-ACCEPTABLE_KEYS.add(strings$2.ARROW_RIGHT_KEY);
-ACCEPTABLE_KEYS.add(strings$2.END_KEY);
-ACCEPTABLE_KEYS.add(strings$2.HOME_KEY);
-ACCEPTABLE_KEYS.add(strings$2.ENTER_KEY);
-ACCEPTABLE_KEYS.add(strings$2.SPACE_KEY);
+ACCEPTABLE_KEYS.add(strings$1.ARROW_LEFT_KEY);
+ACCEPTABLE_KEYS.add(strings$1.ARROW_RIGHT_KEY);
+ACCEPTABLE_KEYS.add(strings$1.END_KEY);
+ACCEPTABLE_KEYS.add(strings$1.HOME_KEY);
+ACCEPTABLE_KEYS.add(strings$1.ENTER_KEY);
+ACCEPTABLE_KEYS.add(strings$1.SPACE_KEY);
 var KEYCODE_MAP = new Map();
 // IE11 has no support for new Map with iterable so we need to initialize this by hand
-KEYCODE_MAP.set(numbers.ARROW_LEFT_KEYCODE, strings$2.ARROW_LEFT_KEY);
-KEYCODE_MAP.set(numbers.ARROW_RIGHT_KEYCODE, strings$2.ARROW_RIGHT_KEY);
-KEYCODE_MAP.set(numbers.END_KEYCODE, strings$2.END_KEY);
-KEYCODE_MAP.set(numbers.HOME_KEYCODE, strings$2.HOME_KEY);
-KEYCODE_MAP.set(numbers.ENTER_KEYCODE, strings$2.ENTER_KEY);
-KEYCODE_MAP.set(numbers.SPACE_KEYCODE, strings$2.SPACE_KEY);
+KEYCODE_MAP.set(numbers.ARROW_LEFT_KEYCODE, strings$1.ARROW_LEFT_KEY);
+KEYCODE_MAP.set(numbers.ARROW_RIGHT_KEYCODE, strings$1.ARROW_RIGHT_KEY);
+KEYCODE_MAP.set(numbers.END_KEYCODE, strings$1.END_KEY);
+KEYCODE_MAP.set(numbers.HOME_KEYCODE, strings$1.HOME_KEY);
+KEYCODE_MAP.set(numbers.ENTER_KEYCODE, strings$1.ENTER_KEY);
+KEYCODE_MAP.set(numbers.SPACE_KEYCODE, strings$1.SPACE_KEY);
 var MDCTabBarFoundation = /** @class */ (function (_super) {
     __extends(MDCTabBarFoundation, _super);
     function MDCTabBarFoundation(adapter) {
@@ -5110,7 +5228,7 @@ var MDCTabBarFoundation = /** @class */ (function (_super) {
     }
     Object.defineProperty(MDCTabBarFoundation, "strings", {
         get: function () {
-            return strings$2;
+            return strings$1;
         },
         enumerable: false,
         configurable: true
@@ -5246,9 +5364,9 @@ var MDCTabBarFoundation = /** @class */ (function (_super) {
     MDCTabBarFoundation.prototype.determineTargetFromKey = function (origin, key) {
         var isRTL = this.isRTL();
         var maxIndex = this.adapter.getTabListLength() - 1;
-        var shouldGoToEnd = key === strings$2.END_KEY;
-        var shouldDecrement = key === strings$2.ARROW_LEFT_KEY && !isRTL || key === strings$2.ARROW_RIGHT_KEY && isRTL;
-        var shouldIncrement = key === strings$2.ARROW_RIGHT_KEY && !isRTL || key === strings$2.ARROW_LEFT_KEY && isRTL;
+        var shouldGoToEnd = key === strings$1.END_KEY;
+        var shouldDecrement = key === strings$1.ARROW_LEFT_KEY && !isRTL || key === strings$1.ARROW_RIGHT_KEY && isRTL;
+        var shouldIncrement = key === strings$1.ARROW_RIGHT_KEY && !isRTL || key === strings$1.ARROW_LEFT_KEY && isRTL;
         var index = origin;
         if (shouldGoToEnd) {
             index = maxIndex;
@@ -5385,7 +5503,7 @@ var MDCTabBarFoundation = /** @class */ (function (_super) {
         return KEYCODE_MAP.get(evt.keyCode);
     };
     MDCTabBarFoundation.prototype.isActivationKey = function (key) {
-        return key === strings$2.SPACE_KEY || key === strings$2.ENTER_KEY;
+        return key === strings$1.SPACE_KEY || key === strings$1.ENTER_KEY;
     };
     /**
      * Returns whether a given index is inclusively between the ends
@@ -5588,7 +5706,7 @@ __decorate([
  * Copyright 2021 Google LLC
  * SPDX-LIcense-Identifier: Apache-2.0
  */
-const styles$3 = i$4 `.mdc-tab-bar{width:100%}.mdc-tab{height:48px}.mdc-tab--stacked{height:72px}:host{display:block}.mdc-tab-bar{flex:1}mwc-tab{--mdc-tab-height: 48px;--mdc-tab-stacked-height: 72px}`;
+const styles$1 = i$4 `.mdc-tab-bar{width:100%}.mdc-tab{height:48px}.mdc-tab--stacked{height:72px}:host{display:block}.mdc-tab-bar{flex:1}mwc-tab{--mdc-tab-height: 48px;--mdc-tab-stacked-height: 72px}`;
 
 /**
  * @license
@@ -5645,12 +5763,12 @@ function matches(element, selector) {
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-var cssClasses$1 = {
+var cssClasses = {
     ANIMATING: 'mdc-tab-scroller--animating',
     SCROLL_AREA_SCROLL: 'mdc-tab-scroller__scroll-area--scroll',
     SCROLL_TEST: 'mdc-tab-scroller__test',
 };
-var strings$1 = {
+var strings = {
     AREA_SELECTOR: '.mdc-tab-scroller__scroll-area',
     CONTENT_SELECTOR: '.mdc-tab-scroller__scroll-content',
 };
@@ -5917,14 +6035,14 @@ var MDCTabScrollerFoundation = /** @class */ (function (_super) {
     }
     Object.defineProperty(MDCTabScrollerFoundation, "cssClasses", {
         get: function () {
-            return cssClasses$1;
+            return cssClasses;
         },
         enumerable: false,
         configurable: true
     });
     Object.defineProperty(MDCTabScrollerFoundation, "strings", {
         get: function () {
-            return strings$1;
+            return strings;
         },
         enumerable: false,
         configurable: true
@@ -6317,11 +6435,11 @@ __decorate([
  * Copyright 2021 Google LLC
  * SPDX-LIcense-Identifier: Apache-2.0
  */
-const styles$2 = i$4 `.mdc-tab-scroller{overflow-y:hidden}.mdc-tab-scroller.mdc-tab-scroller--animating .mdc-tab-scroller__scroll-content{transition:250ms transform cubic-bezier(0.4, 0, 0.2, 1)}.mdc-tab-scroller__test{position:absolute;top:-9999px;width:100px;height:100px;overflow-x:scroll}.mdc-tab-scroller__scroll-area{-webkit-overflow-scrolling:touch;display:flex;overflow-x:hidden}.mdc-tab-scroller__scroll-area::-webkit-scrollbar,.mdc-tab-scroller__test::-webkit-scrollbar{display:none}.mdc-tab-scroller__scroll-area--scroll{overflow-x:scroll}.mdc-tab-scroller__scroll-content{position:relative;display:flex;flex:1 0 auto;transform:none;will-change:transform}.mdc-tab-scroller--align-start .mdc-tab-scroller__scroll-content{justify-content:flex-start}.mdc-tab-scroller--align-end .mdc-tab-scroller__scroll-content{justify-content:flex-end}.mdc-tab-scroller--align-center .mdc-tab-scroller__scroll-content{justify-content:center}.mdc-tab-scroller--animating .mdc-tab-scroller__scroll-area{-webkit-overflow-scrolling:auto}:host{display:flex}.mdc-tab-scroller{flex:1}`;
+const styles = i$4 `.mdc-tab-scroller{overflow-y:hidden}.mdc-tab-scroller.mdc-tab-scroller--animating .mdc-tab-scroller__scroll-content{transition:250ms transform cubic-bezier(0.4, 0, 0.2, 1)}.mdc-tab-scroller__test{position:absolute;top:-9999px;width:100px;height:100px;overflow-x:scroll}.mdc-tab-scroller__scroll-area{-webkit-overflow-scrolling:touch;display:flex;overflow-x:hidden}.mdc-tab-scroller__scroll-area::-webkit-scrollbar,.mdc-tab-scroller__test::-webkit-scrollbar{display:none}.mdc-tab-scroller__scroll-area--scroll{overflow-x:scroll}.mdc-tab-scroller__scroll-content{position:relative;display:flex;flex:1 0 auto;transform:none;will-change:transform}.mdc-tab-scroller--align-start .mdc-tab-scroller__scroll-content{justify-content:flex-start}.mdc-tab-scroller--align-end .mdc-tab-scroller__scroll-content{justify-content:flex-end}.mdc-tab-scroller--align-center .mdc-tab-scroller__scroll-content{justify-content:center}.mdc-tab-scroller--animating .mdc-tab-scroller__scroll-area{-webkit-overflow-scrolling:auto}:host{display:flex}.mdc-tab-scroller{flex:1}`;
 
 let PoLRTabScroller = class PoLRTabScroller extends TabScrollerBase {
 };
-PoLRTabScroller.styles = [styles$2];
+PoLRTabScroller.styles = [styles];
 PoLRTabScroller = __decorate([
     e$5("polr-tab-scroller")
 ], PoLRTabScroller);
@@ -6339,295 +6457,177 @@ let PoLRTabBar = class PoLRTabBar extends TabBarBase {
         `;
     }
 };
-PoLRTabBar.styles = [styles$3];
+PoLRTabBar.styles = [styles$1];
 PoLRTabBar = __decorate([
     e$5("polr-tab-bar")
 ], PoLRTabBar);
 __decorate([i$1("polr-tab-scroller")], TabBarBase.prototype, "scrollerElement", void 0);
 
-/**
- * @license
- * Copyright 2021 Google LLC
- * SPDX-LIcense-Identifier: Apache-2.0
- */
-const styles$1 = i$4 `.material-icons{font-family:var(--mdc-icon-font, "Material Icons");font-weight:normal;font-style:normal;font-size:var(--mdc-icon-size, 24px);line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;word-wrap:normal;direction:ltr;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;-moz-osx-font-smoothing:grayscale;font-feature-settings:"liga"}.mdc-tab{-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font-family:Roboto, sans-serif;font-family:var(--mdc-typography-button-font-family, var(--mdc-typography-font-family, Roboto, sans-serif));font-size:0.875rem;font-size:var(--mdc-typography-button-font-size, 0.875rem);line-height:2.25rem;line-height:var(--mdc-typography-button-line-height, 2.25rem);font-weight:500;font-weight:var(--mdc-typography-button-font-weight, 500);letter-spacing:0.0892857143em;letter-spacing:var(--mdc-typography-button-letter-spacing, 0.0892857143em);text-decoration:none;text-decoration:var(--mdc-typography-button-text-decoration, none);text-transform:uppercase;text-transform:var(--mdc-typography-button-text-transform, uppercase);position:relative}.mdc-tab .mdc-tab__text-label{color:rgba(0, 0, 0, 0.6)}.mdc-tab .mdc-tab__icon{color:rgba(0, 0, 0, 0.54);fill:currentColor}.mdc-tab.mdc-ripple-upgraded--background-focused.mdc-tab--active .mdc-tab__focus-ring,.mdc-tab:not(.mdc-ripple-upgraded):focus.mdc-tab--active .mdc-tab__focus-ring{pointer-events:none;border:2px solid transparent;border-radius:8px;box-sizing:content-box;position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);height:calc( 100% + -12px );width:calc( 100% + -8px );margin-top:-2px;z-index:2}@media screen and (forced-colors: active){.mdc-tab.mdc-ripple-upgraded--background-focused.mdc-tab--active .mdc-tab__focus-ring,.mdc-tab:not(.mdc-ripple-upgraded):focus.mdc-tab--active .mdc-tab__focus-ring{border-color:CanvasText}}.mdc-tab.mdc-ripple-upgraded--background-focused.mdc-tab--active .mdc-tab__focus-ring::after,.mdc-tab:not(.mdc-ripple-upgraded):focus.mdc-tab--active .mdc-tab__focus-ring::after{content:"";border:2px solid transparent;border-radius:10px;display:block;position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);height:calc(100% + 4px);width:calc(100% + 4px)}@media screen and (forced-colors: active){.mdc-tab.mdc-ripple-upgraded--background-focused.mdc-tab--active .mdc-tab__focus-ring::after,.mdc-tab:not(.mdc-ripple-upgraded):focus.mdc-tab--active .mdc-tab__focus-ring::after{border-color:CanvasText}}.mdc-tab.mdc-ripple-upgraded--background-focused .mdc-tab__focus-ring,.mdc-tab:not(.mdc-ripple-upgraded):focus .mdc-tab__focus-ring{pointer-events:none;border:2px solid transparent;border-radius:8px;box-sizing:content-box;position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);height:calc( 100% + -8px );width:calc( 100% + -8px );z-index:2}@media screen and (forced-colors: active){.mdc-tab.mdc-ripple-upgraded--background-focused .mdc-tab__focus-ring,.mdc-tab:not(.mdc-ripple-upgraded):focus .mdc-tab__focus-ring{border-color:CanvasText}}.mdc-tab.mdc-ripple-upgraded--background-focused .mdc-tab__focus-ring::after,.mdc-tab:not(.mdc-ripple-upgraded):focus .mdc-tab__focus-ring::after{content:"";border:2px solid transparent;border-radius:10px;display:block;position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);height:calc(100% + 4px);width:calc(100% + 4px)}@media screen and (forced-colors: active){.mdc-tab.mdc-ripple-upgraded--background-focused .mdc-tab__focus-ring::after,.mdc-tab:not(.mdc-ripple-upgraded):focus .mdc-tab__focus-ring::after{border-color:CanvasText}}.mdc-tab__content{position:relative}.mdc-tab__icon{width:24px;height:24px;font-size:24px}.mdc-tab--active .mdc-tab__text-label{color:#6200ee;color:var(--mdc-theme-primary, #6200ee)}.mdc-tab--active .mdc-tab__icon{color:#6200ee;color:var(--mdc-theme-primary, #6200ee);fill:currentColor}.mdc-tab{background:none}.mdc-tab{min-width:90px;padding-right:24px;padding-left:24px;display:flex;flex:1 0 auto;justify-content:center;box-sizing:border-box;margin:0;padding-top:0;padding-bottom:0;border:none;outline:none;text-align:center;white-space:nowrap;cursor:pointer;-webkit-appearance:none;z-index:1}.mdc-tab::-moz-focus-inner{padding:0;border:0}.mdc-tab--min-width{flex:0 1 auto}.mdc-tab__content{display:flex;align-items:center;justify-content:center;height:inherit;pointer-events:none}.mdc-tab__text-label{transition:150ms color linear;display:inline-block;line-height:1;z-index:2}.mdc-tab__icon{transition:150ms color linear;z-index:2}.mdc-tab--stacked .mdc-tab__content{flex-direction:column;align-items:center;justify-content:center}.mdc-tab--stacked .mdc-tab__text-label{padding-top:6px;padding-bottom:4px}.mdc-tab--active .mdc-tab__text-label,.mdc-tab--active .mdc-tab__icon{transition-delay:100ms}.mdc-tab:not(.mdc-tab--stacked) .mdc-tab__icon+.mdc-tab__text-label{padding-left:8px;padding-right:0}[dir=rtl] .mdc-tab:not(.mdc-tab--stacked) .mdc-tab__icon+.mdc-tab__text-label,.mdc-tab:not(.mdc-tab--stacked) .mdc-tab__icon+.mdc-tab__text-label[dir=rtl]{padding-left:0;padding-right:8px}@keyframes mdc-ripple-fg-radius-in{from{animation-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transform:translate(var(--mdc-ripple-fg-translate-start, 0)) scale(1)}to{transform:translate(var(--mdc-ripple-fg-translate-end, 0)) scale(var(--mdc-ripple-fg-scale, 1))}}@keyframes mdc-ripple-fg-opacity-in{from{animation-timing-function:linear;opacity:0}to{opacity:var(--mdc-ripple-fg-opacity, 0)}}@keyframes mdc-ripple-fg-opacity-out{from{animation-timing-function:linear;opacity:var(--mdc-ripple-fg-opacity, 0)}to{opacity:0}}.mdc-tab{--mdc-ripple-fg-size: 0;--mdc-ripple-left: 0;--mdc-ripple-top: 0;--mdc-ripple-fg-scale: 1;--mdc-ripple-fg-translate-end: 0;--mdc-ripple-fg-translate-start: 0;-webkit-tap-highlight-color:rgba(0,0,0,0)}.mdc-tab .mdc-tab__ripple::before,.mdc-tab .mdc-tab__ripple::after{position:absolute;border-radius:50%;opacity:0;pointer-events:none;content:""}.mdc-tab .mdc-tab__ripple::before{transition:opacity 15ms linear,background-color 15ms linear;z-index:1;z-index:var(--mdc-ripple-z-index, 1)}.mdc-tab .mdc-tab__ripple::after{z-index:0;z-index:var(--mdc-ripple-z-index, 0)}.mdc-tab.mdc-ripple-upgraded .mdc-tab__ripple::before{transform:scale(var(--mdc-ripple-fg-scale, 1))}.mdc-tab.mdc-ripple-upgraded .mdc-tab__ripple::after{top:0;left:0;transform:scale(0);transform-origin:center center}.mdc-tab.mdc-ripple-upgraded--unbounded .mdc-tab__ripple::after{top:var(--mdc-ripple-top, 0);left:var(--mdc-ripple-left, 0)}.mdc-tab.mdc-ripple-upgraded--foreground-activation .mdc-tab__ripple::after{animation:mdc-ripple-fg-radius-in 225ms forwards,mdc-ripple-fg-opacity-in 75ms forwards}.mdc-tab.mdc-ripple-upgraded--foreground-deactivation .mdc-tab__ripple::after{animation:mdc-ripple-fg-opacity-out 150ms;transform:translate(var(--mdc-ripple-fg-translate-end, 0)) scale(var(--mdc-ripple-fg-scale, 1))}.mdc-tab .mdc-tab__ripple::before,.mdc-tab .mdc-tab__ripple::after{top:calc(50% - 100%);left:calc(50% - 100%);width:200%;height:200%}.mdc-tab.mdc-ripple-upgraded .mdc-tab__ripple::after{width:var(--mdc-ripple-fg-size, 100%);height:var(--mdc-ripple-fg-size, 100%)}.mdc-tab .mdc-tab__ripple::before,.mdc-tab .mdc-tab__ripple::after{background-color:#6200ee;background-color:var(--mdc-ripple-color, var(--mdc-theme-primary, #6200ee))}.mdc-tab:hover .mdc-tab__ripple::before,.mdc-tab.mdc-ripple-surface--hover .mdc-tab__ripple::before{opacity:0.04;opacity:var(--mdc-ripple-hover-opacity, 0.04)}.mdc-tab.mdc-ripple-upgraded--background-focused .mdc-tab__ripple::before,.mdc-tab:not(.mdc-ripple-upgraded):focus .mdc-tab__ripple::before{transition-duration:75ms;opacity:0.12;opacity:var(--mdc-ripple-focus-opacity, 0.12)}.mdc-tab:not(.mdc-ripple-upgraded) .mdc-tab__ripple::after{transition:opacity 150ms linear}.mdc-tab:not(.mdc-ripple-upgraded):active .mdc-tab__ripple::after{transition-duration:75ms;opacity:0.12;opacity:var(--mdc-ripple-press-opacity, 0.12)}.mdc-tab.mdc-ripple-upgraded{--mdc-ripple-fg-opacity:var(--mdc-ripple-press-opacity, 0.12)}.mdc-tab__ripple{position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;will-change:transform,opacity}:host{outline:none;flex:1 0 auto;display:flex;justify-content:center;-webkit-tap-highlight-color:transparent}.mdc-tab{height:var(--mdc-tab-height, 48px);margin-left:0;margin-right:0;padding-right:var(--mdc-tab-horizontal-padding, 24px);padding-left:var(--mdc-tab-horizontal-padding, 24px)}.mdc-tab--stacked{height:var(--mdc-tab-stacked-height, 72px)}.mdc-tab::-moz-focus-inner{border:0}.mdc-tab:not(.mdc-tab--stacked) .mdc-tab__icon+.mdc-tab__text-label{padding-left:8px;padding-right:0}[dir=rtl] .mdc-tab:not(.mdc-tab--stacked) .mdc-tab__icon+.mdc-tab__text-label,.mdc-tab:not(.mdc-tab--stacked) .mdc-tab__icon+.mdc-tab__text-label[dir=rtl]{padding-left:0;padding-right:8px}.mdc-tab:not(.mdc-tab--active) .mdc-tab__text-label{color:var(--mdc-tab-text-label-color-default, rgba(0, 0, 0, 0.6))}.mdc-tab:not(.mdc-tab--active) .mdc-tab__icon{color:var(--mdc-tab-color-default, rgba(0, 0, 0, 0.54))}`;
-
-/**
- * @license
- * Copyright 2018 Google Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-var cssClasses = {
-    ACTIVE: 'mdc-tab-indicator--active',
-    FADE: 'mdc-tab-indicator--fade',
-    NO_TRANSITION: 'mdc-tab-indicator--no-transition',
-};
-var strings = {
-    CONTENT_SELECTOR: '.mdc-tab-indicator__content',
-};
-
-/**
- * @license
- * Copyright 2018 Google Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-var MDCTabIndicatorFoundation = /** @class */ (function (_super) {
-    __extends(MDCTabIndicatorFoundation, _super);
-    function MDCTabIndicatorFoundation(adapter) {
-        return _super.call(this, __assign(__assign({}, MDCTabIndicatorFoundation.defaultAdapter), adapter)) || this;
-    }
-    Object.defineProperty(MDCTabIndicatorFoundation, "cssClasses", {
-        get: function () {
-            return cssClasses;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(MDCTabIndicatorFoundation, "strings", {
-        get: function () {
-            return strings;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(MDCTabIndicatorFoundation, "defaultAdapter", {
-        get: function () {
-            // tslint:disable:object-literal-sort-keys Methods should be in the same order as the adapter interface.
-            return {
-                addClass: function () { return undefined; },
-                removeClass: function () { return undefined; },
-                computeContentClientRect: function () {
-                    return ({ top: 0, right: 0, bottom: 0, left: 0, width: 0, height: 0 });
-                },
-                setContentStyleProperty: function () { return undefined; },
-            };
-            // tslint:enable:object-literal-sort-keys
-        },
-        enumerable: false,
-        configurable: true
-    });
-    MDCTabIndicatorFoundation.prototype.computeContentClientRect = function () {
-        return this.adapter.computeContentClientRect();
-    };
-    return MDCTabIndicatorFoundation;
-}(MDCFoundation));
-
-/**
- * @license
- * Copyright 2018 Google Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-/* istanbul ignore next: subclass is not a branch statement */
-var MDCFadingTabIndicatorFoundation = /** @class */ (function (_super) {
-    __extends(MDCFadingTabIndicatorFoundation, _super);
-    function MDCFadingTabIndicatorFoundation() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    MDCFadingTabIndicatorFoundation.prototype.activate = function () {
-        this.adapter.addClass(MDCTabIndicatorFoundation.cssClasses.ACTIVE);
-    };
-    MDCFadingTabIndicatorFoundation.prototype.deactivate = function () {
-        this.adapter.removeClass(MDCTabIndicatorFoundation.cssClasses.ACTIVE);
-    };
-    return MDCFadingTabIndicatorFoundation;
-}(MDCTabIndicatorFoundation));
-// tslint:disable-next-line:no-default-export Needed for backward compatibility with MDC Web v0.44.0 and earlier.
-var MDCFadingTabIndicatorFoundation$1 = MDCFadingTabIndicatorFoundation;
-
-/**
- * @license
- * Copyright 2018 Google Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-/* istanbul ignore next: subclass is not a branch statement */
-var MDCSlidingTabIndicatorFoundation = /** @class */ (function (_super) {
-    __extends(MDCSlidingTabIndicatorFoundation, _super);
-    function MDCSlidingTabIndicatorFoundation() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    MDCSlidingTabIndicatorFoundation.prototype.activate = function (previousIndicatorClientRect) {
-        // Early exit if no indicator is present to handle cases where an indicator
-        // may be activated without a prior indicator state
-        if (!previousIndicatorClientRect) {
-            this.adapter.addClass(MDCTabIndicatorFoundation.cssClasses.ACTIVE);
-            return;
-        }
-        // This animation uses the FLIP approach. You can read more about it at the link below:
-        // https://aerotwist.com/blog/flip-your-animations/
-        // Calculate the dimensions based on the dimensions of the previous indicator
-        var currentClientRect = this.computeContentClientRect();
-        var widthDelta = previousIndicatorClientRect.width / currentClientRect.width;
-        var xPosition = previousIndicatorClientRect.left - currentClientRect.left;
-        this.adapter.addClass(MDCTabIndicatorFoundation.cssClasses.NO_TRANSITION);
-        this.adapter.setContentStyleProperty('transform', "translateX(" + xPosition + "px) scaleX(" + widthDelta + ")");
-        // Force repaint before updating classes and transform to ensure the transform properly takes effect
-        this.computeContentClientRect();
-        this.adapter.removeClass(MDCTabIndicatorFoundation.cssClasses.NO_TRANSITION);
-        this.adapter.addClass(MDCTabIndicatorFoundation.cssClasses.ACTIVE);
-        this.adapter.setContentStyleProperty('transform', '');
-    };
-    MDCSlidingTabIndicatorFoundation.prototype.deactivate = function () {
-        this.adapter.removeClass(MDCTabIndicatorFoundation.cssClasses.ACTIVE);
-    };
-    return MDCSlidingTabIndicatorFoundation;
-}(MDCTabIndicatorFoundation));
-// tslint:disable-next-line:no-default-export Needed for backward compatibility with MDC Web v0.44.0 and earlier.
-var MDCSlidingTabIndicatorFoundation$1 = MDCSlidingTabIndicatorFoundation;
-
-/**
- * @license
- * Copyright 2018 Google LLC
- * SPDX-License-Identifier: Apache-2.0
- */
-class TabIndicatorBase extends BaseElement {
-    constructor() {
-        super(...arguments);
-        this.icon = '';
-        this.fade = false;
-    }
-    get mdcFoundationClass() {
-        return this.fade ? MDCFadingTabIndicatorFoundation$1 :
-            MDCSlidingTabIndicatorFoundation$1;
+let PoLRYTubePlaying = class PoLRYTubePlaying extends s$1 {
+    firstUpdated(_changedProperties) {
+        this._polrYTubeList = this.renderRoot.querySelector("polr-ytube-list");
+        this._getCurrentlyPlayingItems();
     }
     render() {
-        const contentClasses = {
-            'mdc-tab-indicator__content--icon': this.icon,
-            'material-icons': this.icon,
-            'mdc-tab-indicator__content--underline': !this.icon,
-        };
         return x `
-      <span class="mdc-tab-indicator ${o({
-            'mdc-tab-indicator--fade': this.fade
-        })}">
-        <span class="mdc-tab-indicator__content ${o(contentClasses)}">${this.icon}</span>
-      </span>
-      `;
+            <polr-ytube-list
+                .hass=${this._hass}
+                .entity=${this._entity}></polr-ytube-list>
+        `;
     }
-    updated(changedProperties) {
-        if (changedProperties.has('fade')) {
-            this.createFoundation();
+    async _getCurrentlyPlayingItems() {
+        var _a;
+        let media_type = this._entity["attributes"]["_media_type"];
+        let results;
+        try {
+            this._polrYTubeList.state = 4 /* PoLRYTubeListState.LOADING */;
+            if (["vid_channel", "playlist", "track"].includes(media_type)) {
+                results = await this._hass.callWS({
+                    type: "media_player/browse_media",
+                    entity_id: this._entity["entity_id"],
+                    media_content_type: "cur_playlists",
+                    media_content_id: "",
+                });
+            }
+            if (["album"].includes(media_type)) {
+                results = await this._hass.callWS({
+                    type: "media_player/browse_media",
+                    entity_id: this._entity["entity_id"],
+                    media_content_type: "album_of_track",
+                    media_content_id: "1",
+                });
+            }
+            //console.log(results);
+            if (((_a = results === null || results === void 0 ? void 0 : results.children) === null || _a === void 0 ? void 0 : _a.length) > 0) {
+                this._polrYTubeList.elements = results.children;
+                this._polrYTubeList.state = 2 /* PoLRYTubeListState.HAS_RESULTS */;
+            }
+            else {
+                this._polrYTubeList.elements = [];
+                this._polrYTubeList.state = 8 /* PoLRYTubeListState.NO_RESULTS */;
+            }
+            this.requestUpdate();
+        }
+        catch (e) {
+            console.error(e);
+            this._polrYTubeList.state = 16 /* PoLRYTubeListState.ERROR */;
         }
     }
-    createAdapter() {
-        return Object.assign(Object.assign({}, addHasRemoveClass(this.mdcRoot)), { computeContentClientRect: () => this.contentElement.getBoundingClientRect(), setContentStyleProperty: (prop, value) => this.contentElement.style.setProperty(prop, value) });
+    refresh() {
+        this._getCurrentlyPlayingItems();
     }
-    computeContentClientRect() {
-        return this.mdcFoundation.computeContentClientRect();
-    }
-    activate(previousIndicatorClientRect) {
-        this.mdcFoundation.activate(previousIndicatorClientRect);
-    }
-    deactivate() {
-        this.mdcFoundation.deactivate();
-    }
-}
+};
+PoLRYTubePlaying.styles = i$4 ``;
 __decorate([
-    i$1('.mdc-tab-indicator')
-], TabIndicatorBase.prototype, "mdcRoot", void 0);
+    t$1()
+], PoLRYTubePlaying.prototype, "_hass", void 0);
 __decorate([
-    i$1('.mdc-tab-indicator__content')
-], TabIndicatorBase.prototype, "contentElement", void 0);
+    t$1()
+], PoLRYTubePlaying.prototype, "_entity", void 0);
+__decorate([
+    t$1()
+], PoLRYTubePlaying.prototype, "_polrYTubeList", void 0);
+PoLRYTubePlaying = __decorate([
+    e$5("polr-ytube-playing")
+], PoLRYTubePlaying);
+
+let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
+    constructor() {
+        super(...arguments);
+        this._browseHistory = [];
+    }
+    firstUpdated(_changedProperties) {
+        this._polrYTubeList = this.renderRoot.querySelector("polr-ytube-list");
+        this._browse(this.initialAction);
+    }
+    render() {
+        return x `
+            ${this._renderBackButton()}
+            <polr-ytube-list
+                .hass=${this.hass}
+                .entity=${this.entity}
+                @navigate=${(ev) => this._browse(ev.detail.action)}></polr-ytube-list>
+        `;
+    }
+    _renderBackButton() {
+        if (this._browseHistory.length <= 1)
+            return x ``;
+        const breadcrumb = this._browseHistory
+            .map((item) => `${item.title}`)
+            .join(" > ");
+        return x `
+            <div class="back-button">
+                <mwc-icon-button
+                    @click=${() => this._browse(this._browseHistory.pop() &&
+            this._browseHistory.pop())}>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <title>arrow-left</title>
+                        <path
+                            d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
+                    </svg>
+                </mwc-icon-button>
+                <div class="breadcrumb">${breadcrumb}</div>
+            </div>
+        `;
+    }
+    async _browse(element) {
+        this._polrYTubeList.state = 4 /* PoLRYTubeListState.LOADING */;
+        this._browseHistory.push(element);
+        try {
+            const response = await this.hass.callWS({
+                type: "media_player/browse_media",
+                entity_id: this.entity["entity_id"],
+                media_content_type: element.media_content_type,
+                media_content_id: element.media_content_id,
+            });
+            this._polrYTubeList.elements = response["children"];
+            this._polrYTubeList.state = 2 /* PoLRYTubeListState.HAS_RESULTS */;
+            this.requestUpdate();
+        }
+        catch (e) {
+            this._polrYTubeList.state = 16 /* PoLRYTubeListState.ERROR */;
+            console.error(e, element.media_content_type, element.media_content_id);
+        }
+    }
+    static get styles() {
+        return [
+            i$4 `
+                .back-button {
+                    display: grid;
+                    padding: 12px 0;
+                    grid-template-columns: min-content 1fr;
+                    align-items: center;
+                    gap: 12px;
+                }
+
+                .breadcrumb {
+                    display: block;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+            `,
+        ];
+    }
+};
 __decorate([
     n$1()
-], TabIndicatorBase.prototype, "icon", void 0);
+], PoLRYTubeBrowser.prototype, "entity", void 0);
 __decorate([
-    n$1({ type: Boolean })
-], TabIndicatorBase.prototype, "fade", void 0);
-
-/**
- * @license
- * Copyright 2021 Google LLC
- * SPDX-LIcense-Identifier: Apache-2.0
- */
-const styles = i$4 `.material-icons{font-family:var(--mdc-icon-font, "Material Icons");font-weight:normal;font-style:normal;font-size:var(--mdc-icon-size, 24px);line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;word-wrap:normal;direction:ltr;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;-moz-osx-font-smoothing:grayscale;font-feature-settings:"liga"}.mdc-tab-indicator .mdc-tab-indicator__content--underline{border-color:#6200ee;border-color:var(--mdc-theme-primary, #6200ee)}.mdc-tab-indicator .mdc-tab-indicator__content--icon{color:#018786;color:var(--mdc-theme-secondary, #018786)}.mdc-tab-indicator .mdc-tab-indicator__content--underline{border-top-width:2px}.mdc-tab-indicator .mdc-tab-indicator__content--icon{height:34px;font-size:34px}.mdc-tab-indicator{display:flex;position:absolute;top:0;left:0;justify-content:center;width:100%;height:100%;pointer-events:none;z-index:1}.mdc-tab-indicator__content{transform-origin:left;opacity:0}.mdc-tab-indicator__content--underline{align-self:flex-end;box-sizing:border-box;width:100%;border-top-style:solid}.mdc-tab-indicator__content--icon{align-self:center;margin:0 auto}.mdc-tab-indicator--active .mdc-tab-indicator__content{opacity:1}.mdc-tab-indicator .mdc-tab-indicator__content{transition:250ms transform cubic-bezier(0.4, 0, 0.2, 1)}.mdc-tab-indicator--no-transition .mdc-tab-indicator__content{transition:none}.mdc-tab-indicator--fade .mdc-tab-indicator__content{transition:150ms opacity linear}.mdc-tab-indicator--active.mdc-tab-indicator--fade .mdc-tab-indicator__content{transition-delay:100ms}`;
-
-let PoLRTabIndicator = class PoLRTabIndicator extends TabIndicatorBase {
-};
-PoLRTabIndicator.styles = [styles];
-PoLRTabIndicator = __decorate([
-    e$5("polr-tab-indicator")
-], PoLRTabIndicator);
-
-let PoLRTab = class PoLRTab extends TabBase {
-    renderIndicator() {
-        return x `<polr-tab-indicator
-            .icon="${this.indicatorIcon}"
-            .fade="${this.isFadingIndicator}"></polr-tab-indicator>`;
-    }
-};
-PoLRTab.styles = [styles$1];
-PoLRTab = __decorate([
-    e$5("polr-tab")
-], PoLRTab);
-__decorate([i$1("polr-tab-indicator")], TabBase.prototype, "tabIndicator", void 0);
+    n$1()
+], PoLRYTubeBrowser.prototype, "hass", void 0);
+__decorate([
+    t$1()
+], PoLRYTubeBrowser.prototype, "initialAction", void 0);
+__decorate([
+    t$1()
+], PoLRYTubeBrowser.prototype, "_browseHistory", void 0);
+__decorate([
+    t$1()
+], PoLRYTubeBrowser.prototype, "_polrYTubeList", void 0);
+PoLRYTubeBrowser = __decorate([
+    e$5("polr-ytube-browser")
+], PoLRYTubeBrowser);
 
 class PoLRYTubeItem {
 }
@@ -6847,12 +6847,11 @@ class PoLRYTubePlayingCard extends s$1 {
                         ${this._renderSecondary()}
                     </div>
                     <div class="action-container">
-                        <div class="actions">
-                            ${this._renderLikeButton()}
-                            ${this._renderSourceSelctor()}
-                        </div>
+                        ${this._renderLikeButton()}
+                        ${this._renderSourceSelctor()}
                     </div>
                 </div>
+                </polr-header>
                 <div class="content">
                     <polr-tab-bar
                         activeIndex=${this._activeTab}
@@ -6960,7 +6959,7 @@ class PoLRYTubePlayingCard extends s$1 {
                     gap: 12px;
                 }
 
-                .actions {
+                .action-container {
                     display: flex;
                     justify-content: flex-end;
                 }
