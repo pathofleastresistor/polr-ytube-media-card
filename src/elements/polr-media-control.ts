@@ -57,6 +57,9 @@ export class PoLRMediaControl extends LitElement {
 
     render() {
         return html`
+            <div id="progress" @click=${this._seekProgress}>
+                ${this._renderProgressBar()}
+            </div>
             <div class="controls">
                 ${this._renderMuteToggle()}
                 <md-slider
@@ -68,9 +71,6 @@ export class PoLRMediaControl extends LitElement {
                     @change=${this._changeVolume}></md-slider>
                 ${this._renderPrevious()} ${this._renderPlayPause()}
                 ${this._renderNext()}
-            </div>
-            <div id="progress" @click=${this._seekProgress}>
-                ${this._renderProgressBar()}
             </div>
         `;
     }
@@ -213,14 +213,18 @@ export class PoLRMediaControl extends LitElement {
                     --md-slider-inactive-track-shape: 4px;
                     --md-slider-active-track-height: 5px;
                     --md-slider-inactive-track-height: 5px;
+                    --mdc-icon-button-size: 40px;
+                    --mdc-icon-size: 20px;
                     display: grid;
-                    gap: 12px;
+                    gap: 24px;
                 }
 
                 .controls {
                     display: grid;
-                    grid-template-columns: min-content 1fr min-content min-content min-content;
+                    grid-template-columns: min-content min-content min-content min-content min-content;
                     align-items: center;
+
+                    justify-content: space-evenly;
                 }
 
                 #progress {

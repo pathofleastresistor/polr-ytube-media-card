@@ -71,7 +71,7 @@ export class PoLRYTubePlaying extends LitElement {
     }
 
     public refresh(entity) {
-        this._entity = entity;
+        if (entity != null) this._entity = entity;
         this._getCurrentlyPlayingItems();
     }
 

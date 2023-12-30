@@ -51,13 +51,13 @@ export class PoLRYTubePlayingCard extends LitElement {
         this._hass = hass;
         const newEntity = this._hass["states"][this._config["entity_id"]];
         this._entity = structuredClone(newEntity);
-        this._playing?.refresh(this._entity);
+        this._playing?.refresh();
 
         if (this._hasEntityChanged(this._entity, newEntity)) {
             if (this._entity["state"] == "off") {
                 this._changeTab(PoLRYTubeTab.FOR_YOU);
             } else {
-                this._playing?.refresh(this._entity);
+                //this._playing?.refresh(this._entity);
             }
         }
     }
@@ -372,7 +372,7 @@ export class PoLRYTubePlayingCard extends LitElement {
                 }
 
                 .content {
-                    padding: 12px;
+                    padding: 24px 12px;
                     display: grid;
                     gap: 12px;
                 }

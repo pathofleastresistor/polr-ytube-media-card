@@ -6529,6 +6529,9 @@ let PoLRMediaControl = class PoLRMediaControl extends s$1 {
     }
     render() {
         return x `
+            <div id="progress" @click=${this._seekProgress}>
+                ${this._renderProgressBar()}
+            </div>
             <div class="controls">
                 ${this._renderMuteToggle()}
                 <md-slider
@@ -6540,9 +6543,6 @@ let PoLRMediaControl = class PoLRMediaControl extends s$1 {
                     @change=${this._changeVolume}></md-slider>
                 ${this._renderPrevious()} ${this._renderPlayPause()}
                 ${this._renderNext()}
-            </div>
-            <div id="progress" @click=${this._seekProgress}>
-                ${this._renderProgressBar()}
             </div>
         `;
     }
@@ -6670,14 +6670,18 @@ let PoLRMediaControl = class PoLRMediaControl extends s$1 {
                     --md-slider-inactive-track-shape: 4px;
                     --md-slider-active-track-height: 5px;
                     --md-slider-inactive-track-height: 5px;
+                    --mdc-icon-button-size: 40px;
+                    --mdc-icon-size: 20px;
                     display: grid;
-                    gap: 12px;
+                    gap: 24px;
                 }
 
                 .controls {
                     display: grid;
-                    grid-template-columns: min-content 1fr min-content min-content min-content;
+                    grid-template-columns: min-content min-content min-content min-content min-content;
                     align-items: center;
+
+                    justify-content: space-evenly;
                 }
 
                 #progress {
@@ -6774,7 +6778,8 @@ let PoLRYTubePlaying = class PoLRYTubePlaying extends s$1 {
         }
     }
     refresh(entity) {
-        this._entity = entity;
+        if (entity != null)
+            this._entity = entity;
         this._getCurrentlyPlayingItems();
     }
 };
@@ -6895,8 +6900,11 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
                 }
                 .crumb {
                     background-color: rgba(111, 111, 111, 0.2);
-                    padding: 8px;
+                    padding: 4px 8px;
                     border-radius: 12px;
+                    text-transform: uppercase;
+                    font-size: 10px;
+                    font-weight: bold;
                 }
                 .separator {
                     font-weight: bold;
@@ -6950,17 +6958,14 @@ class PoLRYTubePlayingCard extends s$1 {
             this._config.searchTitle = "mdi:speaker";
     }
     set hass(hass) {
-        var _a, _b;
+        var _a;
         this._hass = hass;
         const newEntity = this._hass["states"][this._config["entity_id"]];
         this._entity = structuredClone(newEntity);
-        (_a = this._playing) === null || _a === void 0 ? void 0 : _a.refresh(this._entity);
+        (_a = this._playing) === null || _a === void 0 ? void 0 : _a.refresh();
         if (this._hasEntityChanged(this._entity, newEntity)) {
             if (this._entity["state"] == "off") {
                 this._changeTab(1 /* PoLRYTubeTab.FOR_YOU */);
-            }
-            else {
-                (_b = this._playing) === null || _b === void 0 ? void 0 : _b.refresh(this._entity);
             }
         }
     }
@@ -7248,7 +7253,7 @@ class PoLRYTubePlayingCard extends s$1 {
                 }
 
                 .content {
-                    padding: 12px;
+                    padding: 24px 12px;
                     display: grid;
                     gap: 12px;
                 }

@@ -117,8 +117,11 @@ export class PoLRYTubeBrowser extends LitElement {
                 }
                 .crumb {
                     background-color: rgba(111, 111, 111, 0.2);
-                    padding: 8px;
+                    padding: 4px 8px;
                     border-radius: 12px;
+                    text-transform: uppercase;
+                    font-size: 10px;
+                    font-weight: bold;
                 }
                 .separator {
                     font-weight: bold;
