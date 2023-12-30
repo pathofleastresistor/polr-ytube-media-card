@@ -10,7 +10,14 @@ import "@material/mwc-select";
 export class PoLRYTubeSearch extends LitElement {
     @property() public _hass: any;
     @state() public _entity: any;
+    @state() public _limit: number;
     @state() private _polrYTubeList: PoLRYTubeList;
+
+    constructor() {
+        super();
+
+        this._limit = 25;
+    }
 
     protected firstUpdated(_changedProperties): void {
         this._polrYTubeList = this.renderRoot.querySelector("polr-ytube-list");
@@ -98,14 +105,14 @@ export class PoLRYTubeSearch extends LitElement {
             data = {
                 entity_id: this._entity?.entity_id,
                 query: query,
-                limit: 50,
+                limit: this._limit,
             };
         } else {
             data = {
                 entity_id: this._entity?.entity_id,
                 query: query,
                 filter: filter,
-                limit: 50,
+                limit: this._limit,
             };
         }
 

@@ -25,11 +25,15 @@ export class PoLRYTubePlaying extends LitElement {
 
     async _getCurrentlyPlayingItems() {
         let media_content_type = this._entity?.attributes?.media_content_type;
+        let _media_type = this._entity?.attributes?._media_type;
         let results;
-        if (this._entity.state == "idle") return;
+        if (this._entity?.state == "idle") return;
 
         try {
-            if (FetchableMediaContentType.includes(media_content_type)) {
+            if (
+                FetchableMediaContentType.includes(media_content_type) &&
+                !["album"].includes(_media_type)
+            ) {
                 results = await this._hass.callWS({
                     type: "media_player/browse_media",
                     entity_id: this._entity["entity_id"],
@@ -38,24 +42,20 @@ export class PoLRYTubePlaying extends LitElement {
                 });
             }
 
-            if (["album"].includes(media_content_type)) {
+            if (["album"].includes(_media_type)) {
                 results = await this._hass.callWS({
                     type: "media_player/browse_media",
-                    entity_id: this._entity["entity_id"],
+                    entity_id: this._entity?.entity_id,
                     media_content_type: "album_of_track",
                     media_content_id: "1",
                 });
             }
 
-            if (
-                //this._entity.state == "idle" ||
-                this._entity.attributes?.media_title == "loading..."
-            ) {
+            if (this._entity?.attributes?.media_title == "loading...") {
                 this._polrYTubeList.state = PoLRYTubeListState.LOADING;
                 return;
             }
 
-            //console.log(this._entity);
             if (results?.children?.length > 0) {
                 this._polrYTubeList.elements = results.children;
                 this._polrYTubeList.state = PoLRYTubeListState.HAS_RESULTS;
@@ -70,7 +70,8 @@ export class PoLRYTubePlaying extends LitElement {
         }
     }
 
-    public refresh() {
+    public refresh(entity) {
+        this._entity = entity;
         this._getCurrentlyPlayingItems();
     }
 

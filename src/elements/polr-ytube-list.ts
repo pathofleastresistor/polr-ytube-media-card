@@ -24,11 +24,11 @@ export class PoLRYTubeList extends LitElement {
     protected updated(
         _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
     ): void {
-        this.renderRoot.querySelector(".current")?.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-            inline: "center",
-        });
+        // this.renderRoot.querySelector(".current")?.scrollIntoView({
+        //     behavior: "smooth",
+        //     block: "start",
+        //     inline: "center",
+        // });
     }
 
     private _is_current(element: PoLRYTubeItem): boolean {
@@ -170,8 +170,6 @@ export class PoLRYTubeList extends LitElement {
     }
 
     private async _play(element: PoLRYTubeItem) {
-        console.log(element);
-
         if (element.media_content_type == "PLAYLIST_GOTO_TRACK") {
             this.hass.callService("ytube_music_player", "call_method", {
                 entity_id: this.entity["entity_id"],

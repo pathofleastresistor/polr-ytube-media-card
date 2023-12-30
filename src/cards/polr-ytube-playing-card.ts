@@ -1,4 +1,11 @@
-import { LitElement, html, css, CSSResultGroup, PropertyValueMap } from "lit";
+import {
+    LitElement,
+    html,
+    css,
+    CSSResultGroup,
+    PropertyValueMap,
+    nothing,
+} from "lit";
 import { property, state } from "lit/decorators.js";
 import "../shared/polr-tab";
 import "../shared/polr-tab-bar";
@@ -49,7 +56,7 @@ export class PoLRYTubePlayingCard extends LitElement {
             if (this._entity["state"] == "off") {
                 this._changeTab(PoLRYTubeTab.FOR_YOU);
             } else {
-                this._playing?.refresh();
+                this._playing?.refresh(this._entity);
             }
         }
     }
@@ -58,28 +65,20 @@ export class PoLRYTubePlayingCard extends LitElement {
         _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
     ): void {
         // (async () => await loadHaForm())();
-
         this._menuButton = this.renderRoot.querySelector("#menuButton");
         this._menu = this.renderRoot.querySelector("#menu");
         this._playing = this.renderRoot.querySelector("#playing");
     }
 
-    shouldUpdate(changedProperties: Map<string, any>) {
-        const _hass = changedProperties.get("_hass");
-        if (_hass != null) {
-            return this._hasEntityChanged(
-                this._entity,
-                _hass["states"][this._config["entity_id"]]
-            );
-        }
-        return true;
-    }
-
     private _hasEntityChanged(current, updated) {
         return (
+            current?.state != updated?.state ||
             current?.attributes?.media_title !=
                 updated?.attributes?.media_title ||
-            current?.attributes?.likeStatus != updated?.attributes?.likeStatus
+            current?.attributes?.likeStatus !=
+                updated?.attributes?.likeStatus ||
+            current?.attributes.media_content_id !=
+                updated?.attributes.media_content_id
         );
     }
 
@@ -97,7 +96,7 @@ export class PoLRYTubePlayingCard extends LitElement {
 
     _renderLikeButton() {
         if (this._entity?.state == "off") return html``;
-        if (!("likeStatus" in this._entity["attributes"])) return html``;
+        if (!this._entity?.attributes?.likeStatus) return html``;
 
         if (this._entity?.attributes?.likeStatus == "LIKE") {
             return html`
@@ -128,13 +127,13 @@ export class PoLRYTubePlayingCard extends LitElement {
 
         const items = [];
         if (
-            "media_title" in this._entity?.attributes &&
+            this._entity?.attributes?.media_title &&
             this._entity.attributes.media_title != ""
         )
             items.push(this._entity.attributes.media_title);
 
         if (
-            "media_artist" in this._entity?.attributes &&
+            this._entity?.attributes?.media_artist &&
             this._entity.attributes.media_artist != ""
         )
             items.push(this._entity.attributes.media_artist);
@@ -148,7 +147,7 @@ export class PoLRYTubePlayingCard extends LitElement {
         for (const [key, value] of Object.entries(this._hass["states"])) {
             if (key.startsWith("media_player")) {
                 // Skip ytube_media_player entities
-                if ("remote_player_id" in value["attributes"]) continue;
+                if ((value as any)?.attributes?.remote_player_id) continue;
 
                 media_players.push([key, value["attributes"]["friendly_name"]]);
             }
@@ -184,8 +183,7 @@ export class PoLRYTubePlayingCard extends LitElement {
                     naturalmenuwidth
                     fixed>
                     ${media_players.map((item) =>
-                        item[0] ==
-                        this._entity["attributes"]["remote_player_id"]
+                        item[0] == this._entity?.attributes?.remote_player_id
                             ? html`<mwc-list-item
                                   selected
                                   activated
@@ -202,50 +200,61 @@ export class PoLRYTubePlayingCard extends LitElement {
     }
 
     _renderTab() {
-        if (this._activeTab == PoLRYTubeTab.FOR_YOU) {
-            const item = new PoLRYTubeItem();
-            item.media_content_id = "";
-            item.media_content_type = "mood_overview";
-            item.title = "For You";
+        let tabs = [];
 
-            return html`
-                <polr-ytube-browser
-                    .hass=${this._hass}
-                    .entity=${this._entity}
-                    .initialAction=${item}></polr-ytube-browser>
-            `;
-        }
-        if (this._activeTab == PoLRYTubeTab.YOURS) {
-            const item = new PoLRYTubeItem();
-            item.title = "Yours";
+        const forYouItem = new PoLRYTubeItem();
+        forYouItem.media_content_id = "";
+        forYouItem.media_content_type = "mood_overview";
+        forYouItem.title = "For You";
 
-            return html`
-                <polr-ytube-browser
-                    .hass=${this._hass}
-                    .entity=${this._entity}
-                    .initialAction=${item}></polr-ytube-browser>
-            `;
-        }
+        const item = new PoLRYTubeItem();
+        item.title = "Yours";
 
-        if (this._activeTab == PoLRYTubeTab.SEARCH) {
-            return html`
-                <polr-ytube-search
-                    ._hass=${this._hass}
-                    ._entity=${this._entity}
-                    ._config=${{
-                        entity_id: this._config["entity_id"],
-                    }}></polr-ytube-search>
-            `;
-        }
+        // Currently Playing Tab
+        tabs.push(html`
+            <polr-ytube-playing
+                class="${this._activeTab == PoLRYTubeTab.CURRENTLY_PLAYING
+                    ? "activeTab"
+                    : "hiddenTab"}"
+                id="playing"
+                ._hass=${this._hass}
+                ._entity=${this._entity}></polr-ytube-playing>
+        `);
 
-        if (this._activeTab == PoLRYTubeTab.CURRENTLY_PLAYING) {
-            return html`
-                <polr-ytube-playing
-                    id="playing"
-                    ._hass=${this._hass}
-                    ._entity=${this._entity}></polr-ytube-playing>
-            `;
-        }
+        // For You Tab
+        tabs.push(html`
+            <polr-ytube-browser
+                class="${this._activeTab == PoLRYTubeTab.FOR_YOU
+                    ? "activeTab"
+                    : "hiddenTab"}"
+                .hass=${this._hass}
+                .entity=${this._entity}
+                .initialAction=${forYouItem}></polr-ytube-browser>
+        `);
+
+        // Search tab
+        tabs.push(html`
+            <polr-ytube-search
+                class="${this._activeTab == PoLRYTubeTab.SEARCH
+                    ? "activeTab"
+                    : "hiddenTab"}"
+                ._hass=${this._hass}
+                ._entity=${this._entity}
+                ._limit="50"></polr-ytube-search>
+        `);
+
+        // Yours tab
+        tabs.push(html`
+            <polr-ytube-browser
+                class="${this._activeTab == PoLRYTubeTab.YOURS
+                    ? "activeTab"
+                    : "hiddenTab"}"
+                .hass=${this._hass}
+                .entity=${this._entity}
+                .initialAction=${item}></polr-ytube-browser>
+        `);
+
+        return tabs;
     }
 
     render() {
@@ -311,7 +320,7 @@ export class PoLRYTubePlayingCard extends LitElement {
 
     async _selectSource(ev) {
         const selectedSource = this._menu.selected.value;
-        const currentSource = this._entity["attributes"]["remote_player_id"];
+        const currentSource = this._entity?.attributes?.remote_player_id;
 
         if (selectedSource == "") return;
         if (selectedSource == currentSource) return;
@@ -384,6 +393,9 @@ export class PoLRYTubePlayingCard extends LitElement {
                 }
                 .source {
                     position: relative;
+                }
+                .hiddenTab {
+                    display: none;
                 }
             `,
         ];

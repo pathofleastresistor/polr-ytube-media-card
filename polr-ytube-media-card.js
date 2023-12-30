@@ -170,12 +170,11 @@ const isNumeric = (num) => (typeof num === "number" ||
 
 let PoLRYTubeList = class PoLRYTubeList extends s$1 {
     updated(_changedProperties) {
-        var _a;
-        (_a = this.renderRoot.querySelector(".current")) === null || _a === void 0 ? void 0 : _a.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-            inline: "center",
-        });
+        // this.renderRoot.querySelector(".current")?.scrollIntoView({
+        //     behavior: "smooth",
+        //     block: "start",
+        //     inline: "center",
+        // });
     }
     _is_current(element) {
         if (this.entity == null)
@@ -296,7 +295,6 @@ let PoLRYTubeList = class PoLRYTubeList extends s$1 {
         return;
     }
     async _play(element) {
-        console.log(element);
         if (element.media_content_type == "PLAYLIST_GOTO_TRACK") {
             this.hass.callService("ytube_music_player", "call_method", {
                 entity_id: this.entity["entity_id"],
@@ -4164,6 +4162,10 @@ Select = __decorate([
 ], Select);
 
 let PoLRYTubeSearch = class PoLRYTubeSearch extends s$1 {
+    constructor() {
+        super();
+        this._limit = 25;
+    }
     firstUpdated(_changedProperties) {
         this._polrYTubeList = this.renderRoot.querySelector("polr-ytube-list");
     }
@@ -4245,7 +4247,7 @@ let PoLRYTubeSearch = class PoLRYTubeSearch extends s$1 {
             data = {
                 entity_id: (_a = this._entity) === null || _a === void 0 ? void 0 : _a.entity_id,
                 query: query,
-                limit: 50,
+                limit: this._limit,
             };
         }
         else {
@@ -4253,7 +4255,7 @@ let PoLRYTubeSearch = class PoLRYTubeSearch extends s$1 {
                 entity_id: (_b = this._entity) === null || _b === void 0 ? void 0 : _b.entity_id,
                 query: query,
                 filter: filter,
-                limit: 50,
+                limit: this._limit,
             };
         }
         await this._hass.callService("ytube_music_player", "search", data);
@@ -4274,6 +4276,9 @@ __decorate([
 __decorate([
     t$1()
 ], PoLRYTubeSearch.prototype, "_entity", void 0);
+__decorate([
+    t$1()
+], PoLRYTubeSearch.prototype, "_limit", void 0);
 __decorate([
     t$1()
 ], PoLRYTubeSearch.prototype, "_polrYTubeList", void 0);
@@ -6505,13 +6510,15 @@ let PoLRYTubePlaying = class PoLRYTubePlaying extends s$1 {
         `;
     }
     async _getCurrentlyPlayingItems() {
-        var _a, _b, _c, _d;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
         let media_content_type = (_b = (_a = this._entity) === null || _a === void 0 ? void 0 : _a.attributes) === null || _b === void 0 ? void 0 : _b.media_content_type;
+        let _media_type = (_d = (_c = this._entity) === null || _c === void 0 ? void 0 : _c.attributes) === null || _d === void 0 ? void 0 : _d._media_type;
         let results;
-        if (this._entity.state == "idle")
+        if (((_e = this._entity) === null || _e === void 0 ? void 0 : _e.state) == "idle")
             return;
         try {
-            if (FetchableMediaContentType.includes(media_content_type)) {
+            if (FetchableMediaContentType.includes(media_content_type) &&
+                !["album"].includes(_media_type)) {
                 results = await this._hass.callWS({
                     type: "media_player/browse_media",
                     entity_id: this._entity["entity_id"],
@@ -6519,22 +6526,19 @@ let PoLRYTubePlaying = class PoLRYTubePlaying extends s$1 {
                     media_content_id: "",
                 });
             }
-            if (["album"].includes(media_content_type)) {
+            if (["album"].includes(_media_type)) {
                 results = await this._hass.callWS({
                     type: "media_player/browse_media",
-                    entity_id: this._entity["entity_id"],
+                    entity_id: (_f = this._entity) === null || _f === void 0 ? void 0 : _f.entity_id,
                     media_content_type: "album_of_track",
                     media_content_id: "1",
                 });
             }
-            if (
-            //this._entity.state == "idle" ||
-            ((_c = this._entity.attributes) === null || _c === void 0 ? void 0 : _c.media_title) == "loading...") {
+            if (((_h = (_g = this._entity) === null || _g === void 0 ? void 0 : _g.attributes) === null || _h === void 0 ? void 0 : _h.media_title) == "loading...") {
                 this._polrYTubeList.state = 4 /* PoLRYTubeListState.LOADING */;
                 return;
             }
-            //console.log(this._entity);
-            if (((_d = results === null || results === void 0 ? void 0 : results.children) === null || _d === void 0 ? void 0 : _d.length) > 0) {
+            if (((_j = results === null || results === void 0 ? void 0 : results.children) === null || _j === void 0 ? void 0 : _j.length) > 0) {
                 this._polrYTubeList.elements = results.children;
                 this._polrYTubeList.state = 2 /* PoLRYTubeListState.HAS_RESULTS */;
             }
@@ -6549,7 +6553,8 @@ let PoLRYTubePlaying = class PoLRYTubePlaying extends s$1 {
             this._polrYTubeList.state = 16 /* PoLRYTubeListState.ERROR */;
         }
     }
-    refresh() {
+    refresh(entity) {
+        this._entity = entity;
         this._getCurrentlyPlayingItems();
     }
 };
@@ -6734,7 +6739,7 @@ class PoLRYTubePlayingCard extends s$1 {
                 this._changeTab(1 /* PoLRYTubeTab.FOR_YOU */);
             }
             else {
-                (_a = this._playing) === null || _a === void 0 ? void 0 : _a.refresh();
+                (_a = this._playing) === null || _a === void 0 ? void 0 : _a.refresh(this._entity);
             }
         }
     }
@@ -6744,18 +6749,15 @@ class PoLRYTubePlayingCard extends s$1 {
         this._menu = this.renderRoot.querySelector("#menu");
         this._playing = this.renderRoot.querySelector("#playing");
     }
-    shouldUpdate(changedProperties) {
-        const _hass = changedProperties.get("_hass");
-        if (_hass != null) {
-            return this._hasEntityChanged(this._entity, _hass["states"][this._config["entity_id"]]);
-        }
-        return true;
-    }
     _hasEntityChanged(current, updated) {
         var _a, _b, _c, _d;
-        return (((_a = current === null || current === void 0 ? void 0 : current.attributes) === null || _a === void 0 ? void 0 : _a.media_title) !=
-            ((_b = updated === null || updated === void 0 ? void 0 : updated.attributes) === null || _b === void 0 ? void 0 : _b.media_title) ||
-            ((_c = current === null || current === void 0 ? void 0 : current.attributes) === null || _c === void 0 ? void 0 : _c.likeStatus) != ((_d = updated === null || updated === void 0 ? void 0 : updated.attributes) === null || _d === void 0 ? void 0 : _d.likeStatus));
+        return ((current === null || current === void 0 ? void 0 : current.state) != (updated === null || updated === void 0 ? void 0 : updated.state) ||
+            ((_a = current === null || current === void 0 ? void 0 : current.attributes) === null || _a === void 0 ? void 0 : _a.media_title) !=
+                ((_b = updated === null || updated === void 0 ? void 0 : updated.attributes) === null || _b === void 0 ? void 0 : _b.media_title) ||
+            ((_c = current === null || current === void 0 ? void 0 : current.attributes) === null || _c === void 0 ? void 0 : _c.likeStatus) !=
+                ((_d = updated === null || updated === void 0 ? void 0 : updated.attributes) === null || _d === void 0 ? void 0 : _d.likeStatus) ||
+            (current === null || current === void 0 ? void 0 : current.attributes.media_content_id) !=
+                (updated === null || updated === void 0 ? void 0 : updated.attributes.media_content_id));
     }
     _renderIcon() {
         var _a, _b, _c, _d;
@@ -6768,12 +6770,12 @@ class PoLRYTubePlayingCard extends s$1 {
         return x `<ha-icon icon="${this._config.icon}"></ha-icon> `;
     }
     _renderLikeButton() {
-        var _a, _b, _c;
+        var _a, _b, _c, _d, _e;
         if (((_a = this._entity) === null || _a === void 0 ? void 0 : _a.state) == "off")
             return x ``;
-        if (!("likeStatus" in this._entity["attributes"]))
+        if (!((_c = (_b = this._entity) === null || _b === void 0 ? void 0 : _b.attributes) === null || _c === void 0 ? void 0 : _c.likeStatus))
             return x ``;
-        if (((_c = (_b = this._entity) === null || _b === void 0 ? void 0 : _b.attributes) === null || _c === void 0 ? void 0 : _c.likeStatus) == "LIKE") {
+        if (((_e = (_d = this._entity) === null || _d === void 0 ? void 0 : _d.attributes) === null || _e === void 0 ? void 0 : _e.likeStatus) == "LIKE") {
             return x `
                 <mwc-icon-button @click=${() => this._likeSong("thumb_middle")}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -6797,25 +6799,26 @@ class PoLRYTubePlayingCard extends s$1 {
         }
     }
     _renderSecondary() {
-        var _a, _b, _c;
+        var _a, _b, _c, _d, _e;
         // TODO: Implement a title
         if (((_a = this._entity) === null || _a === void 0 ? void 0 : _a.state) == "off")
             return x ``;
         const items = [];
-        if ("media_title" in ((_b = this._entity) === null || _b === void 0 ? void 0 : _b.attributes) &&
+        if (((_c = (_b = this._entity) === null || _b === void 0 ? void 0 : _b.attributes) === null || _c === void 0 ? void 0 : _c.media_title) &&
             this._entity.attributes.media_title != "")
             items.push(this._entity.attributes.media_title);
-        if ("media_artist" in ((_c = this._entity) === null || _c === void 0 ? void 0 : _c.attributes) &&
+        if (((_e = (_d = this._entity) === null || _d === void 0 ? void 0 : _d.attributes) === null || _e === void 0 ? void 0 : _e.media_artist) &&
             this._entity.attributes.media_artist != "")
             items.push(this._entity.attributes.media_artist);
         return x ` <div class="secondary">${items.join(" - ")}</div> `;
     }
     _renderSourceSelctor() {
+        var _a;
         const media_players = [];
         for (const [key, value] of Object.entries(this._hass["states"])) {
             if (key.startsWith("media_player")) {
                 // Skip ytube_media_player entities
-                if ("remote_player_id" in value["attributes"])
+                if ((_a = value === null || value === void 0 ? void 0 : value.attributes) === null || _a === void 0 ? void 0 : _a.remote_player_id)
                     continue;
                 media_players.push([key, value["attributes"]["friendly_name"]]);
             }
@@ -6848,62 +6851,72 @@ class PoLRYTubePlayingCard extends s$1 {
                     menuCorner="END"
                     naturalmenuwidth
                     fixed>
-                    ${media_players.map((item) => item[0] ==
-            this._entity["attributes"]["remote_player_id"]
-            ? x `<mwc-list-item
+                    ${media_players.map((item) => {
+            var _a, _b;
+            return item[0] == ((_b = (_a = this._entity) === null || _a === void 0 ? void 0 : _a.attributes) === null || _b === void 0 ? void 0 : _b.remote_player_id)
+                ? x `<mwc-list-item
                                   selected
                                   activated
                                   value=${item[0]}>
                                   ${item[1]}
                               </mwc-list-item> `
-            : x `<mwc-list-item value=${item[0]}
+                : x `<mwc-list-item value=${item[0]}
                                   >${item[1]}</mwc-list-item
-                              > `)}
+                              > `;
+        })}
                 </mwc-menu>
             </div>
         `;
     }
     _renderTab() {
-        if (this._activeTab == 1 /* PoLRYTubeTab.FOR_YOU */) {
-            const item = new PoLRYTubeItem();
-            item.media_content_id = "";
-            item.media_content_type = "mood_overview";
-            item.title = "For You";
-            return x `
-                <polr-ytube-browser
-                    .hass=${this._hass}
-                    .entity=${this._entity}
-                    .initialAction=${item}></polr-ytube-browser>
-            `;
-        }
-        if (this._activeTab == 3 /* PoLRYTubeTab.YOURS */) {
-            const item = new PoLRYTubeItem();
-            item.title = "Yours";
-            return x `
-                <polr-ytube-browser
-                    .hass=${this._hass}
-                    .entity=${this._entity}
-                    .initialAction=${item}></polr-ytube-browser>
-            `;
-        }
-        if (this._activeTab == 2 /* PoLRYTubeTab.SEARCH */) {
-            return x `
-                <polr-ytube-search
-                    ._hass=${this._hass}
-                    ._entity=${this._entity}
-                    ._config=${{
-                entity_id: this._config["entity_id"],
-            }}></polr-ytube-search>
-            `;
-        }
-        if (this._activeTab == 0 /* PoLRYTubeTab.CURRENTLY_PLAYING */) {
-            return x `
-                <polr-ytube-playing
-                    id="playing"
-                    ._hass=${this._hass}
-                    ._entity=${this._entity}></polr-ytube-playing>
-            `;
-        }
+        let tabs = [];
+        const forYouItem = new PoLRYTubeItem();
+        forYouItem.media_content_id = "";
+        forYouItem.media_content_type = "mood_overview";
+        forYouItem.title = "For You";
+        const item = new PoLRYTubeItem();
+        item.title = "Yours";
+        // Currently Playing Tab
+        tabs.push(x `
+            <polr-ytube-playing
+                class="${this._activeTab == 0 /* PoLRYTubeTab.CURRENTLY_PLAYING */
+            ? "activeTab"
+            : "hiddenTab"}"
+                id="playing"
+                ._hass=${this._hass}
+                ._entity=${this._entity}></polr-ytube-playing>
+        `);
+        // For You Tab
+        tabs.push(x `
+            <polr-ytube-browser
+                class="${this._activeTab == 1 /* PoLRYTubeTab.FOR_YOU */
+            ? "activeTab"
+            : "hiddenTab"}"
+                .hass=${this._hass}
+                .entity=${this._entity}
+                .initialAction=${forYouItem}></polr-ytube-browser>
+        `);
+        // Search tab
+        tabs.push(x `
+            <polr-ytube-search
+                class="${this._activeTab == 2 /* PoLRYTubeTab.SEARCH */
+            ? "activeTab"
+            : "hiddenTab"}"
+                ._hass=${this._hass}
+                ._entity=${this._entity}
+                ._limit="50"></polr-ytube-search>
+        `);
+        // Yours tab
+        tabs.push(x `
+            <polr-ytube-browser
+                class="${this._activeTab == 3 /* PoLRYTubeTab.YOURS */
+            ? "activeTab"
+            : "hiddenTab"}"
+                .hass=${this._hass}
+                .entity=${this._entity}
+                .initialAction=${item}></polr-ytube-browser>
+        `);
+        return tabs;
     }
     render() {
         return x `
@@ -6960,8 +6973,9 @@ class PoLRYTubePlayingCard extends s$1 {
         this.requestUpdate();
     }
     async _selectSource(ev) {
+        var _a, _b;
         const selectedSource = this._menu.selected.value;
-        const currentSource = this._entity["attributes"]["remote_player_id"];
+        const currentSource = (_b = (_a = this._entity) === null || _a === void 0 ? void 0 : _a.attributes) === null || _b === void 0 ? void 0 : _b.remote_player_id;
         if (selectedSource == "")
             return;
         if (selectedSource == currentSource)
@@ -7033,6 +7047,9 @@ class PoLRYTubePlayingCard extends s$1 {
                 }
                 .source {
                     position: relative;
+                }
+                .hiddenTab {
+                    display: none;
                 }
             `,
         ];
