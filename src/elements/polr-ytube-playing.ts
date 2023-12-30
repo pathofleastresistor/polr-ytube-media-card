@@ -2,7 +2,7 @@ import { LitElement, html, css, CSSResultGroup, PropertyValueMap } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import "../elements/polr-ytube-list";
 import { PoLRYTubeList } from "../elements/polr-ytube-list";
-import { PoLRYTubeListState } from "../utils/utils";
+import { FetchableMediaContentType, PoLRYTubeListState } from "../utils/utils";
 
 @customElement("polr-ytube-playing")
 export class PoLRYTubePlaying extends LitElement {
@@ -24,12 +24,12 @@ export class PoLRYTubePlaying extends LitElement {
     }
 
     async _getCurrentlyPlayingItems() {
-        let media_type = this._entity["attributes"]["_media_type"];
+        let media_content_type = this._entity?.attributes?.media_content_type;
         let results;
+        if (this._entity.state == "idle") return;
 
         try {
-            this._polrYTubeList.state = PoLRYTubeListState.LOADING;
-            if (["vid_channel", "playlist", "track"].includes(media_type)) {
+            if (FetchableMediaContentType.includes(media_content_type)) {
                 results = await this._hass.callWS({
                     type: "media_player/browse_media",
                     entity_id: this._entity["entity_id"],
@@ -38,7 +38,7 @@ export class PoLRYTubePlaying extends LitElement {
                 });
             }
 
-            if (["album"].includes(media_type)) {
+            if (["album"].includes(media_content_type)) {
                 results = await this._hass.callWS({
                     type: "media_player/browse_media",
                     entity_id: this._entity["entity_id"],
@@ -46,14 +46,22 @@ export class PoLRYTubePlaying extends LitElement {
                     media_content_id: "1",
                 });
             }
-            //console.log(results);
 
+            if (
+                //this._entity.state == "idle" ||
+                this._entity.attributes?.media_title == "loading..."
+            ) {
+                this._polrYTubeList.state = PoLRYTubeListState.LOADING;
+                return;
+            }
+
+            //console.log(this._entity);
             if (results?.children?.length > 0) {
                 this._polrYTubeList.elements = results.children;
                 this._polrYTubeList.state = PoLRYTubeListState.HAS_RESULTS;
             } else {
-                this._polrYTubeList.elements = [];
-                this._polrYTubeList.state = PoLRYTubeListState.NO_RESULTS;
+                //this._polrYTubeList.elements = [];
+                //this._polrYTubeList.state = PoLRYTubeListState.NO_RESULTS;
             }
             this.requestUpdate();
         } catch (e) {

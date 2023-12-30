@@ -1,6 +1,18 @@
-import { LitElement, html, css, CSSResultGroup, nothing } from "lit";
+import {
+    LitElement,
+    html,
+    css,
+    CSSResultGroup,
+    nothing,
+    PropertyValueMap,
+} from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { PoLRYTubeItem, PoLRYTubeListState } from "../utils/utils";
+import {
+    isNumeric,
+    PlayableMediaList,
+    PoLRYTubeItem,
+    PoLRYTubeListState,
+} from "../utils/utils";
 
 @customElement("polr-ytube-list")
 export class PoLRYTubeList extends LitElement {
@@ -9,8 +21,20 @@ export class PoLRYTubeList extends LitElement {
     @property() public elements: PoLRYTubeItem[];
     @property() public state: PoLRYTubeListState;
 
+    protected updated(
+        _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
+    ): void {
+        this.renderRoot.querySelector(".current")?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+            inline: "center",
+        });
+    }
+
     private _is_current(element: PoLRYTubeItem): boolean {
         if (this.entity == null) return false;
+        if (!isNumeric(element.media_content_id)) return false;
+
         if ("current_track" in this.entity["attributes"]) {
             return (
                 parseInt(element.media_content_id) - 1 ==
@@ -93,6 +117,8 @@ export class PoLRYTubeList extends LitElement {
         }
 
         if (this.state == PoLRYTubeListState.HAS_RESULTS) {
+            if (this.elements.length == 0) return html``;
+
             const renderedElements = this.elements.map((element) => {
                 return html`
                     <div
@@ -144,18 +170,25 @@ export class PoLRYTubeList extends LitElement {
     }
 
     private async _play(element: PoLRYTubeItem) {
-        if (["track", "playlist"].includes(element.media_content_type)) {
-            this.hass.callService("media_player", "play_media", {
-                entity_id: this.entity["entity_id"],
-                media_content_id: element.media_content_id,
-                media_content_type: element.media_content_type,
-            });
-        } else {
+        console.log(element);
+
+        if (element.media_content_type == "PLAYLIST_GOTO_TRACK") {
             this.hass.callService("ytube_music_player", "call_method", {
                 entity_id: this.entity["entity_id"],
                 command: "goto_track",
                 parameters: element.media_content_id,
             });
+
+            return;
+        }
+        if (PlayableMediaList.includes(element.media_class)) {
+            this.hass.callService("media_player", "play_media", {
+                entity_id: this.entity["entity_id"],
+                media_content_id: element.media_content_id,
+                media_content_type: element.media_content_type,
+            });
+
+            return;
         }
     }
 

@@ -23,3 +23,18 @@ export const enum PoLRYTubeTab {
     SEARCH = 2,
     YOURS = 3,
 }
+
+export const PlayableMediaList = ["track", "playlist", "tv_show", "album"];
+
+export const FetchableMediaContentType = [
+    "vid_channel",
+    "playlist",
+    "track",
+    "speakers",
+    "music",
+];
+
+export const isNumeric = (num: any) =>
+    (typeof num === "number" ||
+        (typeof num === "string" && num.trim() !== "")) &&
+    !isNaN(num as number);
