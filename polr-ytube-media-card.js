@@ -7132,6 +7132,7 @@ class PoLRYTubePlayingCard extends s$1 {
         return tabs;
     }
     render() {
+        var _a;
         return x `
             <ha-card>
                 <div class="header">
@@ -7147,11 +7148,13 @@ class PoLRYTubePlayingCard extends s$1 {
                 </div>
                 </polr-header>
                 <div class="content">
-                    <polr-media-control
-                        id="mediaControl"
-                        .hass=${this._hass}
-                        .entity=${this._entity}>
-                    </polr-media-control>
+                    ${((_a = this._entity) === null || _a === void 0 ? void 0 : _a.state) != "off"
+            ? x `<polr-media-control
+                                  id="mediaControl"
+                                  .hass=${this._hass}
+                                  .entity=${this._entity}>
+                              </polr-media-control>`
+            : A}
                     <polr-tab-bar
                         activeIndex=${this._activeTab}
                         @MDCTabBar:activated="${(ev) => this._changeTab(ev.detail.index)}">

@@ -261,11 +261,15 @@ export class PoLRYTubePlayingCard extends LitElement {
                 </div>
                 </polr-header>
                 <div class="content">
-                    <polr-media-control
-                        id="mediaControl"
-                        .hass=${this._hass}
-                        .entity=${this._entity}>
-                    </polr-media-control>
+                    ${
+                        this._entity?.state != "off"
+                            ? html`<polr-media-control
+                                  id="mediaControl"
+                                  .hass=${this._hass}
+                                  .entity=${this._entity}>
+                              </polr-media-control>`
+                            : nothing
+                    }
                     <polr-tab-bar
                         activeIndex=${this._activeTab}
                         @MDCTabBar:activated="${(ev) =>
