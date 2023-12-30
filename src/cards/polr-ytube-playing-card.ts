@@ -50,14 +50,14 @@ export class PoLRYTubePlayingCard extends LitElement {
     set hass(hass) {
         this._hass = hass;
         const newEntity = this._hass["states"][this._config["entity_id"]];
-
         this._entity = structuredClone(newEntity);
+        this._playing?.refresh(this._entity);
 
         if (this._hasEntityChanged(this._entity, newEntity)) {
             if (this._entity["state"] == "off") {
                 this._changeTab(PoLRYTubeTab.FOR_YOU);
             } else {
-                //this._playing?.refresh(this._entity);
+                this._playing?.refresh(this._entity);
             }
         }
     }

@@ -6950,12 +6950,17 @@ class PoLRYTubePlayingCard extends s$1 {
             this._config.searchTitle = "mdi:speaker";
     }
     set hass(hass) {
+        var _a, _b;
         this._hass = hass;
         const newEntity = this._hass["states"][this._config["entity_id"]];
         this._entity = structuredClone(newEntity);
+        (_a = this._playing) === null || _a === void 0 ? void 0 : _a.refresh(this._entity);
         if (this._hasEntityChanged(this._entity, newEntity)) {
             if (this._entity["state"] == "off") {
                 this._changeTab(1 /* PoLRYTubeTab.FOR_YOU */);
+            }
+            else {
+                (_b = this._playing) === null || _b === void 0 ? void 0 : _b.refresh(this._entity);
             }
         }
     }
