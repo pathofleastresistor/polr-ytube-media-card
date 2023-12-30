@@ -25,7 +25,6 @@ export class PoLRYTubePlayingCard extends LitElement {
     @state() _playing: any;
     @state() _search: any;
     @state() _forYou: any;
-    @state() _yours: any;
     @state() _mediaControl: any;
 
     static getConfigElement() {}
@@ -206,12 +205,7 @@ export class PoLRYTubePlayingCard extends LitElement {
         let tabs = [];
 
         const forYouItem = new PoLRYTubeItem();
-        forYouItem.media_content_id = "";
-        forYouItem.media_content_type = "mood_overview";
-        forYouItem.title = "For You";
-
-        const item = new PoLRYTubeItem();
-        item.title = "Yours";
+        forYouItem.title = "Yours";
 
         // Currently Playing Tab
         tabs.push(html`
@@ -246,17 +240,6 @@ export class PoLRYTubePlayingCard extends LitElement {
                 ._limit="50"></polr-ytube-search>
         `);
 
-        // Yours tab
-        tabs.push(html`
-            <polr-ytube-browser
-                class="${this._activeTab == PoLRYTubeTab.YOURS
-                    ? "activeTab"
-                    : "hiddenTab"}"
-                .hass=${this._hass}
-                .entity=${this._entity}
-                .initialAction=${item}></polr-ytube-browser>
-        `);
-
         return tabs;
     }
 
@@ -288,7 +271,6 @@ export class PoLRYTubePlayingCard extends LitElement {
                         <polr-tab label="Playing"></polr-tab>
                         <polr-tab label="For You"></polr-tab>
                         <polr-tab label="Search"></polr-tab>
-                        <polr-tab label="Yours"></polr-tab>
                     </polr-tab-bar>
 
                     <div class="results">${this._renderTab()}</div>
