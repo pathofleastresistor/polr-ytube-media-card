@@ -247,7 +247,9 @@ export class PoLRYTubePlayingCard extends LitElement {
         return html`
             <ha-card>
                 <div class="header">
-                    <div class="icon-container">${this._renderIcon()}</div>
+                    <div class="icon-container" @click=${
+                        this._togglePower
+                    }>${this._renderIcon()}</div>
                     <div class="info-container">
                         <div class="primary">${this._config.header}</div>
                         ${this._renderSecondary()}
@@ -321,6 +323,13 @@ export class PoLRYTubePlayingCard extends LitElement {
         });
     }
 
+    async _togglePower() {
+        await this._hass.callService("media_player", "turn_off", {
+            entity_id: this._config.entity_id,
+        });
+        this.requestUpdate();
+    }
+
     static get styles(): CSSResultGroup {
         return [
             css`
@@ -348,10 +357,12 @@ export class PoLRYTubePlayingCard extends LitElement {
                     place-content: center;
                     align-items: center;
                 }
+
                 .icon-container > img {
                     width: 40px;
                     height: 40px;
                     border-radius: 5%;
+                    cursor: pointer;
                 }
 
                 .info-container {
