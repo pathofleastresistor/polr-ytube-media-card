@@ -9,6 +9,7 @@ import {
 import { property, state } from "lit/decorators.js";
 import "../shared/polr-tab";
 import "../shared/polr-tab-bar";
+import "../elements/polr-media-control";
 import "../elements/polr-ytube-playing";
 import "../elements/polr-ytube-search";
 import "../elements/polr-ytube-browser";
@@ -25,6 +26,7 @@ export class PoLRYTubePlayingCard extends LitElement {
     @state() _search: any;
     @state() _forYou: any;
     @state() _yours: any;
+    @state() _mediaControl: any;
 
     static getConfigElement() {}
 
@@ -50,13 +52,13 @@ export class PoLRYTubePlayingCard extends LitElement {
         this._hass = hass;
         const newEntity = this._hass["states"][this._config["entity_id"]];
 
-        if (this._hasEntityChanged(this._entity, newEntity)) {
-            this._entity = structuredClone(newEntity);
+        this._entity = structuredClone(newEntity);
 
+        if (this._hasEntityChanged(this._entity, newEntity)) {
             if (this._entity["state"] == "off") {
                 this._changeTab(PoLRYTubeTab.FOR_YOU);
             } else {
-                this._playing?.refresh(this._entity);
+                //this._playing?.refresh(this._entity);
             }
         }
     }
@@ -68,6 +70,7 @@ export class PoLRYTubePlayingCard extends LitElement {
         this._menuButton = this.renderRoot.querySelector("#menuButton");
         this._menu = this.renderRoot.querySelector("#menu");
         this._playing = this.renderRoot.querySelector("#playing");
+        this._mediaControl = this.renderRoot.querySelector("mediaControl");
     }
 
     private _hasEntityChanged(current, updated) {
@@ -273,6 +276,11 @@ export class PoLRYTubePlayingCard extends LitElement {
                 </div>
                 </polr-header>
                 <div class="content">
+                    <polr-media-control
+                        id="mediaControl"
+                        .hass=${this._hass}
+                        .entity=${this._entity}>
+                    </polr-media-control>
                     <polr-tab-bar
                         activeIndex=${this._activeTab}
                         @MDCTabBar:activated="${(ev) =>
