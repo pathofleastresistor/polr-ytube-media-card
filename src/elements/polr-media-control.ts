@@ -64,6 +64,7 @@ export class PoLRMediaControl extends LitElement {
                     min="0"
                     max="100"
                     steps="1"
+                    labeled
                     @change=${this._changeVolume}></md-slider>
                 ${this._renderPrevious()} ${this._renderPlayPause()}
                 ${this._renderNext()}
