@@ -7757,29 +7757,31 @@ let PoLRMediaControl = class PoLRMediaControl extends s$1 {
                     menuCorner="START"
                     naturalmenuwidth
                     fixed>
-                    <mwc-icon-button @click=${this._toggleMute}>
-                        ${((_b = (_a = this.entity) === null || _a === void 0 ? void 0 : _a.attributes) === null || _b === void 0 ? void 0 : _b.is_volume_muted)
+                    <div class="volumeMenuItems">
+                        <mwc-icon-button @click=${this._toggleMute}>
+                            ${((_b = (_a = this.entity) === null || _a === void 0 ? void 0 : _a.attributes) === null || _b === void 0 ? void 0 : _b.is_volume_muted)
             ? x ` <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  viewBox="0 0 24 24">
-                                  <title>volume-high</title>
-                                  <path
-                                      d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z" />
-                              </svg>`
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      viewBox="0 0 24 24">
+                                      <title>volume-high</title>
+                                      <path
+                                          d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z" />
+                                  </svg>`
             : x ` <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  viewBox="0 0 24 24">
-                                  <title>volume-off</title>
-                                  <path
-                                      d="M12,4L9.91,6.09L12,8.18M4.27,3L3,4.27L7.73,9H3V15H7L12,20V13.27L16.25,17.53C15.58,18.04 14.83,18.46 14,18.7V20.77C15.38,20.45 16.63,19.82 17.68,18.96L19.73,21L21,19.73L12,10.73M19,12C19,12.94 18.8,13.82 18.46,14.64L19.97,16.15C20.62,14.91 21,13.5 21,12C21,7.72 18,4.14 14,3.23V5.29C16.89,6.15 19,8.83 19,12M16.5,12C16.5,10.23 15.5,8.71 14,7.97V10.18L16.45,12.63C16.5,12.43 16.5,12.21 16.5,12Z" />
-                              </svg>`}
-                    </mwc-icon-button>
-                    <polr-slider
-                        id="volume"
-                        min="0"
-                        max="100"
-                        steps="1"
-                        @change=${this._changeVolume}></polr-slider>
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      viewBox="0 0 24 24">
+                                      <title>volume-off</title>
+                                      <path
+                                          d="M12,4L9.91,6.09L12,8.18M4.27,3L3,4.27L7.73,9H3V15H7L12,20V13.27L16.25,17.53C15.58,18.04 14.83,18.46 14,18.7V20.77C15.38,20.45 16.63,19.82 17.68,18.96L19.73,21L21,19.73L12,10.73M19,12C19,12.94 18.8,13.82 18.46,14.64L19.97,16.15C20.62,14.91 21,13.5 21,12C21,7.72 18,4.14 14,3.23V5.29C16.89,6.15 19,8.83 19,12M16.5,12C16.5,10.23 15.5,8.71 14,7.97V10.18L16.45,12.63C16.5,12.43 16.5,12.21 16.5,12Z" />
+                                  </svg>`}
+                        </mwc-icon-button>
+                        <polr-slider
+                            id="volume"
+                            min="0"
+                            max="100"
+                            steps="1"
+                            @change=${this._changeVolume}></polr-slider>
+                    </div>
                 </mwc-menu>
             </div>
         `;
@@ -8032,6 +8034,12 @@ let PoLRMediaControl = class PoLRMediaControl extends s$1 {
                     --md-slider-inactive-track-shape: 4px;
                     --md-slider-active-track-height: 12px;
                     --md-slider-inactive-track-height: 12px;
+                }
+                .volumeMenuItems {
+                    display: grid;
+                    grid-template-columns: min-content 1fr;
+                    align-items: center;
+                    padding: 0 12px;
                 }
             `,
         ];
