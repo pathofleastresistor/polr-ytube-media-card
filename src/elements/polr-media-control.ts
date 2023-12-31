@@ -50,12 +50,15 @@ export class PoLRMediaControl extends LitElement {
 
     render() {
         return html`
-            <div class="progress-row">
-                ${this._renderVolume()} ${this._renderProgress()}
+            <div class="action-row">
+                ${this._renderVolume()} ${this._renderLikeButton()}
+                ${this._renderRadioButton()}
             </div>
+            <div class="progress-row">${this._renderProgress()}</div>
             <div class="control-row">
-                ${this._renderPrevious()} ${this._renderPlayPause()}
-                ${this._renderNext()}
+                ${this._renderShuffle()} ${this._renderPrevious()}
+                ${this._renderPlayPause()} ${this._renderNext()}
+                ${this._renderRepeat()}
             </div>
         `;
     }
@@ -117,6 +120,67 @@ export class PoLRMediaControl extends LitElement {
         `;
     }
 
+    _renderLikeButton() {
+        if (this.entity?.state == "off") return html``;
+        if (!this.entity?.attributes?.likeStatus) return html``;
+
+        if (this.entity?.attributes?.likeStatus == "LIKE") {
+            return html`
+                <mwc-icon-button @click=${() => this._likeSong("thumb_middle")}>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <title>thumb-up</title>
+                        <path
+                            d="M23,10C23,8.89 22.1,8 21,8H14.68L15.64,3.43C15.66,3.33 15.67,3.22 15.67,3.11C15.67,2.7 15.5,2.32 15.23,2.05L14.17,1L7.59,7.58C7.22,7.95 7,8.45 7,9V19A2,2 0 0,0 9,21H18C18.83,21 19.54,20.5 19.84,19.78L22.86,12.73C22.95,12.5 23,12.26 23,12V10M1,21H5V9H1V21Z" />
+                    </svg>
+                </mwc-icon-button>
+            `;
+        } else {
+            return html`
+                <mwc-icon-button @click=${() => this._likeSong("thumb_up")}>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <title>thumb-up-outline</title>
+                        <path
+                            d="M5,9V21H1V9H5M9,21A2,2 0 0,1 7,19V9C7,8.45 7.22,7.95 7.59,7.59L14.17,1L15.23,2.06C15.5,2.33 15.67,2.7 15.67,3.11L15.64,3.43L14.69,8H21C22.11,8 23,8.9 23,10V12C23,12.26 22.95,12.5 22.86,12.73L19.84,19.78C19.54,20.5 18.83,21 18,21H9M9,19H18.03L21,12V10H12.21L13.34,4.68L9,9.03V19Z" />
+                    </svg>
+                </mwc-icon-button>
+            `;
+        }
+    }
+
+    _renderRadioButton() {
+        return html`
+            <mwc-icon-button @click=${this._startRadio}>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path
+                        d="M12,10A2,2 0 0,1 14,12C14,12.5 13.82,12.94 13.53,13.29L16.7,22H14.57L12,14.93L9.43,22H7.3L10.47,13.29C10.18,12.94 10,12.5 10,12A2,2 0 0,1 12,10M12,8A4,4 0 0,0 8,12C8,12.5 8.1,13 8.28,13.46L7.4,15.86C6.53,14.81 6,13.47 6,12A6,6 0 0,1 12,6A6,6 0 0,1 18,12C18,13.47 17.47,14.81 16.6,15.86L15.72,13.46C15.9,13 16,12.5 16,12A4,4 0 0,0 12,8M12,4A8,8 0 0,0 4,12C4,14.36 5,16.5 6.64,17.94L5.92,19.94C3.54,18.11 2,15.23 2,12A10,10 0 0,1 12,2A10,10 0 0,1 22,12C22,15.23 20.46,18.11 18.08,19.94L17.36,17.94C19,16.5 20,14.36 20,12A8,8 0 0,0 12,4Z" />
+                </svg>
+            </mwc-icon-button>
+        `;
+    }
+
+    _renderShuffle() {
+        return html`
+            <mwc-icon-button @click=${this._shuffleList}>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <title>shuffle-variant</title>
+                    <path
+                        d="M17,3L22.25,7.5L17,12L22.25,16.5L17,21V18H14.26L11.44,15.18L13.56,13.06L15.5,15H17V12L17,9H15.5L6.5,18H2V15H5.26L14.26,6H17V3M2,6H6.5L9.32,8.82L7.2,10.94L5.26,9H2V6Z" />
+                </svg>
+            </mwc-icon-button>
+        `;
+    }
+
+    _renderRepeat() {
+        return html`
+            <mwc-icon-button @click=${this._changeRepeat}>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <title>repeat</title>
+                    <path
+                        d="M17,17H7V14L3,18L7,22V19H19V13H17M7,7H17V10L21,6L17,2V5H5V11H7V7Z" />
+                </svg>
+            </mwc-icon-button>
+        `;
+    }
     _renderPrevious() {
         return html`
             <mwc-icon-button @click=${this._skipPrevious}>
@@ -172,6 +236,59 @@ export class PoLRMediaControl extends LitElement {
         this.hass.callService("media_player", "volume_mute", {
             entity_id: this.entity["entity_id"],
             is_volume_muted: false,
+        });
+    }
+    async _startRadio() {
+        await this.hass.callService("media_player", "shuffle_set", {
+            entity_id: this.entity["entity_id"],
+            shuffle: false,
+        });
+
+        this.hass.callService("media_player", "play_media", {
+            entity_id: this.entity["entity_id"],
+            media_content_id: this.entity?.attributes?.videoId,
+            media_content_type: "vid_channel",
+        });
+    }
+
+    async _likeSong(rating) {
+        await this.hass.callService("ytube_music_player", "rate_track", {
+            entity_id: this.entity?.entity_id,
+            rating: rating,
+        });
+        this.requestUpdate();
+    }
+
+    _shuffleList() {
+        const shuffle = this.entity?.attributes?.shuffle;
+
+        this.hass.callService("media_player", "shuffle_set", {
+            entity_id: this.entity["entity_id"],
+            shuffle: !shuffle,
+        });
+    }
+
+    _changeRepeat() {
+        const repeat = this.entity?.attributes?.repeat;
+        let newRepeat;
+
+        switch (repeat) {
+            case "off":
+                newRepeat = "one";
+                break;
+            case "one":
+                newRepeat = "all";
+                break;
+            case "all":
+                newRepeat = "off";
+                break;
+            default:
+                break;
+        }
+
+        this.hass.callService("media_player", "repeat_set", {
+            entity_id: this.entity["entity_id"],
+            repeat: newRepeat,
         });
     }
 
@@ -234,16 +351,22 @@ export class PoLRMediaControl extends LitElement {
                     --mdc-icon-button-size: 40px;
                     --mdc-icon-size: 20px;
                     display: grid;
-                    gap: 24px;
+                    gap: 12px;
+                }
+                .action-row {
+                    display: grid;
+                    grid-template-columns: min-content min-content min-content;
+
+                    justify-content: space-evenly;
                 }
                 .progress-row {
                     display: grid;
-                    grid-template-columns: min-content 1fr;
+                    grid-template-columns: 1fr;
                 }
 
                 .control-row {
                     display: grid;
-                    grid-template-columns: min-content min-content min-content;
+                    grid-template-columns: min-content min-content min-content min-content min-content;
                     align-items: center;
 
                     justify-content: space-evenly;

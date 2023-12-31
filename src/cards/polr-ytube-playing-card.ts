@@ -93,6 +93,9 @@ export class PoLRYTubePlayingCard extends LitElement {
             return html`<img
                 src="${this._entity.attributes.entity_picture}" /> `;
 
+        if (this._entity?.state == "off")
+            return html`<ha-icon icon="mdi:speaker"></ha-icon> `;
+
         return html`<ha-icon icon="${this._config.icon}"></ha-icon> `;
     }
 
@@ -255,7 +258,6 @@ export class PoLRYTubePlayingCard extends LitElement {
                         ${this._renderSecondary()}
                     </div>
                     <div class="action-container">
-                        ${this._renderLikeButton()}
                         ${this._renderSourceSelctor()}
                     </div>
                 </div>
