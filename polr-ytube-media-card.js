@@ -7785,12 +7785,12 @@ let PoLRMediaControl = class PoLRMediaControl extends s$1 {
         `;
     }
     _renderLikeButton() {
-        var _a, _b, _c, _d, _e;
+        var _a, _b, _c, _d;
         if (((_a = this.entity) === null || _a === void 0 ? void 0 : _a.state) == "off")
             return x ``;
-        if (!((_c = (_b = this.entity) === null || _b === void 0 ? void 0 : _b.attributes) === null || _c === void 0 ? void 0 : _c.likeStatus))
+        if (!("likeStatus" in ((_b = this.entity) === null || _b === void 0 ? void 0 : _b.attributes)))
             return x ``;
-        if (((_e = (_d = this.entity) === null || _d === void 0 ? void 0 : _d.attributes) === null || _e === void 0 ? void 0 : _e.likeStatus) == "LIKE") {
+        if (((_d = (_c = this.entity) === null || _c === void 0 ? void 0 : _c.attributes) === null || _d === void 0 ? void 0 : _d.likeStatus) == "LIKE") {
             return x `
                 <mwc-icon-button @click=${() => this._likeSong("thumb_middle")}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
