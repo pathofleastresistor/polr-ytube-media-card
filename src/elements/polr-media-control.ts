@@ -7,6 +7,7 @@ import {
     PropertyValueMap,
 } from "lit";
 import { customElement, property } from "lit/decorators.js";
+import "../shared/polr-slider";
 
 @customElement("polr-media-control")
 export class PoLRMediaControl extends LitElement {
@@ -15,6 +16,7 @@ export class PoLRMediaControl extends LitElement {
     @property() volumeSlider: any;
     @property() tracker: any;
     @property() progress: any;
+    @property() progressSlider: any;
 
     async connectedCallback() {
         super.connectedCallback();
@@ -34,41 +36,24 @@ export class PoLRMediaControl extends LitElement {
         if (this.volumeSlider)
             this.volumeSlider.value =
                 this.entity?.attributes?.volume_level * 100;
-    }
 
-    trackProgress() {
-        let now = Date.now();
-
-        let last_update = Date.parse(
-            this.entity?.attributes?.media_position_updated_at
-        );
-        let current =
-            this.entity?.attributes?.media_position +
-            (now - last_update) / 1000;
-
-        this.progress =
-            100 * (current / this.entity?.attributes?.media_duration);
-
-        if (this.entity?.attributes?.media_position == null) this.progress = 0;
-
-        if (!this.tracker)
-            this.tracker = setInterval(() => this.trackProgress(), 1000);
+        this.progressSlider = this.renderRoot.querySelector(
+            "#progressSlider"
+        ) as any;
     }
 
     render() {
         return html`
-            <div id="progress" @click=${this._seekProgress}>
-                ${this._renderProgressBar()}
-            </div>
+            ${this._renderProgressBar()}
             <div class="controls">
                 ${this._renderMuteToggle()}
-                <md-slider
+                <polr-slider
                     id="volume"
                     min="0"
                     max="100"
                     steps="1"
                     labeled
-                    @change=${this._changeVolume}></md-slider>
+                    @change=${this._changeVolume}></polr-slider>
                 ${this._renderPrevious()} ${this._renderPlayPause()}
                 ${this._renderNext()}
             </div>
@@ -77,11 +62,11 @@ export class PoLRMediaControl extends LitElement {
 
     _renderProgressBar() {
         return html`
-            <div
-                id="progress-bar"
-                style="width:${Math.round(
-                    this.progress
-                )}%; transition: width 1s;"></div>
+            <polr-slider
+                id="progressSlider"
+                min="0"
+                max="100"
+                @change=${this._seekProgress}></polr-slider>
         `;
     }
 
@@ -154,11 +139,9 @@ export class PoLRMediaControl extends LitElement {
     }
 
     _changeVolume() {
-        let volume = this.renderRoot.querySelector("md-slider") as any;
-
         this.hass.callService("media_player", "volume_set", {
             entity_id: this.entity["entity_id"],
-            volume_level: volume.value / 100,
+            volume_level: this.volumeSlider.value / 100,
         });
     }
 
@@ -187,14 +170,11 @@ export class PoLRMediaControl extends LitElement {
         });
     }
 
-    _seekProgress(ev) {
-        let progress = this.renderRoot.querySelector(
-            "#progress"
-        ) as HTMLDivElement;
+    _seekProgress() {
+        let progress = this.renderRoot.querySelector("#progressSlider") as any;
 
-        let rect = progress.getBoundingClientRect();
-        let distance = (ev.clientX - rect.x) / rect.width;
-        let position = distance * this.entity?.attributes?.media_duration;
+        let position =
+            (progress.value / 100) * this.entity?.attributes?.media_duration;
 
         this.hass.callService("media_player", "media_seek", {
             entity_id: this.entity["entity_id"],
@@ -202,17 +182,32 @@ export class PoLRMediaControl extends LitElement {
         });
     }
 
+    trackProgress() {
+        let now = Date.now();
+
+        let last_update = Date.parse(
+            this.entity?.attributes?.media_position_updated_at
+        );
+        let current =
+            this.entity?.attributes?.media_position +
+            (now - last_update) / 1000;
+
+        if (this.progressSlider != null) {
+            this.progressSlider.value =
+                100 * (current / this.entity?.attributes?.media_duration);
+        }
+
+        if (this.entity?.attributes?.media_position == null)
+            this.progressSlider.value = 0;
+
+        if (!this.tracker)
+            this.tracker = setInterval(() => this.trackProgress(), 1000);
+    }
+
     static get styles(): CSSResultGroup {
         return [
             css`
                 :host {
-                    --md-sys-color-primary: var(--primary-color);
-                    --md-slider-handle-height: 10px;
-                    --md-slider-handle-shape: 9999px;
-                    --md-slider-active-track-shape: 9999px;
-                    --md-slider-inactive-track-shape: 4px;
-                    --md-slider-active-track-height: 5px;
-                    --md-slider-inactive-track-height: 5px;
                     --mdc-icon-button-size: 40px;
                     --mdc-icon-size: 20px;
                     display: grid;
@@ -227,19 +222,23 @@ export class PoLRMediaControl extends LitElement {
                     justify-content: space-evenly;
                 }
 
-                #progress {
-                    display: grid;
-                    height: 10px;
-                    cursor: pointer;
-                    background-color: rgba(111, 111, 111, 0.2);
-                    border-radius: 5px;
+                #volume {
+                    --md-sys-color-primary: var(--primary-color);
+                    --md-slider-handle-height: 10px;
+                    --md-slider-handle-shape: 9999px;
+                    --md-slider-active-track-shape: 9999px;
+                    --md-slider-inactive-track-shape: 4px;
+                    --md-slider-active-track-height: 5px;
+                    --md-slider-inactive-track-height: 5px;
                 }
-
-                #progress-bar {
-                    display: block;
-                    height: 10px;
-                    border-radius: 5px;
-                    background-color: var(--primary-color);
+                #progressSlider {
+                    --md-sys-color-primary: var(--primary-color);
+                    --md-slider-handle-height: 12px;
+                    --md-slider-handle-shape: 4px;
+                    --md-slider-active-track-shape: 4px;
+                    --md-slider-inactive-track-shape: 4px;
+                    --md-slider-active-track-height: 12px;
+                    --md-slider-inactive-track-height: 12px;
                 }
             `,
         ];

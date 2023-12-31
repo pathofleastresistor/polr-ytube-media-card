@@ -19,6 +19,9 @@ const IGNORED_FILES = [
     "@material/mwc-tab/mwc-tab.js",
     "@material/mwc-tab-indicator/mwc-tab-indicator.js",
     "@material/mwc-tab-scroller/mwc-tab-scroller.js",
+    "@material/web/elevation/elevation.js",
+    "@material/web/focus/md-focus-ring.js",
+    "@material/web/ripple/ripple.js",
 ];
 
 export default {
