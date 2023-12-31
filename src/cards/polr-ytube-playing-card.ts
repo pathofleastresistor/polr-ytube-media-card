@@ -171,9 +171,8 @@ export class PoLRYTubePlayingCard extends LitElement {
                     id="menuButton"
                     @click=${() => this._menu.show()}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <title>dots-vertical</title>
                         <path
-                            d="M12,16A2,2 0 0,1 14,18A2,2 0 0,1 12,20A2,2 0 0,1 10,18A2,2 0 0,1 12,16M12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12A2,2 0 0,1 12,10M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4Z" />
+                            d="M12,12A3,3 0 0,0 9,15A3,3 0 0,0 12,18A3,3 0 0,0 15,15A3,3 0 0,0 12,12M12,20A5,5 0 0,1 7,15A5,5 0 0,1 12,10A5,5 0 0,1 17,15A5,5 0 0,1 12,20M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8C10.89,8 10,7.1 10,6C10,4.89 10.89,4 12,4M17,2H7C5.89,2 5,2.89 5,4V20A2,2 0 0,0 7,22H17A2,2 0 0,0 19,20V4C19,2.89 18.1,2 17,2Z" />
                     </svg>
                 </mwc-icon-button>
                 <mwc-menu
@@ -243,6 +242,38 @@ export class PoLRYTubePlayingCard extends LitElement {
         return tabs;
     }
 
+    _renderVolume() {
+        if (this._entity?.attributes?.is_volume_muted) {
+            return html`
+                <mwc-icon-button>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <title>volume-off</title>
+                        <path
+                            d="M12,4L9.91,6.09L12,8.18M4.27,3L3,4.27L7.73,9H3V15H7L12,20V13.27L16.25,17.53C15.58,18.04 14.83,18.46 14,18.7V20.77C15.38,20.45 16.63,19.82 17.68,18.96L19.73,21L21,19.73L12,10.73M19,12C19,12.94 18.8,13.82 18.46,14.64L19.97,16.15C20.62,14.91 21,13.5 21,12C21,7.72 18,4.14 14,3.23V5.29C16.89,6.15 19,8.83 19,12M16.5,12C16.5,10.23 15.5,8.71 14,7.97V10.18L16.45,12.63C16.5,12.43 16.5,12.21 16.5,12Z" />
+                    </svg>
+                </mwc-icon-button>
+            `;
+        } else {
+            return html`
+                <mwc-icon-button>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <title>volume-high</title>
+                        <path
+                            d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z" />
+                    </svg>
+                </mwc-icon-button>
+            `;
+        }
+        return html`
+            <md-slider
+                id="volume"
+                min="0"
+                max="100"
+                steps="1"
+                labeled></md-slider>
+        `;
+    }
+
     render() {
         return html`
             <ha-card>
@@ -255,7 +286,6 @@ export class PoLRYTubePlayingCard extends LitElement {
                         ${this._renderSecondary()}
                     </div>
                     <div class="action-container">
-                        ${this._renderLikeButton()}
                         ${this._renderSourceSelctor()}
                     </div>
                 </div>
@@ -270,17 +300,23 @@ export class PoLRYTubePlayingCard extends LitElement {
                               </polr-media-control>`
                             : nothing
                     }
+                    <div class="results">${this._renderTab()}</div>
+
+                </div>
                     <polr-tab-bar
                         activeIndex=${this._activeTab}
                         @MDCTabBar:activated="${(ev) =>
                             this._changeTab(ev.detail.index)}">
-                        <polr-tab label="Playing"></polr-tab>
-                        <polr-tab label="For You"></polr-tab>
-                        <polr-tab label="Search"></polr-tab>
+                        <polr-tab label="Playing" stacked hasImageIcon>
+                            <svg slot="icon" xmlns="http://www.w3.org/2000/svg" style="fill:var(--primary-text-color)" viewBox="0 0 24 24"><path d="M12,11A1,1 0 0,0 11,12A1,1 0 0,0 12,13A1,1 0 0,0 13,12A1,1 0 0,0 12,11M12,16.5C9.5,16.5 7.5,14.5 7.5,12C7.5,9.5 9.5,7.5 12,7.5C14.5,7.5 16.5,9.5 16.5,12C16.5,14.5 14.5,16.5 12,16.5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" /></svg>
+                        </polr-tab>
+                        <polr-tab label="You" stacked hasImageIcon>
+                            <svg slot="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z" /></svg>
+                        </polr-tab>
+                        <polr-tab label="Search" stacked hasImageIcon>
+                        <svg slot="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" /></svg>
+                        </polr-tab>
                     </polr-tab-bar>
-
-                    <div class="results">${this._renderTab()}</div>
-                </div>
             </ha-card>
         `;
     }
@@ -387,7 +423,7 @@ export class PoLRYTubePlayingCard extends LitElement {
                 }
 
                 .content {
-                    padding: 24px 12px;
+                    padding: 24px 12px 0 12px;
                     display: grid;
                     gap: 12px;
                 }
@@ -401,6 +437,16 @@ export class PoLRYTubePlayingCard extends LitElement {
                 }
                 .hiddenTab {
                     display: none;
+                }
+                polr-tab-bar {
+                    box-shadow: 0px 0px 20px 0px hsl(0deg 0% 0% / 0.38);
+                }
+                #menuButton {
+                    max-width: 100px;
+                    display: block;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
                 }
             `,
         ];

@@ -6529,11 +6529,10 @@ let PoLRMediaControl = class PoLRMediaControl extends s$1 {
     }
     render() {
         return x `
-            <div id="progress" @click=${this._seekProgress}>
-                ${this._renderProgressBar()}
-            </div>
-            <div class="controls">
+            <div class="top">
+                ${this._renderLikeButton()} ${this._renderRadio()}
                 ${this._renderMuteToggle()}
+
                 <md-slider
                     id="volume"
                     min="0"
@@ -6541,9 +6540,58 @@ let PoLRMediaControl = class PoLRMediaControl extends s$1 {
                     steps="1"
                     labeled
                     @change=${this._changeVolume}></md-slider>
-                ${this._renderPrevious()} ${this._renderPlayPause()}
-                ${this._renderNext()}
             </div>
+            <div id="progress" @click=${this._seekProgress}>
+                ${this._renderProgressBar()}
+            </div>
+            <div class="controls">
+                ${this._renderShuffle()} ${this._renderPrevious()}
+                ${this._renderPlayPause()} ${this._renderNext()}
+                ${this._renderRepeat()}
+            </div>
+        `;
+        /*
+
+                ${this._renderMuteToggle()}
+                    */
+    }
+    _renderLikeButton() {
+        var _a, _b, _c, _d, _e;
+        if (((_a = this.entity) === null || _a === void 0 ? void 0 : _a.state) == "off")
+            return x ``;
+        if (!((_c = (_b = this.entity) === null || _b === void 0 ? void 0 : _b.attributes) === null || _c === void 0 ? void 0 : _c.likeStatus))
+            return x ``;
+        if (((_e = (_d = this.entity) === null || _d === void 0 ? void 0 : _d.attributes) === null || _e === void 0 ? void 0 : _e.likeStatus) == "LIKE") {
+            return x `
+                <mwc-icon-button @click=${() => this._likeSong("thumb_middle")}>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <title>thumb-up</title>
+                        <path
+                            d="M23,10C23,8.89 22.1,8 21,8H14.68L15.64,3.43C15.66,3.33 15.67,3.22 15.67,3.11C15.67,2.7 15.5,2.32 15.23,2.05L14.17,1L7.59,7.58C7.22,7.95 7,8.45 7,9V19A2,2 0 0,0 9,21H18C18.83,21 19.54,20.5 19.84,19.78L22.86,12.73C22.95,12.5 23,12.26 23,12V10M1,21H5V9H1V21Z" />
+                    </svg>
+                </mwc-icon-button>
+            `;
+        }
+        else {
+            return x `
+                <mwc-icon-button @click=${() => this._likeSong("thumb_up")}>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <title>thumb-up-outline</title>
+                        <path
+                            d="M5,9V21H1V9H5M9,21A2,2 0 0,1 7,19V9C7,8.45 7.22,7.95 7.59,7.59L14.17,1L15.23,2.06C15.5,2.33 15.67,2.7 15.67,3.11L15.64,3.43L14.69,8H21C22.11,8 23,8.9 23,10V12C23,12.26 22.95,12.5 22.86,12.73L19.84,19.78C19.54,20.5 18.83,21 18,21H9M9,19H18.03L21,12V10H12.21L13.34,4.68L9,9.03V19Z" />
+                    </svg>
+                </mwc-icon-button>
+            `;
+        }
+    }
+    _renderRadio() {
+        return x `
+            <mwc-icon-button @click=${this._startRadio}>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path
+                        d="M12,10A2,2 0 0,1 14,12C14,12.5 13.82,12.94 13.53,13.29L16.7,22H14.57L12,14.93L9.43,22H7.3L10.47,13.29C10.18,12.94 10,12.5 10,12A2,2 0 0,1 12,10M12,8A4,4 0 0,0 8,12C8,12.5 8.1,13 8.28,13.46L7.4,15.86C6.53,14.81 6,13.47 6,12A6,6 0 0,1 12,6A6,6 0 0,1 18,12C18,13.47 17.47,14.81 16.6,15.86L15.72,13.46C15.9,13 16,12.5 16,12A4,4 0 0,0 12,8M12,4A8,8 0 0,0 4,12C4,14.36 5,16.5 6.64,17.94L5.92,19.94C3.54,18.11 2,15.23 2,12A10,10 0 0,1 12,2A10,10 0 0,1 22,12C22,15.23 20.46,18.11 18.08,19.94L17.36,17.94C19,16.5 20,14.36 20,12A8,8 0 0,0 12,4Z" />
+                </svg>
+            </mwc-icon-button>
         `;
     }
     _renderProgressBar() {
@@ -6578,6 +6626,28 @@ let PoLRMediaControl = class PoLRMediaControl extends s$1 {
             `;
         }
     }
+    _renderShuffle() {
+        return x `
+            <mwc-icon-button @click=${this._shuffleList}>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <title>shuffle-variant</title>
+                    <path
+                        d="M17,3L22.25,7.5L17,12L22.25,16.5L17,21V18H14.26L11.44,15.18L13.56,13.06L15.5,15H17V12L17,9H15.5L6.5,18H2V15H5.26L14.26,6H17V3M2,6H6.5L9.32,8.82L7.2,10.94L5.26,9H2V6Z" />
+                </svg>
+            </mwc-icon-button>
+        `;
+    }
+    _renderRepeat() {
+        return x `
+            <mwc-icon-button @click=${this._changeRepeat}>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <title>repeat</title>
+                    <path
+                        d="M17,17H7V14L3,18L7,22V19H19V13H17M7,7H17V10L21,6L17,2V5H5V11H7V7Z" />
+                </svg>
+            </mwc-icon-button>
+        `;
+    }
     _renderPrevious() {
         return x `
             <mwc-icon-button @click=${this._skipPrevious}>
@@ -6591,20 +6661,24 @@ let PoLRMediaControl = class PoLRMediaControl extends s$1 {
     _renderPlayPause() {
         if (this.entity.state == "playing") {
             return x `
-                <mwc-icon-button @click=${this._togglePlayPause}>
+                <mwc-icon-button
+                    @click=${this._togglePlayPause}
+                    class="playPause">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <title>play</title>
-                        <path d="M8,5.14V19.14L19,12.14L8,5.14Z" />
+                        <title>pause</title>
+                        <path d="M14,19H18V5H14M6,19H10V5H6V19Z" />
                     </svg>
                 </mwc-icon-button>
             `;
         }
         else {
             return x `
-                <mwc-icon-button @click=${this._togglePlayPause}>
+                <mwc-icon-button
+                    @click=${this._togglePlayPause}
+                    class="playPause">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <title>pause</title>
-                        <path d="M14,19H18V5H14M6,19H10V5H6V19Z" />
+                        <title>play</title>
+                        <path d="M8,5.14V19.14L19,12.14L8,5.14Z" />
                     </svg>
                 </mwc-icon-button>
             `;
@@ -6627,10 +6701,46 @@ let PoLRMediaControl = class PoLRMediaControl extends s$1 {
             volume_level: volume.value / 100,
         });
     }
+    _changeRepeat() {
+        var _a, _b;
+        const repeat = (_b = (_a = this.entity) === null || _a === void 0 ? void 0 : _a.attributes) === null || _b === void 0 ? void 0 : _b.repeat;
+        this.hass.callService("media_player", "repeat_set", {
+            entity_id: this.entity["entity_id"],
+            repeat: repeat != "all" ? "all" : "off",
+        });
+    }
     _toggleMute() {
         this.hass.callService("media_player", "volume_mute", {
             entity_id: this.entity["entity_id"],
             is_volume_muted: false,
+        });
+    }
+    async _startRadio() {
+        var _a, _b;
+        await this.hass.callService("media_player", "shuffle_set", {
+            entity_id: this.entity["entity_id"],
+            shuffle: false,
+        });
+        this.hass.callService("media_player", "play_media", {
+            entity_id: this.entity["entity_id"],
+            media_content_id: (_b = (_a = this.entity) === null || _a === void 0 ? void 0 : _a.attributes) === null || _b === void 0 ? void 0 : _b.videoId,
+            media_content_type: "vid_channel",
+        });
+    }
+    async _likeSong(rating) {
+        var _a;
+        await this.hass.callService("ytube_music_player", "rate_track", {
+            entity_id: (_a = this.entity) === null || _a === void 0 ? void 0 : _a.entity_id,
+            rating: rating,
+        });
+        this.requestUpdate();
+    }
+    _shuffleList() {
+        var _a, _b;
+        const shuffle = (_b = (_a = this.entity) === null || _a === void 0 ? void 0 : _a.attributes) === null || _b === void 0 ? void 0 : _b.shuffle;
+        this.hass.callService("media_player", "shuffle_set", {
+            entity_id: this.entity["entity_id"],
+            shuffle: !shuffle,
         });
     }
     _skipPrevious() {
@@ -6697,6 +6807,20 @@ let PoLRMediaControl = class PoLRMediaControl extends s$1 {
                     height: 10px;
                     border-radius: 5px;
                     background-color: var(--primary-color);
+                }
+
+                md-slider {
+                    /* transform: rotate(-90deg); */
+                }
+
+                .playPause {
+                    --mdc-icon-button-size: 50px;
+                    --mdc-icon-size: 30px;
+                }
+                .top {
+                    display: flex;
+                    justify-content: space-evenly;
+                    align-items: center;
                 }
             `,
         ];
@@ -6897,10 +7021,13 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
                     overflow: hidden;
                     text-overflow: ellipsis;
                     align-items: center;
+                    padding: 8px;
+                    border: 1px white solid;
+                    border-radius: 4px;
                 }
                 .crumb {
-                    background-color: rgba(111, 111, 111, 0.2);
-                    padding: 4px 8px;
+                    /* background-color: rgba(111, 111, 111, 0.2); */
+                    padding: 4px;
                     border-radius: 12px;
                     text-transform: uppercase;
                     font-size: 10px;
@@ -7065,9 +7192,8 @@ class PoLRYTubePlayingCard extends s$1 {
                     id="menuButton"
                     @click=${() => this._menu.show()}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <title>dots-vertical</title>
                         <path
-                            d="M12,16A2,2 0 0,1 14,18A2,2 0 0,1 12,20A2,2 0 0,1 10,18A2,2 0 0,1 12,16M12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12A2,2 0 0,1 12,10M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4Z" />
+                            d="M12,12A3,3 0 0,0 9,15A3,3 0 0,0 12,18A3,3 0 0,0 15,15A3,3 0 0,0 12,12M12,20A5,5 0 0,1 7,15A5,5 0 0,1 12,10A5,5 0 0,1 17,15A5,5 0 0,1 12,20M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8C10.89,8 10,7.1 10,6C10,4.89 10.89,4 12,4M17,2H7C5.89,2 5,2.89 5,4V20A2,2 0 0,0 7,22H17A2,2 0 0,0 19,20V4C19,2.89 18.1,2 17,2Z" />
                     </svg>
                 </mwc-icon-button>
                 <mwc-menu
@@ -7131,6 +7257,31 @@ class PoLRYTubePlayingCard extends s$1 {
         `);
         return tabs;
     }
+    _renderVolume() {
+        var _a, _b;
+        if ((_b = (_a = this._entity) === null || _a === void 0 ? void 0 : _a.attributes) === null || _b === void 0 ? void 0 : _b.is_volume_muted) {
+            return x `
+                <mwc-icon-button>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <title>volume-off</title>
+                        <path
+                            d="M12,4L9.91,6.09L12,8.18M4.27,3L3,4.27L7.73,9H3V15H7L12,20V13.27L16.25,17.53C15.58,18.04 14.83,18.46 14,18.7V20.77C15.38,20.45 16.63,19.82 17.68,18.96L19.73,21L21,19.73L12,10.73M19,12C19,12.94 18.8,13.82 18.46,14.64L19.97,16.15C20.62,14.91 21,13.5 21,12C21,7.72 18,4.14 14,3.23V5.29C16.89,6.15 19,8.83 19,12M16.5,12C16.5,10.23 15.5,8.71 14,7.97V10.18L16.45,12.63C16.5,12.43 16.5,12.21 16.5,12Z" />
+                    </svg>
+                </mwc-icon-button>
+            `;
+        }
+        else {
+            return x `
+                <mwc-icon-button>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <title>volume-high</title>
+                        <path
+                            d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z" />
+                    </svg>
+                </mwc-icon-button>
+            `;
+        }
+    }
     render() {
         var _a;
         return x `
@@ -7142,7 +7293,6 @@ class PoLRYTubePlayingCard extends s$1 {
                         ${this._renderSecondary()}
                     </div>
                     <div class="action-container">
-                        ${this._renderLikeButton()}
                         ${this._renderSourceSelctor()}
                     </div>
                 </div>
@@ -7155,16 +7305,22 @@ class PoLRYTubePlayingCard extends s$1 {
                                   .entity=${this._entity}>
                               </polr-media-control>`
             : A}
+                    <div class="results">${this._renderTab()}</div>
+
+                </div>
                     <polr-tab-bar
                         activeIndex=${this._activeTab}
                         @MDCTabBar:activated="${(ev) => this._changeTab(ev.detail.index)}">
-                        <polr-tab label="Playing"></polr-tab>
-                        <polr-tab label="For You"></polr-tab>
-                        <polr-tab label="Search"></polr-tab>
+                        <polr-tab label="Playing" stacked hasImageIcon>
+                            <svg slot="icon" xmlns="http://www.w3.org/2000/svg" style="fill:var(--primary-text-color)" viewBox="0 0 24 24"><path d="M12,11A1,1 0 0,0 11,12A1,1 0 0,0 12,13A1,1 0 0,0 13,12A1,1 0 0,0 12,11M12,16.5C9.5,16.5 7.5,14.5 7.5,12C7.5,9.5 9.5,7.5 12,7.5C14.5,7.5 16.5,9.5 16.5,12C16.5,14.5 14.5,16.5 12,16.5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" /></svg>
+                        </polr-tab>
+                        <polr-tab label="You" stacked hasImageIcon>
+                            <svg slot="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z" /></svg>
+                        </polr-tab>
+                        <polr-tab label="Search" stacked hasImageIcon>
+                        <svg slot="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" /></svg>
+                        </polr-tab>
                     </polr-tab-bar>
-
-                    <div class="results">${this._renderTab()}</div>
-                </div>
             </ha-card>
         `;
     }
@@ -7264,7 +7420,7 @@ class PoLRYTubePlayingCard extends s$1 {
                 }
 
                 .content {
-                    padding: 24px 12px;
+                    padding: 24px 12px 0 12px;
                     display: grid;
                     gap: 12px;
                 }
@@ -7278,6 +7434,16 @@ class PoLRYTubePlayingCard extends s$1 {
                 }
                 .hiddenTab {
                     display: none;
+                }
+                polr-tab-bar {
+                    box-shadow: 0px 0px 20px 0px hsl(0deg 0% 0% / 0.38);
+                }
+                #menuButton {
+                    max-width: 100px;
+                    display: block;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
                 }
             `,
         ];

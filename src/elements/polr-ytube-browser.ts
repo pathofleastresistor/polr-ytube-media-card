@@ -114,10 +114,13 @@ export class PoLRYTubeBrowser extends LitElement {
                     overflow: hidden;
                     text-overflow: ellipsis;
                     align-items: center;
+                    padding: 8px;
+                    border: 1px white solid;
+                    border-radius: 4px;
                 }
                 .crumb {
-                    background-color: rgba(111, 111, 111, 0.2);
-                    padding: 4px 8px;
+                    /* background-color: rgba(111, 111, 111, 0.2); */
+                    padding: 4px;
                     border-radius: 12px;
                     text-transform: uppercase;
                     font-size: 10px;
