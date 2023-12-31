@@ -149,7 +149,7 @@ export class PoLRMediaControl extends LitElement {
 
     _renderVolume() {
         return html`
-            <div>
+            <div class="volumeMenuItems">
                 <mwc-icon-button
                     id="volumeButton"
                     @click=${() => this.volumeMenu.show()}>

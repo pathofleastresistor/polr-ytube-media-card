@@ -7910,7 +7910,7 @@ let PoLRMediaControl = class PoLRMediaControl extends s$1 {
     _renderVolume() {
         var _a, _b;
         return x `
-            <div>
+            <div class="volumeMenuItems">
                 <mwc-icon-button
                     id="volumeButton"
                     @click=${() => this.volumeMenu.show()}>
