@@ -81,7 +81,7 @@ export class PoLRMediaControl extends LitElement {
         if (!("likeStatus" in this.entity?.attributes)) return html``;
 
         return html`
-            <mwc-icon-button @click=${() => this._likeSong("thumb_middle")}>
+            <mwc-icon-button @click=${() => this._likeSong()}>
                 ${this.entity?.attributes?.likeStatus == "LIKE"
                     ? ThumbUpIcon
                     : ThumbUpOutlineIcon}
@@ -211,10 +211,10 @@ export class PoLRMediaControl extends LitElement {
         });
     }
 
-    async _likeSong(rating) {
+    async _likeSong() {
         await this.hass.callService("ytube_music_player", "rate_track", {
             entity_id: this.entity?.entity_id,
-            rating: rating,
+            rating: "thumb_toggle_up_middle",
         });
         this.requestUpdate();
     }

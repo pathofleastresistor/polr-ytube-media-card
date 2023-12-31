@@ -7817,7 +7817,7 @@ let PoLRMediaControl = class PoLRMediaControl extends s$1 {
         if (!("likeStatus" in ((_b = this.entity) === null || _b === void 0 ? void 0 : _b.attributes)))
             return x ``;
         return x `
-            <mwc-icon-button @click=${() => this._likeSong("thumb_middle")}>
+            <mwc-icon-button @click=${() => this._likeSong()}>
                 ${((_d = (_c = this.entity) === null || _c === void 0 ? void 0 : _c.attributes) === null || _d === void 0 ? void 0 : _d.likeStatus) == "LIKE"
             ? ThumbUpIcon
             : ThumbUpOutlineIcon}
@@ -7934,11 +7934,11 @@ let PoLRMediaControl = class PoLRMediaControl extends s$1 {
             volume_level: this.volumeSlider.value / 100,
         });
     }
-    async _likeSong(rating) {
+    async _likeSong() {
         var _a;
         await this.hass.callService("ytube_music_player", "rate_track", {
             entity_id: (_a = this.entity) === null || _a === void 0 ? void 0 : _a.entity_id,
-            rating: rating,
+            rating: "thumb_toggle_up_middle",
         });
         this.requestUpdate();
     }
