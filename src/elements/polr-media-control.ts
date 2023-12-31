@@ -17,6 +17,8 @@ export class PoLRMediaControl extends LitElement {
     @property() tracker: any;
     @property() progress: any;
     @property() progressSlider: any;
+    @property() volumeButton: any;
+    @property() volumeMenu: any;
 
     async connectedCallback() {
         super.connectedCallback();
@@ -40,27 +42,25 @@ export class PoLRMediaControl extends LitElement {
         this.progressSlider = this.renderRoot.querySelector(
             "#progressSlider"
         ) as any;
+        this.volumeButton = this.renderRoot.querySelector(
+            "#volumeButton"
+        ) as any;
+        this.volumeMenu = this.renderRoot.querySelector("#volumeMenu") as any;
     }
 
     render() {
         return html`
-            ${this._renderProgressBar()}
-            <div class="controls">
-                ${this._renderMuteToggle()}
-                <polr-slider
-                    id="volume"
-                    min="0"
-                    max="100"
-                    steps="1"
-                    labeled
-                    @change=${this._changeVolume}></polr-slider>
+            <div class="progress-row">
+                ${this._renderVolume()} ${this._renderProgress()}
+            </div>
+            <div class="control-row">
                 ${this._renderPrevious()} ${this._renderPlayPause()}
                 ${this._renderNext()}
             </div>
         `;
     }
 
-    _renderProgressBar() {
+    _renderProgress() {
         return html`
             <polr-slider
                 id="progressSlider"
@@ -70,28 +70,51 @@ export class PoLRMediaControl extends LitElement {
         `;
     }
 
-    _renderMuteToggle() {
-        if (this.entity?.attributes?.is_volume_muted) {
-            return html`
-                <mwc-icon-button @click=${this._toggleMute}>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <title>volume-off</title>
-                        <path
-                            d="M12,4L9.91,6.09L12,8.18M4.27,3L3,4.27L7.73,9H3V15H7L12,20V13.27L16.25,17.53C15.58,18.04 14.83,18.46 14,18.7V20.77C15.38,20.45 16.63,19.82 17.68,18.96L19.73,21L21,19.73L12,10.73M19,12C19,12.94 18.8,13.82 18.46,14.64L19.97,16.15C20.62,14.91 21,13.5 21,12C21,7.72 18,4.14 14,3.23V5.29C16.89,6.15 19,8.83 19,12M16.5,12C16.5,10.23 15.5,8.71 14,7.97V10.18L16.45,12.63C16.5,12.43 16.5,12.21 16.5,12Z" />
-                    </svg>
-                </mwc-icon-button>
-            `;
-        } else {
-            return html`
-                <mwc-icon-button @click=${this._toggleMute}>
+    _renderVolume() {
+        return html`
+            <div>
+                <mwc-icon-button
+                    id="volumeButton"
+                    @click=${() => this.volumeMenu.show()}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                         <title>volume-high</title>
                         <path
                             d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z" />
                     </svg>
                 </mwc-icon-button>
-            `;
-        }
+                <mwc-menu
+                    id="volumeMenu"
+                    .anchor=${this.volumeButton}
+                    corner="BOTTOM_START"
+                    menuCorner="START"
+                    naturalmenuwidth
+                    fixed>
+                    <mwc-icon-button @click=${this._toggleMute}>
+                        ${this.entity?.attributes?.is_volume_muted
+                            ? html` <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 24 24">
+                                  <title>volume-high</title>
+                                  <path
+                                      d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z" />
+                              </svg>`
+                            : html` <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 24 24">
+                                  <title>volume-off</title>
+                                  <path
+                                      d="M12,4L9.91,6.09L12,8.18M4.27,3L3,4.27L7.73,9H3V15H7L12,20V13.27L16.25,17.53C15.58,18.04 14.83,18.46 14,18.7V20.77C15.38,20.45 16.63,19.82 17.68,18.96L19.73,21L21,19.73L12,10.73M19,12C19,12.94 18.8,13.82 18.46,14.64L19.97,16.15C20.62,14.91 21,13.5 21,12C21,7.72 18,4.14 14,3.23V5.29C16.89,6.15 19,8.83 19,12M16.5,12C16.5,10.23 15.5,8.71 14,7.97V10.18L16.45,12.63C16.5,12.43 16.5,12.21 16.5,12Z" />
+                              </svg>`}
+                    </mwc-icon-button>
+                    <polr-slider
+                        id="volume"
+                        min="0"
+                        max="100"
+                        steps="1"
+                        @change=${this._changeVolume}></polr-slider>
+                </mwc-menu>
+            </div>
+        `;
     }
 
     _renderPrevious() {
@@ -213,13 +236,20 @@ export class PoLRMediaControl extends LitElement {
                     display: grid;
                     gap: 24px;
                 }
-
-                .controls {
+                .progress-row {
                     display: grid;
-                    grid-template-columns: min-content min-content min-content min-content min-content;
+                    grid-template-columns: min-content 1fr;
+                }
+
+                .control-row {
+                    display: grid;
+                    grid-template-columns: min-content min-content min-content;
                     align-items: center;
 
                     justify-content: space-evenly;
+                }
+                #volumeSlider {
+                    transform: rotate(-90deg);
                 }
 
                 #volume {
