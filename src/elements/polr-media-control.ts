@@ -304,8 +304,6 @@ export class PoLRMediaControl extends LitElement {
             css`
                 :host {
                     display: grid;
-                    gap: 12px;
-                    padding: 12px 0;
                 }
 
                 .action-row {

@@ -12,6 +12,7 @@ export class PoLRYTubeSearch extends LitElement {
     @state() public _entity: any;
     @state() public _limit: number;
     @state() private _polrYTubeList: PoLRYTubeList;
+    @state() private _searchTextField: any;
 
     constructor() {
         super();
@@ -21,6 +22,7 @@ export class PoLRYTubeSearch extends LitElement {
 
     protected firstUpdated(_changedProperties): void {
         this._polrYTubeList = this.renderRoot.querySelector("polr-ytube-list");
+        this._searchTextField = this.renderRoot.querySelector("#query");
     }
 
     _renderResults() {
@@ -91,7 +93,10 @@ export class PoLRYTubeSearch extends LitElement {
     }
 
     handleKey(ev) {
-        if (ev.keyCode == 13) this._search();
+        if (ev.keyCode == 13) {
+            this._search();
+            this._searchTextField.blur();
+        }
     }
 
     async _search() {
@@ -123,7 +128,7 @@ export class PoLRYTubeSearch extends LitElement {
     static styles = css`
         .search {
             display: grid;
-            grid-template-columns: 1fr min-content min-content;
+            grid-template-columns: 1fr min-content;
             align-items: center;
             gap: 4px;
         }
