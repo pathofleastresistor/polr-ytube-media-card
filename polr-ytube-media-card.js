@@ -7989,12 +7989,11 @@ let PoLRMediaControl = class PoLRMediaControl extends s$1 {
         let current = ((_d = (_c = this.entity) === null || _c === void 0 ? void 0 : _c.attributes) === null || _d === void 0 ? void 0 : _d.media_position) +
             (now - last_update) / 1000;
         let position = 100 * (current / ((_f = (_e = this.entity) === null || _e === void 0 ? void 0 : _e.attributes) === null || _f === void 0 ? void 0 : _f.media_duration));
-        //console.log(position);
         if (this.progressSlider != null) {
             this.progressSlider.value = position;
+            if (((_h = (_g = this.entity) === null || _g === void 0 ? void 0 : _g.attributes) === null || _h === void 0 ? void 0 : _h.media_position) == null)
+                this.progressSlider.value = 0;
         }
-        if (((_h = (_g = this.entity) === null || _g === void 0 ? void 0 : _g.attributes) === null || _h === void 0 ? void 0 : _h.media_position) == null)
-            this.progressSlider.value = 0;
         if (!this.tracker)
             this.tracker = setInterval(() => this._trackProgress(), 1000);
     }

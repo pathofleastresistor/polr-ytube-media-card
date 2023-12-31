@@ -277,14 +277,12 @@ export class PoLRMediaControl extends LitElement {
             (now - last_update) / 1000;
         let position =
             100 * (current / this.entity?.attributes?.media_duration);
-        //console.log(position);
 
         if (this.progressSlider != null) {
             this.progressSlider.value = position;
+            if (this.entity?.attributes?.media_position == null)
+                this.progressSlider.value = 0;
         }
-
-        if (this.entity?.attributes?.media_position == null)
-            this.progressSlider.value = 0;
 
         if (!this.tracker)
             this.tracker = setInterval(() => this._trackProgress(), 1000);
