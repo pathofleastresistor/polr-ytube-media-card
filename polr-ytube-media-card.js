@@ -7843,14 +7843,12 @@ let PoLRMediaControl = class PoLRMediaControl extends s$1 {
         `;
     }
     _renderLikeButton() {
-        var _a, _b, _c, _d;
-        if (((_a = this.entity) === null || _a === void 0 ? void 0 : _a.state) == "off")
-            return x ``;
-        if (!("likeStatus" in ((_b = this.entity) === null || _b === void 0 ? void 0 : _b.attributes)))
+        var _a, _b, _c;
+        if (!("likeStatus" in ((_a = this.entity) === null || _a === void 0 ? void 0 : _a.attributes)))
             return x ``;
         return x `
             <mwc-icon-button @click=${() => this._likeSong()}>
-                ${((_d = (_c = this.entity) === null || _c === void 0 ? void 0 : _c.attributes) === null || _d === void 0 ? void 0 : _d.likeStatus) == "LIKE"
+                ${((_c = (_b = this.entity) === null || _b === void 0 ? void 0 : _b.attributes) === null || _c === void 0 ? void 0 : _c.likeStatus) == "LIKE"
             ? ThumbUpIcon
             : ThumbUpOutlineIcon}
             </mwc-icon-button>
@@ -8360,15 +8358,12 @@ class PoLRYTubePlayingCard extends s$1 {
             this._config.searchTitle = "mdi:speaker";
     }
     set hass(hass) {
-        var _a, _b;
+        var _a;
         this._hass = hass;
         const newEntity = this._hass["states"][this._config["entity_id"]];
         if (!areDeeplyEqual(this._entity, newEntity)) {
-            if (((_a = this._entity) === null || _a === void 0 ? void 0 : _a.state) == "off") {
-                this._changeTab(1 /* PoLRYTubeTab.FOR_YOU */);
-            }
             this._entity = structuredClone(newEntity);
-            (_b = this._playing) === null || _b === void 0 ? void 0 : _b.refresh();
+            (_a = this._playing) === null || _a === void 0 ? void 0 : _a.refresh();
         }
     }
     firstUpdated(_changedProperties) {
@@ -8391,15 +8386,12 @@ class PoLRYTubePlayingCard extends s$1 {
         return x `<ha-icon icon="${this._config.icon}"></ha-icon> `;
     }
     _renderSecondary() {
-        var _a, _b, _c, _d, _e;
-        // TODO: Implement a title
-        if (((_a = this._entity) === null || _a === void 0 ? void 0 : _a.state) == "off")
-            return x ``;
+        var _a, _b, _c, _d;
         const items = [];
-        if (((_c = (_b = this._entity) === null || _b === void 0 ? void 0 : _b.attributes) === null || _c === void 0 ? void 0 : _c.media_title) &&
+        if (((_b = (_a = this._entity) === null || _a === void 0 ? void 0 : _a.attributes) === null || _b === void 0 ? void 0 : _b.media_title) &&
             this._entity.attributes.media_title != "")
             items.push(this._entity.attributes.media_title);
-        if (((_e = (_d = this._entity) === null || _d === void 0 ? void 0 : _d.attributes) === null || _e === void 0 ? void 0 : _e.media_artist) &&
+        if (((_d = (_c = this._entity) === null || _c === void 0 ? void 0 : _c.attributes) === null || _d === void 0 ? void 0 : _d.media_artist) &&
             this._entity.attributes.media_artist != "")
             items.push(this._entity.attributes.media_artist);
         return x ` <div class="secondary">${items.join(" - ")}</div> `;

@@ -53,9 +53,6 @@ export class PoLRYTubePlayingCard extends LitElement {
         const newEntity = this._hass["states"][this._config["entity_id"]];
 
         if (!areDeeplyEqual(this._entity, newEntity)) {
-            if (this._entity?.state == "off") {
-                this._changeTab(PoLRYTubeTab.FOR_YOU);
-            }
             this._entity = structuredClone(newEntity);
             this._playing?.refresh();
         }
@@ -87,9 +84,6 @@ export class PoLRYTubePlayingCard extends LitElement {
     }
 
     _renderSecondary() {
-        // TODO: Implement a title
-        if (this._entity?.state == "off") return html``;
-
         const items = [];
         if (
             this._entity?.attributes?.media_title &&

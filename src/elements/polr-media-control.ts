@@ -77,7 +77,6 @@ export class PoLRMediaControl extends LitElement {
     }
 
     _renderLikeButton() {
-        if (this.entity?.state == "off") return html``;
         if (!("likeStatus" in this.entity?.attributes)) return html``;
 
         return html`
