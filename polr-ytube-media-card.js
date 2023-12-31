@@ -168,6 +168,99 @@ const isNumeric = (num) => (typeof num === "number" ||
     (typeof num === "string" && num.trim() !== "")) &&
     !isNaN(num);
 
+const ArrowLeftIcon = x `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <title>arrow-left</title>
+        <path
+            d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
+    </svg>
+`;
+const CastAudioIcon = x `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path
+            d="M2 11V13C7 13 11 17 11 22H13C13 15.9 8.1 11 2 11M20 2H10C8.9 2 8 2.9 8 4V10.5C9 11 9.9 11.7 10.7 12.4C11.6 11 13.2 10 15 10C17.8 10 20 12.2 20 15S17.8 20 15 20H14.8C14.9 20.7 15 21.3 15 22H20C21.1 22 22 21.1 22 20V4C22 2.9 21.1 2 20 2M15 8C13.9 8 13 7.1 13 6C13 4.9 13.9 4 15 4C16.1 4 17 4.9 17 6S16.1 8 15 8M15 18C14.8 18 14.5 18 14.3 17.9C13.8 16.4 13.1 15.1 12.2 13.9C12.6 12.8 13.7 11.9 15 11.9C16.7 11.9 18 13.2 18 14.9S16.7 18 15 18M2 15V17C4.8 17 7 19.2 7 22H9C9 18.1 5.9 15 2 15M2 19V22H5C5 20.3 3.7 19 2 19" />
+    </svg>
+`;
+const ForwardBurgerIcon = x `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <title>forwardburger</title>
+        <path
+            d="M19,13H3V11H19L15,7L16.4,5.6L22.8,12L16.4,18.4L15,17L19,13M3,6H13V8H3V6M13,16V18H3V16H13Z" />
+    </svg>
+`;
+const RadioTowerIcon = x `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path
+            d="M12,10A2,2 0 0,1 14,12C14,12.5 13.82,12.94 13.53,13.29L16.7,22H14.57L12,14.93L9.43,22H7.3L10.47,13.29C10.18,12.94 10,12.5 10,12A2,2 0 0,1 12,10M12,8A4,4 0 0,0 8,12C8,12.5 8.1,13 8.28,13.46L7.4,15.86C6.53,14.81 6,13.47 6,12A6,6 0 0,1 12,6A6,6 0 0,1 18,12C18,13.47 17.47,14.81 16.6,15.86L15.72,13.46C15.9,13 16,12.5 16,12A4,4 0 0,0 12,8M12,4A8,8 0 0,0 4,12C4,14.36 5,16.5 6.64,17.94L5.92,19.94C3.54,18.11 2,15.23 2,12A10,10 0 0,1 12,2A10,10 0 0,1 22,12C22,15.23 20.46,18.11 18.08,19.94L17.36,17.94C19,16.5 20,14.36 20,12A8,8 0 0,0 12,4Z" />
+    </svg>
+`;
+const RepeatIcon = x `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <title>repeat</title>
+        <path
+            d="M17,17H7V14L3,18L7,22V19H19V13H17M7,7H17V10L21,6L17,2V5H5V11H7V7Z" />
+    </svg>
+`;
+const ShuffleVariantIcon = x `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <title>shuffle-variant</title>
+        <path
+            d="M17,3L22.25,7.5L17,12L22.25,16.5L17,21V18H14.26L11.44,15.18L13.56,13.06L15.5,15H17V12L17,9H15.5L6.5,18H2V15H5.26L14.26,6H17V3M2,6H6.5L9.32,8.82L7.2,10.94L5.26,9H2V6Z" />
+    </svg>
+`;
+const SkipNextIcon = x `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <title>skip-next</title>
+        <path d="M16,18H18V6H16M6,18L14.5,12L6,6V18Z" />
+    </svg>
+`;
+const SkipPreviousIcon = x `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <title>skip-previous</title>
+        <path d="M6,18V6H8V18H6M9.5,12L18,6V18L9.5,12Z" />
+    </svg>
+`;
+const PauseIcon = x `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <title>pause</title>
+        <path d="M14,19H18V5H14M6,19H10V5H6V19Z" />
+    </svg>
+`;
+const PlayIcon = x `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <title>play</title>
+        <path d="M8,5.14V19.14L19,12.14L8,5.14Z" />
+    </svg>
+`;
+const ThumbUpIcon = x `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <title>thumb-up</title>
+        <path
+            d="M23,10C23,8.89 22.1,8 21,8H14.68L15.64,3.43C15.66,3.33 15.67,3.22 15.67,3.11C15.67,2.7 15.5,2.32 15.23,2.05L14.17,1L7.59,7.58C7.22,7.95 7,8.45 7,9V19A2,2 0 0,0 9,21H18C18.83,21 19.54,20.5 19.84,19.78L22.86,12.73C22.95,12.5 23,12.26 23,12V10M1,21H5V9H1V21Z" />
+    </svg>
+`;
+const ThumbUpOutlineIcon = x `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <title>thumb-up-outline</title>
+        <path
+            d="M5,9V21H1V9H5M9,21A2,2 0 0,1 7,19V9C7,8.45 7.22,7.95 7.59,7.59L14.17,1L15.23,2.06C15.5,2.33 15.67,2.7 15.67,3.11L15.64,3.43L14.69,8H21C22.11,8 23,8.9 23,10V12C23,12.26 22.95,12.5 22.86,12.73L19.84,19.78C19.54,20.5 18.83,21 18,21H9M9,19H18.03L21,12V10H12.21L13.34,4.68L9,9.03V19Z" />
+    </svg>
+`;
+const VolumeHighIcon = x `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <title>volume-high</title>
+        <path
+            d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z" />
+    </svg>
+`;
+const VolumeOffIcon = x ` <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24">
+    <title>volume-off</title>
+    <path
+        d="M12,4L9.91,6.09L12,8.18M4.27,3L3,4.27L7.73,9H3V15H7L12,20V13.27L16.25,17.53C15.58,18.04 14.83,18.46 14,18.7V20.77C15.38,20.45 16.63,19.82 17.68,18.96L19.73,21L21,19.73L12,10.73M19,12C19,12.94 18.8,13.82 18.46,14.64L19.97,16.15C20.62,14.91 21,13.5 21,12C21,7.72 18,4.14 14,3.23V5.29C16.89,6.15 19,8.83 19,12M16.5,12C16.5,10.23 15.5,8.71 14,7.97V10.18L16.45,12.63C16.5,12.43 16.5,12.21 16.5,12Z" />
+</svg>`;
+
 let PoLRYTubeList = class PoLRYTubeList extends s$1 {
     updated(_changedProperties) {
         // this.renderRoot.querySelector(".current")?.scrollIntoView({
@@ -200,11 +293,7 @@ let PoLRYTubeList = class PoLRYTubeList extends s$1 {
             return x ``;
         return x `
             <mwc-icon-button @click=${() => this._fireNavigateEvent(element)}>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <title>forwardburger</title>
-                    <path
-                        d="M19,13H3V11H19L15,7L16.4,5.6L22.8,12L16.4,18.4L15,17L19,13M3,6H13V8H3V6M13,16V18H3V16H13Z" />
-                </svg>
+                ${ForwardBurgerIcon}
             </mwc-icon-button>
         `;
     }
@@ -213,10 +302,7 @@ let PoLRYTubeList = class PoLRYTubeList extends s$1 {
             return x ``;
         return x `
             <mwc-icon-button @click=${() => this._play(element)}>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <title>play</title>
-                    <path d="M8,5.14V19.14L19,12.14L8,5.14Z" />
-                </svg>
+                ${PlayIcon}
             </mwc-icon-button>
         `;
     }
@@ -228,11 +314,7 @@ let PoLRYTubeList = class PoLRYTubeList extends s$1 {
                 : this.entity["attributes"]["videoId"];
             return x `
                 <mwc-icon-button @click=${() => this._startRadio(id)}>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <title>radio-tower</title>
-                        <path
-                            d="M12,10A2,2 0 0,1 14,12C14,12.5 13.82,12.94 13.53,13.29L16.7,22H14.57L12,14.93L9.43,22H7.3L10.47,13.29C10.18,12.94 10,12.5 10,12A2,2 0 0,1 12,10M12,8A4,4 0 0,0 8,12C8,12.5 8.1,13 8.28,13.46L7.4,15.86C6.53,14.81 6,13.47 6,12A6,6 0 0,1 12,6A6,6 0 0,1 18,12C18,13.47 17.47,14.81 16.6,15.86L15.72,13.46C15.9,13 16,12.5 16,12A4,4 0 0,0 12,8M12,4A8,8 0 0,0 4,12C4,14.36 5,16.5 6.64,17.94L5.92,19.94C3.54,18.11 2,15.23 2,12A10,10 0 0,1 12,2A10,10 0 0,1 22,12C22,15.23 20.46,18.11 18.08,19.94L17.36,17.94C19,16.5 20,14.36 20,12A8,8 0 0,0 12,4Z" />
-                    </svg>
+                    ${RadioTowerIcon}
                 </mwc-icon-button>
             `;
         }
@@ -7697,7 +7779,7 @@ PoLRSlider = __decorate([
 let PoLRMediaControl = class PoLRMediaControl extends s$1 {
     async connectedCallback() {
         super.connectedCallback();
-        this.trackProgress();
+        this._trackProgress();
     }
     disconnectedCallback() {
         super.disconnectedCallback();
@@ -7728,6 +7810,41 @@ let PoLRMediaControl = class PoLRMediaControl extends s$1 {
             </div>
         `;
     }
+    _renderLikeButton() {
+        var _a, _b, _c, _d;
+        if (((_a = this.entity) === null || _a === void 0 ? void 0 : _a.state) == "off")
+            return x ``;
+        if (!("likeStatus" in ((_b = this.entity) === null || _b === void 0 ? void 0 : _b.attributes)))
+            return x ``;
+        return x `
+            <mwc-icon-button @click=${() => this._likeSong("thumb_middle")}>
+                ${((_d = (_c = this.entity) === null || _c === void 0 ? void 0 : _c.attributes) === null || _d === void 0 ? void 0 : _d.likeStatus) == "LIKE"
+            ? ThumbUpIcon
+            : ThumbUpOutlineIcon}
+            </mwc-icon-button>
+        `;
+    }
+    _renderNext() {
+        return x `
+            <mwc-icon-button @click=${this._skipNext}>
+                ${SkipNextIcon}
+            </mwc-icon-button>
+        `;
+    }
+    _renderPlayPause() {
+        return x `
+            <mwc-icon-button @click=${this._togglePlayPause}>
+                ${this.entity.state == "playing" ? PauseIcon : PlayIcon}
+            </mwc-icon-button>
+        `;
+    }
+    _renderPrevious() {
+        return x `
+            <mwc-icon-button @click=${this._skipPrevious}
+                >${SkipPreviousIcon}
+            </mwc-icon-button>
+        `;
+    }
     _renderProgress() {
         return x `
             <polr-slider
@@ -7737,6 +7854,27 @@ let PoLRMediaControl = class PoLRMediaControl extends s$1 {
                 @change=${this._seekProgress}></polr-slider>
         `;
     }
+    _renderRadioButton() {
+        return x `
+            <mwc-icon-button @click=${this._startRadio}
+                >${RadioTowerIcon}
+            </mwc-icon-button>
+        `;
+    }
+    _renderRepeat() {
+        return x `
+            <mwc-icon-button @click=${this._changeRepeat}
+                >${RepeatIcon}
+            </mwc-icon-button>
+        `;
+    }
+    _renderShuffle() {
+        return x `
+            <mwc-icon-button @click=${this._shuffleList}
+                >${ShuffleVariantIcon}
+            </mwc-icon-button>
+        `;
+    }
     _renderVolume() {
         var _a, _b;
         return x `
@@ -7744,11 +7882,7 @@ let PoLRMediaControl = class PoLRMediaControl extends s$1 {
                 <mwc-icon-button
                     id="volumeButton"
                     @click=${() => this.volumeMenu.show()}>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <title>volume-high</title>
-                        <path
-                            d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z" />
-                    </svg>
+                    ${VolumeHighIcon}
                 </mwc-icon-button>
                 <mwc-menu
                     id="volumeMenu"
@@ -7760,20 +7894,8 @@ let PoLRMediaControl = class PoLRMediaControl extends s$1 {
                     <div class="volumeMenuItems">
                         <mwc-icon-button @click=${this._toggleMute}>
                             ${((_b = (_a = this.entity) === null || _a === void 0 ? void 0 : _a.attributes) === null || _b === void 0 ? void 0 : _b.is_volume_muted)
-            ? x ` <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      viewBox="0 0 24 24">
-                                      <title>volume-high</title>
-                                      <path
-                                          d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z" />
-                                  </svg>`
-            : x ` <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      viewBox="0 0 24 24">
-                                      <title>volume-off</title>
-                                      <path
-                                          d="M12,4L9.91,6.09L12,8.18M4.27,3L3,4.27L7.73,9H3V15H7L12,20V13.27L16.25,17.53C15.58,18.04 14.83,18.46 14,18.7V20.77C15.38,20.45 16.63,19.82 17.68,18.96L19.73,21L21,19.73L12,10.73M19,12C19,12.94 18.8,13.82 18.46,14.64L19.97,16.15C20.62,14.91 21,13.5 21,12C21,7.72 18,4.14 14,3.23V5.29C16.89,6.15 19,8.83 19,12M16.5,12C16.5,10.23 15.5,8.71 14,7.97V10.18L16.45,12.63C16.5,12.43 16.5,12.21 16.5,12Z" />
-                                  </svg>`}
+            ? VolumeHighIcon
+            : VolumeOffIcon}
                         </mwc-icon-button>
                         <polr-slider
                             id="volume"
@@ -7786,147 +7908,7 @@ let PoLRMediaControl = class PoLRMediaControl extends s$1 {
             </div>
         `;
     }
-    _renderLikeButton() {
-        var _a, _b, _c, _d;
-        if (((_a = this.entity) === null || _a === void 0 ? void 0 : _a.state) == "off")
-            return x ``;
-        if (!("likeStatus" in ((_b = this.entity) === null || _b === void 0 ? void 0 : _b.attributes)))
-            return x ``;
-        if (((_d = (_c = this.entity) === null || _c === void 0 ? void 0 : _c.attributes) === null || _d === void 0 ? void 0 : _d.likeStatus) == "LIKE") {
-            return x `
-                <mwc-icon-button @click=${() => this._likeSong("thumb_middle")}>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <title>thumb-up</title>
-                        <path
-                            d="M23,10C23,8.89 22.1,8 21,8H14.68L15.64,3.43C15.66,3.33 15.67,3.22 15.67,3.11C15.67,2.7 15.5,2.32 15.23,2.05L14.17,1L7.59,7.58C7.22,7.95 7,8.45 7,9V19A2,2 0 0,0 9,21H18C18.83,21 19.54,20.5 19.84,19.78L22.86,12.73C22.95,12.5 23,12.26 23,12V10M1,21H5V9H1V21Z" />
-                    </svg>
-                </mwc-icon-button>
-            `;
-        }
-        else {
-            return x `
-                <mwc-icon-button @click=${() => this._likeSong("thumb_up")}>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <title>thumb-up-outline</title>
-                        <path
-                            d="M5,9V21H1V9H5M9,21A2,2 0 0,1 7,19V9C7,8.45 7.22,7.95 7.59,7.59L14.17,1L15.23,2.06C15.5,2.33 15.67,2.7 15.67,3.11L15.64,3.43L14.69,8H21C22.11,8 23,8.9 23,10V12C23,12.26 22.95,12.5 22.86,12.73L19.84,19.78C19.54,20.5 18.83,21 18,21H9M9,19H18.03L21,12V10H12.21L13.34,4.68L9,9.03V19Z" />
-                    </svg>
-                </mwc-icon-button>
-            `;
-        }
-    }
-    _renderRadioButton() {
-        return x `
-            <mwc-icon-button @click=${this._startRadio}>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <path
-                        d="M12,10A2,2 0 0,1 14,12C14,12.5 13.82,12.94 13.53,13.29L16.7,22H14.57L12,14.93L9.43,22H7.3L10.47,13.29C10.18,12.94 10,12.5 10,12A2,2 0 0,1 12,10M12,8A4,4 0 0,0 8,12C8,12.5 8.1,13 8.28,13.46L7.4,15.86C6.53,14.81 6,13.47 6,12A6,6 0 0,1 12,6A6,6 0 0,1 18,12C18,13.47 17.47,14.81 16.6,15.86L15.72,13.46C15.9,13 16,12.5 16,12A4,4 0 0,0 12,8M12,4A8,8 0 0,0 4,12C4,14.36 5,16.5 6.64,17.94L5.92,19.94C3.54,18.11 2,15.23 2,12A10,10 0 0,1 12,2A10,10 0 0,1 22,12C22,15.23 20.46,18.11 18.08,19.94L17.36,17.94C19,16.5 20,14.36 20,12A8,8 0 0,0 12,4Z" />
-                </svg>
-            </mwc-icon-button>
-        `;
-    }
-    _renderShuffle() {
-        return x `
-            <mwc-icon-button @click=${this._shuffleList}>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <title>shuffle-variant</title>
-                    <path
-                        d="M17,3L22.25,7.5L17,12L22.25,16.5L17,21V18H14.26L11.44,15.18L13.56,13.06L15.5,15H17V12L17,9H15.5L6.5,18H2V15H5.26L14.26,6H17V3M2,6H6.5L9.32,8.82L7.2,10.94L5.26,9H2V6Z" />
-                </svg>
-            </mwc-icon-button>
-        `;
-    }
-    _renderRepeat() {
-        return x `
-            <mwc-icon-button @click=${this._changeRepeat}>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <title>repeat</title>
-                    <path
-                        d="M17,17H7V14L3,18L7,22V19H19V13H17M7,7H17V10L21,6L17,2V5H5V11H7V7Z" />
-                </svg>
-            </mwc-icon-button>
-        `;
-    }
-    _renderPrevious() {
-        return x `
-            <mwc-icon-button @click=${this._skipPrevious}>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <title>skip-previous</title>
-                    <path d="M6,18V6H8V18H6M9.5,12L18,6V18L9.5,12Z" />
-                </svg>
-            </mwc-icon-button>
-        `;
-    }
-    _renderPlayPause() {
-        return x `
-            <mwc-icon-button @click=${this._togglePlayPause}>
-                ${this.entity.state == "playing"
-            ? x ` <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24">
-                          <title>pause</title>
-                          <path d="M14,19H18V5H14M6,19H10V5H6V19Z" />
-                      </svg>`
-            : x ` <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24">
-                          <title>play</title>
-                          <path d="M8,5.14V19.14L19,12.14L8,5.14Z" />
-                      </svg>`}
-            </mwc-icon-button>
-        `;
-    }
-    _renderNext() {
-        return x `
-            <mwc-icon-button @click=${this._skipNext}
-                ><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <title>skip-next</title>
-                    <path d="M16,18H18V6H16M6,18L14.5,12L6,6V18Z" />
-                </svg>
-            </mwc-icon-button>
-        `;
-    }
-    _changeVolume() {
-        this.hass.callService("media_player", "volume_set", {
-            entity_id: this.entity["entity_id"],
-            volume_level: this.volumeSlider.value / 100,
-        });
-    }
-    _toggleMute() {
-        this.hass.callService("media_player", "volume_mute", {
-            entity_id: this.entity["entity_id"],
-            is_volume_muted: false,
-        });
-    }
-    async _startRadio() {
-        var _a, _b;
-        await this.hass.callService("media_player", "shuffle_set", {
-            entity_id: this.entity["entity_id"],
-            shuffle: false,
-        });
-        this.hass.callService("media_player", "play_media", {
-            entity_id: this.entity["entity_id"],
-            media_content_id: (_b = (_a = this.entity) === null || _a === void 0 ? void 0 : _a.attributes) === null || _b === void 0 ? void 0 : _b.videoId,
-            media_content_type: "vid_channel",
-        });
-    }
-    async _likeSong(rating) {
-        var _a;
-        await this.hass.callService("ytube_music_player", "rate_track", {
-            entity_id: (_a = this.entity) === null || _a === void 0 ? void 0 : _a.entity_id,
-            rating: rating,
-        });
-        this.requestUpdate();
-    }
-    _shuffleList() {
-        var _a, _b;
-        const shuffle = (_b = (_a = this.entity) === null || _a === void 0 ? void 0 : _a.attributes) === null || _b === void 0 ? void 0 : _b.shuffle;
-        this.hass.callService("media_player", "shuffle_set", {
-            entity_id: this.entity["entity_id"],
-            shuffle: !shuffle,
-        });
-    }
-    _changeRepeat() {
+    async _changeRepeat() {
         var _a, _b;
         const repeat = (_b = (_a = this.entity) === null || _a === void 0 ? void 0 : _a.attributes) === null || _b === void 0 ? void 0 : _b.repeat;
         let newRepeat;
@@ -7946,22 +7928,21 @@ let PoLRMediaControl = class PoLRMediaControl extends s$1 {
             repeat: newRepeat,
         });
     }
-    _skipPrevious() {
-        this.hass.callService("media_player", "media_previous_track", {
+    async _changeVolume() {
+        this.hass.callService("media_player", "volume_set", {
             entity_id: this.entity["entity_id"],
+            volume_level: this.volumeSlider.value / 100,
         });
     }
-    _togglePlayPause() {
-        this.hass.callService("media_player", "media_play_pause", {
-            entity_id: this.entity["entity_id"],
+    async _likeSong(rating) {
+        var _a;
+        await this.hass.callService("ytube_music_player", "rate_track", {
+            entity_id: (_a = this.entity) === null || _a === void 0 ? void 0 : _a.entity_id,
+            rating: rating,
         });
+        this.requestUpdate();
     }
-    _skipNext() {
-        this.hass.callService("media_player", "media_next_track", {
-            entity_id: this.entity["entity_id"],
-        });
-    }
-    _seekProgress() {
+    async _seekProgress() {
         var _a, _b;
         let progress = this.renderRoot.querySelector("#progressSlider");
         let position = (progress.value / 100) * ((_b = (_a = this.entity) === null || _a === void 0 ? void 0 : _a.attributes) === null || _b === void 0 ? void 0 : _b.media_duration);
@@ -7970,20 +7951,62 @@ let PoLRMediaControl = class PoLRMediaControl extends s$1 {
             seek_position: position,
         });
     }
-    trackProgress() {
+    async _shuffleList() {
+        var _a, _b;
+        const shuffle = (_b = (_a = this.entity) === null || _a === void 0 ? void 0 : _a.attributes) === null || _b === void 0 ? void 0 : _b.shuffle;
+        this.hass.callService("media_player", "shuffle_set", {
+            entity_id: this.entity["entity_id"],
+            shuffle: !shuffle,
+        });
+    }
+    async _skipNext() {
+        this.hass.callService("media_player", "media_next_track", {
+            entity_id: this.entity["entity_id"],
+        });
+    }
+    async _startRadio() {
+        var _a, _b;
+        await this.hass.callService("media_player", "shuffle_set", {
+            entity_id: this.entity["entity_id"],
+            shuffle: false,
+        });
+        this.hass.callService("media_player", "play_media", {
+            entity_id: this.entity["entity_id"],
+            media_content_id: (_b = (_a = this.entity) === null || _a === void 0 ? void 0 : _a.attributes) === null || _b === void 0 ? void 0 : _b.videoId,
+            media_content_type: "vid_channel",
+        });
+    }
+    async _toggleMute() {
+        this.hass.callService("media_player", "volume_mute", {
+            entity_id: this.entity["entity_id"],
+            is_volume_muted: false,
+        });
+    }
+    async _trackProgress() {
         var _a, _b, _c, _d, _e, _f, _g, _h;
         let now = Date.now();
         let last_update = Date.parse((_b = (_a = this.entity) === null || _a === void 0 ? void 0 : _a.attributes) === null || _b === void 0 ? void 0 : _b.media_position_updated_at);
         let current = ((_d = (_c = this.entity) === null || _c === void 0 ? void 0 : _c.attributes) === null || _d === void 0 ? void 0 : _d.media_position) +
             (now - last_update) / 1000;
+        let position = 100 * (current / ((_f = (_e = this.entity) === null || _e === void 0 ? void 0 : _e.attributes) === null || _f === void 0 ? void 0 : _f.media_duration));
+        //console.log(position);
         if (this.progressSlider != null) {
-            this.progressSlider.value =
-                100 * (current / ((_f = (_e = this.entity) === null || _e === void 0 ? void 0 : _e.attributes) === null || _f === void 0 ? void 0 : _f.media_duration));
+            this.progressSlider.value = position;
         }
         if (((_h = (_g = this.entity) === null || _g === void 0 ? void 0 : _g.attributes) === null || _h === void 0 ? void 0 : _h.media_position) == null)
             this.progressSlider.value = 0;
         if (!this.tracker)
-            this.tracker = setInterval(() => this.trackProgress(), 1000);
+            this.tracker = setInterval(() => this._trackProgress(), 1000);
+    }
+    async _skipPrevious() {
+        this.hass.callService("media_player", "media_previous_track", {
+            entity_id: this.entity["entity_id"],
+        });
+    }
+    async _togglePlayPause() {
+        this.hass.callService("media_player", "media_play_pause", {
+            entity_id: this.entity["entity_id"],
+        });
     }
     static get styles() {
         return [
@@ -8203,11 +8226,7 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
                 <mwc-icon-button
                     @click=${() => this._browse(this._browseHistory.pop() &&
             this._browseHistory.pop())}>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <title>arrow-left</title>
-                        <path
-                            d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
-                    </svg>
+                    ${ArrowLeftIcon}
                 </mwc-icon-button>
                 <div class="breadcrumb">${breadcrumb}</div>
             </div>
@@ -8350,35 +8369,6 @@ class PoLRYTubePlayingCard extends s$1 {
             return x `<ha-icon icon="mdi:speaker"></ha-icon> `;
         return x `<ha-icon icon="${this._config.icon}"></ha-icon> `;
     }
-    _renderLikeButton() {
-        var _a, _b, _c, _d, _e;
-        if (((_a = this._entity) === null || _a === void 0 ? void 0 : _a.state) == "off")
-            return x ``;
-        if (!((_c = (_b = this._entity) === null || _b === void 0 ? void 0 : _b.attributes) === null || _c === void 0 ? void 0 : _c.likeStatus))
-            return x ``;
-        if (((_e = (_d = this._entity) === null || _d === void 0 ? void 0 : _d.attributes) === null || _e === void 0 ? void 0 : _e.likeStatus) == "LIKE") {
-            return x `
-                <mwc-icon-button @click=${() => this._likeSong("thumb_middle")}>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <title>thumb-up</title>
-                        <path
-                            d="M23,10C23,8.89 22.1,8 21,8H14.68L15.64,3.43C15.66,3.33 15.67,3.22 15.67,3.11C15.67,2.7 15.5,2.32 15.23,2.05L14.17,1L7.59,7.58C7.22,7.95 7,8.45 7,9V19A2,2 0 0,0 9,21H18C18.83,21 19.54,20.5 19.84,19.78L22.86,12.73C22.95,12.5 23,12.26 23,12V10M1,21H5V9H1V21Z" />
-                    </svg>
-                </mwc-icon-button>
-            `;
-        }
-        else {
-            return x `
-                <mwc-icon-button @click=${() => this._likeSong("thumb_up")}>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <title>thumb-up-outline</title>
-                        <path
-                            d="M5,9V21H1V9H5M9,21A2,2 0 0,1 7,19V9C7,8.45 7.22,7.95 7.59,7.59L14.17,1L15.23,2.06C15.5,2.33 15.67,2.7 15.67,3.11L15.64,3.43L14.69,8H21C22.11,8 23,8.9 23,10V12C23,12.26 22.95,12.5 22.86,12.73L19.84,19.78C19.54,20.5 18.83,21 18,21H9M9,19H18.03L21,12V10H12.21L13.34,4.68L9,9.03V19Z" />
-                    </svg>
-                </mwc-icon-button>
-            `;
-        }
-    }
     _renderSecondary() {
         var _a, _b, _c, _d, _e;
         // TODO: Implement a title
@@ -8418,10 +8408,7 @@ class PoLRYTubePlayingCard extends s$1 {
                 <mwc-icon-button
                     id="menuButton"
                     @click=${() => this._menu.show()}>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <path
-                            d="M2 11V13C7 13 11 17 11 22H13C13 15.9 8.1 11 2 11M20 2H10C8.9 2 8 2.9 8 4V10.5C9 11 9.9 11.7 10.7 12.4C11.6 11 13.2 10 15 10C17.8 10 20 12.2 20 15S17.8 20 15 20H14.8C14.9 20.7 15 21.3 15 22H20C21.1 22 22 21.1 22 20V4C22 2.9 21.1 2 20 2M15 8C13.9 8 13 7.1 13 6C13 4.9 13.9 4 15 4C16.1 4 17 4.9 17 6S16.1 8 15 8M15 18C14.8 18 14.5 18 14.3 17.9C13.8 16.4 13.1 15.1 12.2 13.9C12.6 12.8 13.7 11.9 15 11.9C16.7 11.9 18 13.2 18 14.9S16.7 18 15 18M2 15V17C4.8 17 7 19.2 7 22H9C9 18.1 5.9 15 2 15M2 19V22H5C5 20.3 3.7 19 2 19" />
-                    </svg>
+                    ${CastAudioIcon}
                 </mwc-icon-button>
                 <mwc-menu
                     id="menu"
@@ -8536,13 +8523,6 @@ class PoLRYTubePlayingCard extends s$1 {
                 this._activeTab = 3 /* PoLRYTubeTab.YOURS */;
                 break;
         }
-    }
-    async _likeSong(rating) {
-        await this._hass.callService("ytube_music_player", "rate_track", {
-            entity_id: this._config.entity_id,
-            rating: rating,
-        });
-        this.requestUpdate();
     }
     async _selectSource(ev) {
         var _a, _b;

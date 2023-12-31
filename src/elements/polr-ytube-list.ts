@@ -13,6 +13,7 @@ import {
     PoLRYTubeItem,
     PoLRYTubeListState,
 } from "../utils/utils";
+import { ForwardBurgerIcon, PlayIcon, RadioTowerIcon } from "../utils/icons";
 
 @customElement("polr-ytube-list")
 export class PoLRYTubeList extends LitElement {
@@ -59,11 +60,7 @@ export class PoLRYTubeList extends LitElement {
 
         return html`
             <mwc-icon-button @click=${() => this._fireNavigateEvent(element)}>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <title>forwardburger</title>
-                    <path
-                        d="M19,13H3V11H19L15,7L16.4,5.6L22.8,12L16.4,18.4L15,17L19,13M3,6H13V8H3V6M13,16V18H3V16H13Z" />
-                </svg>
+                ${ForwardBurgerIcon}
             </mwc-icon-button>
         `;
     }
@@ -72,10 +69,7 @@ export class PoLRYTubeList extends LitElement {
         if (!element.can_play) return html``;
         return html`
             <mwc-icon-button @click=${() => this._play(element)}>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <title>play</title>
-                    <path d="M8,5.14V19.14L19,12.14L8,5.14Z" />
-                </svg>
+                ${PlayIcon}
             </mwc-icon-button>
         `;
     }
@@ -92,11 +86,7 @@ export class PoLRYTubeList extends LitElement {
 
             return html`
                 <mwc-icon-button @click=${() => this._startRadio(id)}>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <title>radio-tower</title>
-                        <path
-                            d="M12,10A2,2 0 0,1 14,12C14,12.5 13.82,12.94 13.53,13.29L16.7,22H14.57L12,14.93L9.43,22H7.3L10.47,13.29C10.18,12.94 10,12.5 10,12A2,2 0 0,1 12,10M12,8A4,4 0 0,0 8,12C8,12.5 8.1,13 8.28,13.46L7.4,15.86C6.53,14.81 6,13.47 6,12A6,6 0 0,1 12,6A6,6 0 0,1 18,12C18,13.47 17.47,14.81 16.6,15.86L15.72,13.46C15.9,13 16,12.5 16,12A4,4 0 0,0 12,8M12,4A8,8 0 0,0 4,12C4,14.36 5,16.5 6.64,17.94L5.92,19.94C3.54,18.11 2,15.23 2,12A10,10 0 0,1 12,2A10,10 0 0,1 22,12C22,15.23 20.46,18.11 18.08,19.94L17.36,17.94C19,16.5 20,14.36 20,12A8,8 0 0,0 12,4Z" />
-                    </svg>
+                    ${RadioTowerIcon}
                 </mwc-icon-button>
             `;
         }
