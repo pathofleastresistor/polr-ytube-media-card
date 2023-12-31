@@ -7856,26 +7856,23 @@ let PoLRMediaControl = class PoLRMediaControl extends s$1 {
         `;
     }
     _renderPlayPause() {
-        if (this.entity.state == "playing") {
-            return x `
-                <mwc-icon-button @click=${this._togglePlayPause}>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <title>play</title>
-                        <path d="M8,5.14V19.14L19,12.14L8,5.14Z" />
-                    </svg>
-                </mwc-icon-button>
-            `;
-        }
-        else {
-            return x `
-                <mwc-icon-button @click=${this._togglePlayPause}>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <title>pause</title>
-                        <path d="M14,19H18V5H14M6,19H10V5H6V19Z" />
-                    </svg>
-                </mwc-icon-button>
-            `;
-        }
+        return x `
+            <mwc-icon-button @click=${this._togglePlayPause}>
+                ${this.entity.state == "playing"
+            ? x ` <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24">
+                          <title>pause</title>
+                          <path d="M14,19H18V5H14M6,19H10V5H6V19Z" />
+                      </svg>`
+            : x ` <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24">
+                          <title>play</title>
+                          <path d="M8,5.14V19.14L19,12.14L8,5.14Z" />
+                      </svg>`}
+            </mwc-icon-button>
+        `;
     }
     _renderNext() {
         return x `
