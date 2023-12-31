@@ -346,17 +346,18 @@ export class PoLRMediaControl extends LitElement {
         return [
             css`
                 :host {
-                    --mdc-icon-button-size: 40px;
-                    --mdc-icon-size: 20px;
                     display: grid;
                     gap: 12px;
+                    padding: 12px 0;
                 }
+
                 .action-row {
                     display: grid;
                     grid-template-columns: min-content min-content min-content;
 
                     justify-content: space-evenly;
                 }
+
                 .progress-row {
                     display: grid;
                     grid-template-columns: 1fr;
