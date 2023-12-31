@@ -167,6 +167,38 @@ const FetchableMediaContentType = [
 const isNumeric = (num) => (typeof num === "number" ||
     (typeof num === "string" && num.trim() !== "")) &&
     !isNaN(num);
+function areDeeplyEqual(obj1, obj2) {
+    if (obj1 === obj2)
+        return true;
+    if (Array.isArray(obj1) && Array.isArray(obj2)) {
+        if (obj1.length !== obj2.length)
+            return false;
+        return obj1.every((elem, index) => {
+            return areDeeplyEqual(elem, obj2[index]);
+        });
+    }
+    if (typeof obj1 === "object" &&
+        typeof obj2 === "object" &&
+        obj1 !== null &&
+        obj2 !== null) {
+        if (Array.isArray(obj1) || Array.isArray(obj2))
+            return false;
+        const keys1 = Object.keys(obj1);
+        const keys2 = Object.keys(obj2);
+        if (keys1.length !== keys2.length ||
+            !keys1.every((key) => keys2.includes(key)))
+            return false;
+        for (let key in obj1) {
+            let isEqual = areDeeplyEqual(obj1[key], obj2[key]);
+            if (!isEqual) {
+                //console.log(obj1[key], obj2[key]);
+                return false;
+            }
+        }
+        return true;
+    }
+    return false;
+}
 
 const ArrowLeftIcon = x `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -8328,15 +8360,15 @@ class PoLRYTubePlayingCard extends s$1 {
             this._config.searchTitle = "mdi:speaker";
     }
     set hass(hass) {
-        var _a;
+        var _a, _b;
         this._hass = hass;
         const newEntity = this._hass["states"][this._config["entity_id"]];
-        this._entity = structuredClone(newEntity);
-        (_a = this._playing) === null || _a === void 0 ? void 0 : _a.refresh();
-        if (this._hasEntityChanged(this._entity, newEntity)) {
-            if (this._entity["state"] == "off") {
+        if (!areDeeplyEqual(this._entity, newEntity)) {
+            if (((_a = this._entity) === null || _a === void 0 ? void 0 : _a.state) == "off") {
                 this._changeTab(1 /* PoLRYTubeTab.FOR_YOU */);
             }
+            this._entity = structuredClone(newEntity);
+            (_b = this._playing) === null || _b === void 0 ? void 0 : _b.refresh();
         }
     }
     firstUpdated(_changedProperties) {
@@ -8345,16 +8377,6 @@ class PoLRYTubePlayingCard extends s$1 {
         this._menu = this.renderRoot.querySelector("#menu");
         this._playing = this.renderRoot.querySelector("#playing");
         this._mediaControl = this.renderRoot.querySelector("mediaControl");
-    }
-    _hasEntityChanged(current, updated) {
-        var _a, _b, _c, _d;
-        return ((current === null || current === void 0 ? void 0 : current.state) != (updated === null || updated === void 0 ? void 0 : updated.state) ||
-            ((_a = current === null || current === void 0 ? void 0 : current.attributes) === null || _a === void 0 ? void 0 : _a.media_title) !=
-                ((_b = updated === null || updated === void 0 ? void 0 : updated.attributes) === null || _b === void 0 ? void 0 : _b.media_title) ||
-            ((_c = current === null || current === void 0 ? void 0 : current.attributes) === null || _c === void 0 ? void 0 : _c.likeStatus) !=
-                ((_d = updated === null || updated === void 0 ? void 0 : updated.attributes) === null || _d === void 0 ? void 0 : _d.likeStatus) ||
-            (current === null || current === void 0 ? void 0 : current.attributes.media_content_id) !=
-                (updated === null || updated === void 0 ? void 0 : updated.attributes.media_content_id));
     }
     _renderIcon() {
         var _a, _b, _c, _d, _e;

@@ -13,7 +13,7 @@ import "../elements/polr-media-control";
 import "../elements/polr-ytube-playing";
 import "../elements/polr-ytube-search";
 import "../elements/polr-ytube-browser";
-import { PoLRYTubeItem, PoLRYTubeTab } from "../utils/utils";
+import { areDeeplyEqual, PoLRYTubeItem, PoLRYTubeTab } from "../utils/utils";
 import { CastAudioIcon } from "../utils/icons";
 
 export class PoLRYTubePlayingCard extends LitElement {
@@ -51,15 +51,13 @@ export class PoLRYTubePlayingCard extends LitElement {
     set hass(hass) {
         this._hass = hass;
         const newEntity = this._hass["states"][this._config["entity_id"]];
-        this._entity = structuredClone(newEntity);
-        this._playing?.refresh();
 
-        if (this._hasEntityChanged(this._entity, newEntity)) {
-            if (this._entity["state"] == "off") {
+        if (!areDeeplyEqual(this._entity, newEntity)) {
+            if (this._entity?.state == "off") {
                 this._changeTab(PoLRYTubeTab.FOR_YOU);
-            } else {
-                //this._playing?.refresh(this._entity);
             }
+            this._entity = structuredClone(newEntity);
+            this._playing?.refresh();
         }
     }
 
@@ -71,18 +69,6 @@ export class PoLRYTubePlayingCard extends LitElement {
         this._menu = this.renderRoot.querySelector("#menu");
         this._playing = this.renderRoot.querySelector("#playing");
         this._mediaControl = this.renderRoot.querySelector("mediaControl");
-    }
-
-    private _hasEntityChanged(current, updated) {
-        return (
-            current?.state != updated?.state ||
-            current?.attributes?.media_title !=
-                updated?.attributes?.media_title ||
-            current?.attributes?.likeStatus !=
-                updated?.attributes?.likeStatus ||
-            current?.attributes.media_content_id !=
-                updated?.attributes.media_content_id
-        );
     }
 
     _renderIcon() {
