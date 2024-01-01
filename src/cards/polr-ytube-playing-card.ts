@@ -51,7 +51,14 @@ export class PoLRYTubePlayingCard extends LitElement {
         const newEntity = this._hass["states"][this._config["entity_id"]];
 
         if (!areDeeplyEqual(this._entity, newEntity, [])) {
+            if (this._entity?.state == "off" && newEntity.state != "off")
+                this._changeTab(PoLRYTubeTab.CURRENTLY_PLAYING);
+
             this._entity = structuredClone(newEntity);
+
+            if (this._entity.state == "off")
+                this._changeTab(PoLRYTubeTab.FOR_YOU);
+
             this._playing?.refresh();
         }
     }
@@ -202,21 +209,22 @@ export class PoLRYTubePlayingCard extends LitElement {
                 <div class="content">
                     ${
                         this._entity?.state != "off"
-                            ? html`<polr-media-control
-                                  id="mediaControl"
-                                  .hass=${this._hass}
-                                  .entity=${this._entity}>
-                              </polr-media-control>`
+                            ? html`
+                                  <polr-media-control
+                                      id="mediaControl"
+                                      .hass=${this._hass}
+                                      .entity=${this._entity}>
+                                  </polr-media-control>
+                                  <polr-tab-bar
+                                      activeIndex=${this._activeTab}
+                                      @MDCTabBar:activated="${(ev) =>
+                                          this._changeTab(ev.detail.index)}">
+                                      <polr-tab label="Playing"></polr-tab>
+                                      <polr-tab label="For You"></polr-tab>
+                                  </polr-tab-bar>
+                              `
                             : nothing
                     }
-                    <polr-tab-bar
-                        activeIndex=${this._activeTab}
-                        @MDCTabBar:activated="${(ev) =>
-                            this._changeTab(ev.detail.index)}">
-                        <polr-tab label="Playing"></polr-tab>
-                        <polr-tab label="For You"></polr-tab>
-                    </polr-tab-bar>
-
                     <div class="results">${this._renderTab()}</div>
                 </div>
             </ha-card>

@@ -80,7 +80,8 @@ export class PoLRYTubeBrowser extends LitElement {
     }
 
     private _renderNavigation() {
-        // if (this._browseHistory.length <= 1) return html``;
+        if (this._browseHistory.length <= 1 && !this._isSearchResults)
+            return html``;
 
         let breadcrumbItems;
         if (this._browseHistory.length > 2) {
