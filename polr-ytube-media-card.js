@@ -319,46 +319,6 @@ let PoLRYTubeList = class PoLRYTubeList extends s$1 {
         }
         return false;
     }
-    _renderThumbnail(element) {
-        if (element.thumbnail == "") {
-            return x `<div class="empty-thumbnail thumbnail">
-                <ha-icon icon="mdi:music-box"></ha-icon>
-            </div>`;
-        }
-        return x ` <img class="thumbnail" src="${element.thumbnail}" /> `;
-    }
-    _renderMoreButton(element) {
-        if (!element["can_expand"])
-            return x ``;
-        return x `
-            <mwc-icon-button @click=${() => this._fireNavigateEvent(element)}>
-                ${ForwardBurgerIcon}
-            </mwc-icon-button>
-        `;
-    }
-    _renderPlayButton(element) {
-        if (!element.can_play)
-            return x ``;
-        return x `
-            <mwc-icon-button @click=${() => this._play(element)}>
-                ${PlayIcon}
-            </mwc-icon-button>
-        `;
-    }
-    _renderRadioButton(element) {
-        if (this._is_current(element) ||
-            element.media_content_type == "track") {
-            const id = element.media_content_type == "track"
-                ? element.media_content_id
-                : this.entity["attributes"]["videoId"];
-            return x `
-                <mwc-icon-button @click=${() => this._startRadio(id)}>
-                    ${RadioTowerIcon}
-                </mwc-icon-button>
-            `;
-        }
-        return A;
-    }
     render() {
         if (this.state == 4 /* PoLRYTubeListState.LOADING */) {
             return x `<div class="loading">Loading...</div>`;
@@ -394,6 +354,46 @@ let PoLRYTubeList = class PoLRYTubeList extends s$1 {
                 </div>
             `;
         }
+    }
+    _renderMoreButton(element) {
+        if (!element["can_expand"])
+            return x ``;
+        return x `
+            <mwc-icon-button @click=${() => this._fireNavigateEvent(element)}>
+                ${ForwardBurgerIcon}
+            </mwc-icon-button>
+        `;
+    }
+    _renderPlayButton(element) {
+        if (!element.can_play)
+            return x ``;
+        return x `
+            <mwc-icon-button @click=${() => this._play(element)}>
+                ${PlayIcon}
+            </mwc-icon-button>
+        `;
+    }
+    _renderRadioButton(element) {
+        if (this._is_current(element) ||
+            element.media_content_type == "track") {
+            const id = element.media_content_type == "track"
+                ? element.media_content_id
+                : this.entity["attributes"]["videoId"];
+            return x `
+                <mwc-icon-button @click=${() => this._startRadio(id)}>
+                    ${RadioTowerIcon}
+                </mwc-icon-button>
+            `;
+        }
+        return A;
+    }
+    _renderThumbnail(element) {
+        if (element.thumbnail == "") {
+            return x `<div class="empty-thumbnail thumbnail">
+                <ha-icon icon="mdi:music-box"></ha-icon>
+            </div>`;
+        }
+        return x ` <img class="thumbnail" src="${element.thumbnail}" /> `;
     }
     async _fireNavigateEvent(element) {
         this.dispatchEvent(new CustomEvent("navigate", {
@@ -531,6 +531,17 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
             this._browse(this.initialAction);
         }
     }
+    render() {
+        return x `
+            <div class="container">
+                ${this._renderSearch()} ${this._renderNavigation()}
+                <polr-ytube-list
+                    .hass=${this.hass}
+                    .entity=${this.entity}
+                    @navigate=${(ev) => this._browse(ev.detail.action)}></polr-ytube-list>
+            </div>
+        `;
+    }
     _renderSearch() {
         return x `
             <div class="search">
@@ -539,7 +550,7 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
                     type="search"
                     id="query"
                     outlined
-                    @keyup="${this.handleKey}">
+                    @keyup="${this._handleSearchInput}">
                 </mwc-textfield>
                 <mwc-select
                     id="filter"
@@ -559,99 +570,9 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
             </div>
         `;
     }
-    render() {
-        return x `
-            <div class="container">
-                ${this._renderSearch()} ${this._renderNavigation()}
-                <polr-ytube-list
-                    .hass=${this.hass}
-                    .entity=${this.entity}
-                    @navigate=${(ev) => this._browse(ev.detail.action)}></polr-ytube-list>
-            </div>
-        `;
-    }
     loadElement(element) {
         this._browseHistory = [];
         this._browse(element);
-    }
-    _renderNavigation() {
-        if (this._browseHistory.length <= 1 && !this._isSearchResults)
-            return x ``;
-        let breadcrumbItems;
-        if (this._browseHistory.length > 2) {
-            breadcrumbItems = [
-                this._browseHistory[0].title,
-                "...",
-                this._browseHistory[this._browseHistory.length - 1].title,
-            ];
-        }
-        else {
-            breadcrumbItems = this._browseHistory.map((item) => item.title);
-        }
-        let breadcrumb = x `
-            ${o$3(o$2(breadcrumbItems, (i) => x `<span class="crumb">${i}</span>`), x `<span class="separator">/</span>`)}
-        `;
-        return x `
-            <div class="navigation-row">
-                ${this._isSearchResults
-            ? x `
-                          <mwc-icon-button
-                              @click=${() => {
-                this._isSearchResults = false;
-                this._browseHistory =
-                    this._previousBrowseHistory;
-                this._searchTextField.value = "";
-                this._browse(this._browseHistory.pop());
-            }}>
-                              ${CloseIcon}
-                          </mwc-icon-button>
-                      `
-            : A}
-                ${this._browseHistory.length > 1
-            ? x `
-                          <mwc-icon-button
-                              @click=${() => this._browse(this._browseHistory.pop() &&
-                this._browseHistory.pop())}>
-                              ${ArrowLeftIcon}
-                          </mwc-icon-button>
-                      `
-            : A}
-                ${this._browseHistory.length > 1 || this._isSearchResults
-            ? x ` <div class="breadcrumb">${breadcrumb}</div> `
-            : A}
-            </div>
-        `;
-    }
-    handleKey(ev) {
-        if (ev.keyCode == 13) {
-            this._search();
-            this._searchTextField.blur();
-        }
-    }
-    async _search() {
-        var _a, _b, _c, _d;
-        const query = (_a = this.shadowRoot.querySelector("#query")) === null || _a === void 0 ? void 0 : _a.value;
-        const filter = (_b = this.renderRoot.querySelector("#filter")) === null || _b === void 0 ? void 0 : _b.selected.value;
-        if (query == "")
-            return;
-        let data;
-        if (filter == "all") {
-            data = {
-                entity_id: (_c = this.entity) === null || _c === void 0 ? void 0 : _c.entity_id,
-                query: query,
-                limit: 40,
-            };
-        }
-        else {
-            data = {
-                entity_id: (_d = this.entity) === null || _d === void 0 ? void 0 : _d.entity_id,
-                query: query,
-                filter: filter,
-                limit: 40,
-            };
-        }
-        await this.hass.callService("ytube_music_player", "search", data);
-        this._fetchSearchResults();
     }
     async _browse(element) {
         var _a;
@@ -708,6 +629,85 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
             this._polrYTubeList.state = 16 /* PoLRYTubeListState.ERROR */;
             console.error(e);
         }
+    }
+    _renderNavigation() {
+        if (this._browseHistory.length <= 1 && !this._isSearchResults)
+            return x ``;
+        let breadcrumbItems;
+        if (this._browseHistory.length > 2) {
+            breadcrumbItems = [
+                this._browseHistory[0].title,
+                "...",
+                this._browseHistory[this._browseHistory.length - 1].title,
+            ];
+        }
+        else {
+            breadcrumbItems = this._browseHistory.map((item) => item.title);
+        }
+        let breadcrumb = x `
+            ${o$3(o$2(breadcrumbItems, (i) => x `<span class="crumb">${i}</span>`), x `<span class="separator">/</span>`)}
+        `;
+        return x `
+            <div class="navigation-row">
+                ${this._isSearchResults
+            ? x `
+                          <mwc-icon-button
+                              @click=${() => {
+                this._isSearchResults = false;
+                this._browseHistory =
+                    this._previousBrowseHistory;
+                this._searchTextField.value = "";
+                this._browse(this._browseHistory.pop());
+            }}>
+                              ${CloseIcon}
+                          </mwc-icon-button>
+                      `
+            : A}
+                ${this._browseHistory.length > 1
+            ? x `
+                          <mwc-icon-button
+                              @click=${() => this._browse(this._browseHistory.pop() &&
+                this._browseHistory.pop())}>
+                              ${ArrowLeftIcon}
+                          </mwc-icon-button>
+                      `
+            : A}
+                ${this._browseHistory.length > 1 || this._isSearchResults
+            ? x ` <div class="breadcrumb">${breadcrumb}</div> `
+            : A}
+            </div>
+        `;
+    }
+    _handleSearchInput(ev) {
+        if (ev.keyCode == 13) {
+            this._search();
+            this._searchTextField.blur();
+        }
+    }
+    async _search() {
+        var _a, _b, _c, _d;
+        const query = (_a = this.shadowRoot.querySelector("#query")) === null || _a === void 0 ? void 0 : _a.value;
+        const filter = (_b = this.renderRoot.querySelector("#filter")) === null || _b === void 0 ? void 0 : _b.selected.value;
+        if (query == "")
+            return;
+        let data;
+        if (filter == "all") {
+            data = {
+                entity_id: (_c = this.entity) === null || _c === void 0 ? void 0 : _c.entity_id,
+                query: query,
+                limit: 40,
+            };
+        }
+        else {
+            data = {
+                entity_id: (_d = this.entity) === null || _d === void 0 ? void 0 : _d.entity_id,
+                query: query,
+                filter: filter,
+                limit: 40,
+            };
+        }
+        await this.hass.callService("ytube_music_player", "search", data);
+        this._fetchSearchResults();
     }
     static get styles() {
         return [
@@ -8557,6 +8557,42 @@ class PoLRYTubePlayingCard extends s$1 {
         this._playing = this.renderRoot.querySelector("#playing");
         this._mediaControl = this.renderRoot.querySelector("mediaControl");
     }
+    render() {
+        var _a;
+        return x `
+            <ha-card>
+                <div class="header">
+                    <div class="icon-container" @click=${this._togglePower}>${this._renderIcon()}</div>
+                    <div class="info-container">
+                        <div class="primary">${this._config.header}</div>
+                        ${this._renderSecondary()}
+                    </div>
+                    <div class="action-container">
+                        ${this._renderSourceSelctor()}
+                    </div>
+                </div>
+                </polr-header>
+                <div class="content">
+                    ${((_a = this._entity) === null || _a === void 0 ? void 0 : _a.state) != "off"
+            ? x `
+                                  <polr-media-control
+                                      id="mediaControl"
+                                      .hass=${this._hass}
+                                      .entity=${this._entity}>
+                                  </polr-media-control>
+                                  <polr-tab-bar
+                                      activeIndex=${this._activeTab}
+                                      @MDCTabBar:activated="${(ev) => this._changeTab(ev.detail.index)}">
+                                      <polr-tab label="Playing"></polr-tab>
+                                      <polr-tab label="For You"></polr-tab>
+                                  </polr-tab-bar>
+                              `
+            : A}
+                    <div class="results">${this._renderTab()}</div>
+                </div>
+            </ha-card>
+        `;
+    }
     _renderIcon() {
         var _a, _b, _c, _d, _e;
         if (((_b = (_a = this._entity) === null || _a === void 0 ? void 0 : _a.attributes) === null || _b === void 0 ? void 0 : _b.entity_picture_local) != null)
@@ -8657,42 +8693,6 @@ class PoLRYTubePlayingCard extends s$1 {
                 .initialAction=${forYouItem}></polr-ytube-browser>
         `);
         return tabs;
-    }
-    render() {
-        var _a;
-        return x `
-            <ha-card>
-                <div class="header">
-                    <div class="icon-container" @click=${this._togglePower}>${this._renderIcon()}</div>
-                    <div class="info-container">
-                        <div class="primary">${this._config.header}</div>
-                        ${this._renderSecondary()}
-                    </div>
-                    <div class="action-container">
-                        ${this._renderSourceSelctor()}
-                    </div>
-                </div>
-                </polr-header>
-                <div class="content">
-                    ${((_a = this._entity) === null || _a === void 0 ? void 0 : _a.state) != "off"
-            ? x `
-                                  <polr-media-control
-                                      id="mediaControl"
-                                      .hass=${this._hass}
-                                      .entity=${this._entity}>
-                                  </polr-media-control>
-                                  <polr-tab-bar
-                                      activeIndex=${this._activeTab}
-                                      @MDCTabBar:activated="${(ev) => this._changeTab(ev.detail.index)}">
-                                      <polr-tab label="Playing"></polr-tab>
-                                      <polr-tab label="For You"></polr-tab>
-                                  </polr-tab-bar>
-                              `
-            : A}
-                    <div class="results">${this._renderTab()}</div>
-                </div>
-            </ha-card>
-        `;
     }
     async _changeTab(index) {
         switch (index) {

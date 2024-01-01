@@ -46,14 +46,45 @@ export class PoLRYTubeList extends LitElement {
         return false;
     }
 
-    private _renderThumbnail(element: PoLRYTubeItem) {
-        if (element.thumbnail == "") {
-            return html`<div class="empty-thumbnail thumbnail">
-                <ha-icon icon="mdi:music-box"></ha-icon>
-            </div>`;
+    render() {
+        if (this.state == PoLRYTubeListState.LOADING) {
+            return html`<div class="loading">Loading...</div>`;
         }
 
-        return html` <img class="thumbnail" src="${element.thumbnail}" /> `;
+        if (this.state == PoLRYTubeListState.NO_RESULTS) {
+            return html`<div class="empty">No results</div>`;
+        }
+
+        if (this.state == PoLRYTubeListState.ERROR) {
+            return html`<div class="error">Unknown Error</div>`;
+        }
+
+        if (this.state == PoLRYTubeListState.HAS_RESULTS) {
+            if (this.elements.length == 0) return html``;
+
+            const renderedElements = this.elements.map((element) => {
+                return html`
+                    <div
+                        class="element ${this._is_current(element)
+                            ? "current"
+                            : ""}">
+                        ${this._renderThumbnail(element)}
+                        <div class="info">${element.title}</div>
+                        <div class="actions">
+                            ${this._renderMoreButton(element)}
+                            ${this._renderRadioButton(element)}
+                            ${this._renderPlayButton(element)}
+                        </div>
+                    </div>
+                `;
+            });
+
+            return html`
+                <div class="list-container">
+                    <div class="elements">${renderedElements}</div>
+                </div>
+            `;
+        }
     }
 
     private _renderMoreButton(element: PoLRYTubeItem) {
@@ -94,45 +125,14 @@ export class PoLRYTubeList extends LitElement {
         return nothing;
     }
 
-    render() {
-        if (this.state == PoLRYTubeListState.LOADING) {
-            return html`<div class="loading">Loading...</div>`;
+    private _renderThumbnail(element: PoLRYTubeItem) {
+        if (element.thumbnail == "") {
+            return html`<div class="empty-thumbnail thumbnail">
+                <ha-icon icon="mdi:music-box"></ha-icon>
+            </div>`;
         }
 
-        if (this.state == PoLRYTubeListState.NO_RESULTS) {
-            return html`<div class="empty">No results</div>`;
-        }
-
-        if (this.state == PoLRYTubeListState.ERROR) {
-            return html`<div class="error">Unknown Error</div>`;
-        }
-
-        if (this.state == PoLRYTubeListState.HAS_RESULTS) {
-            if (this.elements.length == 0) return html``;
-
-            const renderedElements = this.elements.map((element) => {
-                return html`
-                    <div
-                        class="element ${this._is_current(element)
-                            ? "current"
-                            : ""}">
-                        ${this._renderThumbnail(element)}
-                        <div class="info">${element.title}</div>
-                        <div class="actions">
-                            ${this._renderMoreButton(element)}
-                            ${this._renderRadioButton(element)}
-                            ${this._renderPlayButton(element)}
-                        </div>
-                    </div>
-                `;
-            });
-
-            return html`
-                <div class="list-container">
-                    <div class="elements">${renderedElements}</div>
-                </div>
-            `;
-        }
+        return html` <img class="thumbnail" src="${element.thumbnail}" /> `;
     }
 
     private async _fireNavigateEvent(element: PoLRYTubeItem) {

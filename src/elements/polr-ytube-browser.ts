@@ -34,6 +34,19 @@ export class PoLRYTubeBrowser extends LitElement {
         }
     }
 
+    render() {
+        return html`
+            <div class="container">
+                ${this._renderSearch()} ${this._renderNavigation()}
+                <polr-ytube-list
+                    .hass=${this.hass}
+                    .entity=${this.entity}
+                    @navigate=${(ev) =>
+                        this._browse(ev.detail.action)}></polr-ytube-list>
+            </div>
+        `;
+    }
+
     _renderSearch() {
         return html`
             <div class="search">
@@ -42,7 +55,7 @@ export class PoLRYTubeBrowser extends LitElement {
                     type="search"
                     id="query"
                     outlined
-                    @keyup="${this.handleKey}">
+                    @keyup="${this._handleSearchInput}">
                 </mwc-textfield>
                 <mwc-select
                     id="filter"
@@ -63,116 +76,9 @@ export class PoLRYTubeBrowser extends LitElement {
         `;
     }
 
-    render() {
-        return html`
-            <div class="container">
-                ${this._renderSearch()} ${this._renderNavigation()}
-                <polr-ytube-list
-                    .hass=${this.hass}
-                    .entity=${this.entity}
-                    @navigate=${(ev) =>
-                        this._browse(ev.detail.action)}></polr-ytube-list>
-            </div>
-        `;
-    }
-
     public loadElement(element: PoLRYTubeItem) {
         this._browseHistory = [];
         this._browse(element);
-    }
-
-    private _renderNavigation() {
-        if (this._browseHistory.length <= 1 && !this._isSearchResults)
-            return html``;
-
-        let breadcrumbItems;
-        if (this._browseHistory.length > 2) {
-            breadcrumbItems = [
-                this._browseHistory[0].title,
-                "...",
-                this._browseHistory[this._browseHistory.length - 1].title,
-            ];
-        } else {
-            breadcrumbItems = this._browseHistory.map((item) => item.title);
-        }
-
-        let breadcrumb = html`
-            ${join(
-                map(
-                    breadcrumbItems,
-                    (i) => html`<span class="crumb">${i}</span>`
-                ),
-                html`<span class="separator">/</span>`
-            )}
-        `;
-
-        return html`
-            <div class="navigation-row">
-                ${this._isSearchResults
-                    ? html`
-                          <mwc-icon-button
-                              @click=${() => {
-                                  this._isSearchResults = false;
-                                  this._browseHistory =
-                                      this._previousBrowseHistory;
-                                  this._searchTextField.value = "";
-                                  this._browse(this._browseHistory.pop());
-                              }}>
-                              ${CloseIcon}
-                          </mwc-icon-button>
-                      `
-                    : nothing}
-                ${this._browseHistory.length > 1
-                    ? html`
-                          <mwc-icon-button
-                              @click=${() =>
-                                  this._browse(
-                                      this._browseHistory.pop() &&
-                                          this._browseHistory.pop()
-                                  )}>
-                              ${ArrowLeftIcon}
-                          </mwc-icon-button>
-                      `
-                    : nothing}
-                ${this._browseHistory.length > 1 || this._isSearchResults
-                    ? html` <div class="breadcrumb">${breadcrumb}</div> `
-                    : nothing}
-            </div>
-        `;
-    }
-
-    handleKey(ev) {
-        if (ev.keyCode == 13) {
-            this._search();
-            this._searchTextField.blur();
-        }
-    }
-
-    async _search() {
-        const query = (this.shadowRoot.querySelector("#query") as any)?.value;
-        const filter = (this.renderRoot.querySelector("#filter") as any)
-            ?.selected.value;
-
-        if (query == "") return;
-
-        let data;
-        if (filter == "all") {
-            data = {
-                entity_id: this.entity?.entity_id,
-                query: query,
-                limit: 40,
-            };
-        } else {
-            data = {
-                entity_id: this.entity?.entity_id,
-                query: query,
-                filter: filter,
-                limit: 40,
-            };
-        }
-
-        await this.hass.callService("ytube_music_player", "search", data);
-        this._fetchSearchResults();
     }
 
     async _browse(element: PoLRYTubeItem) {
@@ -237,6 +143,100 @@ export class PoLRYTubeBrowser extends LitElement {
             this._polrYTubeList.state = PoLRYTubeListState.ERROR;
             console.error(e);
         }
+    }
+
+    private _renderNavigation() {
+        if (this._browseHistory.length <= 1 && !this._isSearchResults)
+            return html``;
+
+        let breadcrumbItems;
+        if (this._browseHistory.length > 2) {
+            breadcrumbItems = [
+                this._browseHistory[0].title,
+                "...",
+                this._browseHistory[this._browseHistory.length - 1].title,
+            ];
+        } else {
+            breadcrumbItems = this._browseHistory.map((item) => item.title);
+        }
+
+        let breadcrumb = html`
+            ${join(
+                map(
+                    breadcrumbItems,
+                    (i) => html`<span class="crumb">${i}</span>`
+                ),
+                html`<span class="separator">/</span>`
+            )}
+        `;
+
+        return html`
+            <div class="navigation-row">
+                ${this._isSearchResults
+                    ? html`
+                          <mwc-icon-button
+                              @click=${() => {
+                                  this._isSearchResults = false;
+                                  this._browseHistory =
+                                      this._previousBrowseHistory;
+                                  this._searchTextField.value = "";
+                                  this._browse(this._browseHistory.pop());
+                              }}>
+                              ${CloseIcon}
+                          </mwc-icon-button>
+                      `
+                    : nothing}
+                ${this._browseHistory.length > 1
+                    ? html`
+                          <mwc-icon-button
+                              @click=${() =>
+                                  this._browse(
+                                      this._browseHistory.pop() &&
+                                          this._browseHistory.pop()
+                                  )}>
+                              ${ArrowLeftIcon}
+                          </mwc-icon-button>
+                      `
+                    : nothing}
+                ${this._browseHistory.length > 1 || this._isSearchResults
+                    ? html` <div class="breadcrumb">${breadcrumb}</div> `
+                    : nothing}
+            </div>
+        `;
+    }
+
+    private _handleSearchInput(ev) {
+        if (ev.keyCode == 13) {
+            this._search();
+            this._searchTextField.blur();
+        }
+    }
+
+    async _search() {
+        const query = (this.shadowRoot.querySelector("#query") as any)?.value;
+        const filter = (this.renderRoot.querySelector("#filter") as any)
+            ?.selected.value;
+
+        if (query == "") return;
+
+        let data;
+        if (filter == "all") {
+            data = {
+                entity_id: this.entity?.entity_id,
+                query: query,
+                limit: 40,
+            };
+        } else {
+            data = {
+                entity_id: this.entity?.entity_id,
+                query: query,
+                filter: filter,
+                limit: 40,
+            };
+        }
+
+        await this.hass.callService("ytube_music_player", "search", data);
+        this._fetchSearchResults();
     }
 
     static get styles(): CSSResultGroup {

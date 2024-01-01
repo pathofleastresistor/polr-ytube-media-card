@@ -73,6 +73,47 @@ export class PoLRYTubePlayingCard extends LitElement {
         this._mediaControl = this.renderRoot.querySelector("mediaControl");
     }
 
+    render() {
+        return html`
+            <ha-card>
+                <div class="header">
+                    <div class="icon-container" @click=${
+                        this._togglePower
+                    }>${this._renderIcon()}</div>
+                    <div class="info-container">
+                        <div class="primary">${this._config.header}</div>
+                        ${this._renderSecondary()}
+                    </div>
+                    <div class="action-container">
+                        ${this._renderSourceSelctor()}
+                    </div>
+                </div>
+                </polr-header>
+                <div class="content">
+                    ${
+                        this._entity?.state != "off"
+                            ? html`
+                                  <polr-media-control
+                                      id="mediaControl"
+                                      .hass=${this._hass}
+                                      .entity=${this._entity}>
+                                  </polr-media-control>
+                                  <polr-tab-bar
+                                      activeIndex=${this._activeTab}
+                                      @MDCTabBar:activated="${(ev) =>
+                                          this._changeTab(ev.detail.index)}">
+                                      <polr-tab label="Playing"></polr-tab>
+                                      <polr-tab label="For You"></polr-tab>
+                                  </polr-tab-bar>
+                              `
+                            : nothing
+                    }
+                    <div class="results">${this._renderTab()}</div>
+                </div>
+            </ha-card>
+        `;
+    }
+
     _renderIcon() {
         if (this._entity?.attributes?.entity_picture_local != null)
             return html`<img
@@ -188,47 +229,6 @@ export class PoLRYTubePlayingCard extends LitElement {
         `);
 
         return tabs;
-    }
-
-    render() {
-        return html`
-            <ha-card>
-                <div class="header">
-                    <div class="icon-container" @click=${
-                        this._togglePower
-                    }>${this._renderIcon()}</div>
-                    <div class="info-container">
-                        <div class="primary">${this._config.header}</div>
-                        ${this._renderSecondary()}
-                    </div>
-                    <div class="action-container">
-                        ${this._renderSourceSelctor()}
-                    </div>
-                </div>
-                </polr-header>
-                <div class="content">
-                    ${
-                        this._entity?.state != "off"
-                            ? html`
-                                  <polr-media-control
-                                      id="mediaControl"
-                                      .hass=${this._hass}
-                                      .entity=${this._entity}>
-                                  </polr-media-control>
-                                  <polr-tab-bar
-                                      activeIndex=${this._activeTab}
-                                      @MDCTabBar:activated="${(ev) =>
-                                          this._changeTab(ev.detail.index)}">
-                                      <polr-tab label="Playing"></polr-tab>
-                                      <polr-tab label="For You"></polr-tab>
-                                  </polr-tab-bar>
-                              `
-                            : nothing
-                    }
-                    <div class="results">${this._renderTab()}</div>
-                </div>
-            </ha-card>
-        `;
     }
 
     async _changeTab(index: any) {
