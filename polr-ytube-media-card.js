@@ -785,7 +785,7 @@ function*(t,e){const i="function"==typeof e;if(void 0!==t){let n=-1;for(const r 
 
                 .search {
                     display: grid;
-                    grid-template-columns: 1fr min-content;
+                    grid-template-columns: 1fr 120px;
                     align-items: center;
                     gap: 4px;
                     padding: 8px 0px;

@@ -286,7 +286,7 @@ export class PoLRYTubeBrowser extends LitElement {
 
                 .search {
                     display: grid;
-                    grid-template-columns: 1fr min-content;
+                    grid-template-columns: 1fr 120px;
                     align-items: center;
                     gap: 4px;
                     padding: 8px 0px;
