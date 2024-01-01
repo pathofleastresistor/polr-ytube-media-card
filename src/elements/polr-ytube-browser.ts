@@ -48,7 +48,8 @@ export class PoLRYTubeBrowser extends LitElement {
                     id="filter"
                     label="Filter"
                     fixedMenuPosition
-                    naturalMenuWidth>
+                    naturalMenuWidth
+                    @selected=${this._search}>
                     <mwc-list-item value="all"> All </mwc-list-item>
                     <mwc-list-item value="artists"> Artists </mwc-list-item>
                     <mwc-list-item selected value="songs">
@@ -145,9 +146,11 @@ export class PoLRYTubeBrowser extends LitElement {
     }
 
     async _search() {
-        const query = (this.shadowRoot.querySelector("#query") as any).value;
+        const query = (this.shadowRoot.querySelector("#query") as any)?.value;
         const filter = (this.renderRoot.querySelector("#filter") as any)
-            .selected.value;
+            ?.selected.value;
+
+        if (query == "") return;
 
         let data;
         if (filter == "all") {

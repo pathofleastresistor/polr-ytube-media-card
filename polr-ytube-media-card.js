@@ -547,7 +547,8 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
                     id="filter"
                     label="Filter"
                     fixedMenuPosition
-                    naturalMenuWidth>
+                    naturalMenuWidth
+                    @selected=${this._search}>
                     <mwc-list-item value="all"> All </mwc-list-item>
                     <mwc-list-item value="artists"> Artists </mwc-list-item>
                     <mwc-list-item selected value="songs">
@@ -627,21 +628,22 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
         }
     }
     async _search() {
-        var _a, _b;
-        const query = this.shadowRoot.querySelector("#query").value;
-        const filter = this.renderRoot.querySelector("#filter")
-            .selected.value;
+        var _a, _b, _c, _d;
+        const query = (_a = this.shadowRoot.querySelector("#query")) === null || _a === void 0 ? void 0 : _a.value;
+        const filter = (_b = this.renderRoot.querySelector("#filter")) === null || _b === void 0 ? void 0 : _b.selected.value;
+        if (query == "")
+            return;
         let data;
         if (filter == "all") {
             data = {
-                entity_id: (_a = this.entity) === null || _a === void 0 ? void 0 : _a.entity_id,
+                entity_id: (_c = this.entity) === null || _c === void 0 ? void 0 : _c.entity_id,
                 query: query,
                 limit: 40,
             };
         }
         else {
             data = {
-                entity_id: (_b = this.entity) === null || _b === void 0 ? void 0 : _b.entity_id,
+                entity_id: (_d = this.entity) === null || _d === void 0 ? void 0 : _d.entity_id,
                 query: query,
                 filter: filter,
                 limit: 40,
