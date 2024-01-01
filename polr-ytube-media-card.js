@@ -167,14 +167,14 @@ const FetchableMediaContentType = [
 const isNumeric = (num) => (typeof num === "number" ||
     (typeof num === "string" && num.trim() !== "")) &&
     !isNaN(num);
-function areDeeplyEqual(obj1, obj2) {
+function areDeeplyEqual(obj1, obj2, ignoreKeys) {
     if (obj1 === obj2)
         return true;
     if (Array.isArray(obj1) && Array.isArray(obj2)) {
         if (obj1.length !== obj2.length)
             return false;
         return obj1.every((elem, index) => {
-            return areDeeplyEqual(elem, obj2[index]);
+            return areDeeplyEqual(elem, obj2[index], ignoreKeys);
         });
     }
     if (typeof obj1 === "object" &&
@@ -189,9 +189,10 @@ function areDeeplyEqual(obj1, obj2) {
             !keys1.every((key) => keys2.includes(key)))
             return false;
         for (let key in obj1) {
-            let isEqual = areDeeplyEqual(obj1[key], obj2[key]);
+            if (ignoreKeys.includes(key))
+                continue;
+            let isEqual = areDeeplyEqual(obj1[key], obj2[key], ignoreKeys);
             if (!isEqual) {
-                //console.log(obj1[key], obj2[key]);
                 return false;
             }
         }
@@ -490,16 +491,16 @@ let PoLRYTubeList = class PoLRYTubeList extends s$1 {
     }
 };
 __decorate([
-    n$3()
+    t$1()
 ], PoLRYTubeList.prototype, "entity", void 0);
 __decorate([
-    n$3()
+    t$1()
 ], PoLRYTubeList.prototype, "hass", void 0);
 __decorate([
-    n$3()
+    t$1()
 ], PoLRYTubeList.prototype, "elements", void 0);
 __decorate([
-    n$3()
+    t$1()
 ], PoLRYTubeList.prototype, "state", void 0);
 PoLRYTubeList = __decorate([
     e$5("polr-ytube-list")
@@ -654,7 +655,6 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
         this._polrYTubeList.state = 4 /* PoLRYTubeListState.LOADING */;
         this._browseHistory.push(element);
         if (((_a = element.children) === null || _a === void 0 ? void 0 : _a.length) > 0) {
-            console.log("has children");
             this._polrYTubeList.elements = element["children"];
             this._polrYTubeList.state = 2 /* PoLRYTubeListState.HAS_RESULTS */;
         }
@@ -749,10 +749,10 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
     }
 };
 __decorate([
-    n$3()
+    t$1()
 ], PoLRYTubeBrowser.prototype, "entity", void 0);
 __decorate([
-    n$3()
+    t$1()
 ], PoLRYTubeBrowser.prototype, "hass", void 0);
 __decorate([
     t$1()
@@ -773,7 +773,7 @@ __decorate([
     t$1()
 ], PoLRYTubeBrowser.prototype, "_searchTextField", void 0);
 __decorate([
-    n$3()
+    t$1()
 ], PoLRYTubeBrowser.prototype, "_isSearchResults", void 0);
 PoLRYTubeBrowser = __decorate([
     e$5("polr-ytube-browser")
@@ -4674,7 +4674,7 @@ PoLRYTubeSearch.styles = i$5 `
         }
     `;
 __decorate([
-    n$3()
+    t$1()
 ], PoLRYTubeSearch.prototype, "_hass", void 0);
 __decorate([
     t$1()
@@ -4686,13 +4686,13 @@ __decorate([
     t$1()
 ], PoLRYTubeSearch.prototype, "_polrYTubeBrowser", void 0);
 __decorate([
-    n$3()
+    t$1()
 ], PoLRYTubeSearch.prototype, "_elements", void 0);
 __decorate([
     t$1()
 ], PoLRYTubeSearch.prototype, "_searchTextField", void 0);
 __decorate([
-    n$3()
+    t$1()
 ], PoLRYTubeSearch.prototype, "initialAction", void 0);
 PoLRYTubeSearch = __decorate([
     e$5("polr-ytube-search")
@@ -8525,7 +8525,7 @@ class PoLRYTubePlayingCard extends s$1 {
         var _a;
         this._hass = hass;
         const newEntity = this._hass["states"][this._config["entity_id"]];
-        if (!areDeeplyEqual(this._entity, newEntity)) {
+        if (!areDeeplyEqual(this._entity, newEntity, [])) {
             this._entity = structuredClone(newEntity);
             (_a = this._playing) === null || _a === void 0 ? void 0 : _a.refresh();
         }
@@ -8776,16 +8776,13 @@ class PoLRYTubePlayingCard extends s$1 {
     }
 }
 __decorate([
-    n$3()
+    t$1()
 ], PoLRYTubePlayingCard.prototype, "_config", void 0);
 __decorate([
-    n$3()
-], PoLRYTubePlayingCard.prototype, "_hass", void 0);
-__decorate([
-    n$3()
+    t$1()
 ], PoLRYTubePlayingCard.prototype, "_entity", void 0);
 __decorate([
-    n$3()
+    t$1()
 ], PoLRYTubePlayingCard.prototype, "_activeTab", void 0);
 __decorate([
     t$1()
@@ -8796,9 +8793,6 @@ __decorate([
 __decorate([
     t$1()
 ], PoLRYTubePlayingCard.prototype, "_playing", void 0);
-__decorate([
-    t$1()
-], PoLRYTubePlayingCard.prototype, "_search", void 0);
 __decorate([
     t$1()
 ], PoLRYTubePlayingCard.prototype, "_forYou", void 0);

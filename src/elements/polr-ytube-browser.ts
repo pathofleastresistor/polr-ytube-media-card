@@ -15,15 +15,15 @@ import { ArrowLeftIcon, CloseIcon } from "../utils/icons";
 
 @customElement("polr-ytube-browser")
 export class PoLRYTubeBrowser extends LitElement {
-    @property() public entity: any;
-    @property() public hass: any;
+    @state() public entity: any;
+    @state() public hass: any;
     @state() public initialAction: PoLRYTubeItem;
     @state() public initialElements: PoLRYTubeItem;
     @state() private _browseHistory: PoLRYTubeItem[] = [];
     @state() private _previousBrowseHistory: PoLRYTubeItem[] = [];
     @state() private _polrYTubeList: PoLRYTubeList;
     @state() private _searchTextField: any;
-    @property() private _isSearchResults: boolean;
+    @state() private _isSearchResults: boolean;
 
     protected firstUpdated(_changedProperties): void {
         this._polrYTubeList = this.renderRoot.querySelector("polr-ytube-list");
@@ -174,7 +174,6 @@ export class PoLRYTubeBrowser extends LitElement {
         this._browseHistory.push(element);
 
         if (element.children?.length > 0) {
-            console.log("has children");
             this._polrYTubeList.elements = element["children"];
             this._polrYTubeList.state = PoLRYTubeListState.HAS_RESULTS;
         } else {

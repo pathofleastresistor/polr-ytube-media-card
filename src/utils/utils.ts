@@ -40,14 +40,14 @@ export const isNumeric = (num: any) =>
         (typeof num === "string" && num.trim() !== "")) &&
     !isNaN(num as number);
 
-export function areDeeplyEqual(obj1, obj2) {
+export function areDeeplyEqual(obj1, obj2, ignoreKeys) {
     if (obj1 === obj2) return true;
 
     if (Array.isArray(obj1) && Array.isArray(obj2)) {
         if (obj1.length !== obj2.length) return false;
 
         return obj1.every((elem, index) => {
-            return areDeeplyEqual(elem, obj2[index]);
+            return areDeeplyEqual(elem, obj2[index], ignoreKeys);
         });
     }
 
@@ -69,9 +69,10 @@ export function areDeeplyEqual(obj1, obj2) {
             return false;
 
         for (let key in obj1) {
-            let isEqual = areDeeplyEqual(obj1[key], obj2[key]);
+            if (ignoreKeys.includes(key)) continue;
+
+            let isEqual = areDeeplyEqual(obj1[key], obj2[key], ignoreKeys);
             if (!isEqual) {
-                //console.log(obj1[key], obj2[key]);
                 return false;
             }
         }

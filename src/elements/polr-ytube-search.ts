@@ -10,13 +10,13 @@ import "@material/mwc-select";
 
 @customElement("polr-ytube-search")
 export class PoLRYTubeSearch extends LitElement {
-    @property() public _hass: any;
+    @state() public _hass: any;
     @state() public _entity: any;
     @state() public _limit: number;
     @state() private _polrYTubeBrowser: PoLRYTubeBrowser;
-    @property() private _elements: PoLRYTubeItem[] = [];
+    @state() private _elements: PoLRYTubeItem[] = [];
     @state() private _searchTextField: any;
-    @property() public initialAction: PoLRYTubeItem;
+    @state() public initialAction: PoLRYTubeItem;
 
     constructor() {
         super();

@@ -11,20 +11,18 @@ import "../shared/polr-tab";
 import "../shared/polr-tab-bar";
 import "../elements/polr-media-control";
 import "../elements/polr-ytube-playing";
-import "../elements/polr-ytube-search";
 import "../elements/polr-ytube-browser";
 import { areDeeplyEqual, PoLRYTubeItem, PoLRYTubeTab } from "../utils/utils";
 import { CastAudioIcon } from "../utils/icons";
 
 export class PoLRYTubePlayingCard extends LitElement {
-    @property() _config: any = {};
-    @property() _hass: any;
-    @property() _entity: any;
-    @property() _activeTab: PoLRYTubeTab = PoLRYTubeTab.CURRENTLY_PLAYING;
+    @state() _config: any = {};
+    _hass: any;
+    @state() _entity: any;
+    @state() _activeTab: PoLRYTubeTab = PoLRYTubeTab.CURRENTLY_PLAYING;
     @state() _menuButton: any;
     @state() _menu: any;
     @state() _playing: any;
-    @state() _search: any;
     @state() _forYou: any;
     @state() _mediaControl: any;
 
@@ -52,7 +50,7 @@ export class PoLRYTubePlayingCard extends LitElement {
         this._hass = hass;
         const newEntity = this._hass["states"][this._config["entity_id"]];
 
-        if (!areDeeplyEqual(this._entity, newEntity)) {
+        if (!areDeeplyEqual(this._entity, newEntity, [])) {
             this._entity = structuredClone(newEntity);
             this._playing?.refresh();
         }

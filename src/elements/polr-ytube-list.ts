@@ -6,21 +6,22 @@ import {
     nothing,
     PropertyValueMap,
 } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { customElement, property, state } from "lit/decorators.js";
 import {
     isNumeric,
     PlayableMediaList,
     PoLRYTubeItem,
     PoLRYTubeListState,
+    areDeeplyEqual,
 } from "../utils/utils";
 import { ForwardBurgerIcon, PlayIcon, RadioTowerIcon } from "../utils/icons";
 
 @customElement("polr-ytube-list")
 export class PoLRYTubeList extends LitElement {
-    @property() public entity: any;
-    @property() public hass: any;
-    @property() public elements: PoLRYTubeItem[];
-    @property() public state: PoLRYTubeListState;
+    @state() public entity: any;
+    @state() public hass: any;
+    @state() public elements: PoLRYTubeItem[];
+    @state() public state: PoLRYTubeListState;
 
     protected updated(
         _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
