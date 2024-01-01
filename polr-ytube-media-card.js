@@ -1353,12 +1353,8 @@ const fn=function(t){class e extends t{get form(){return this[mn].form}get label
                 }
                 #progressSlider {
                     --md-sys-color-primary: var(--primary-color);
-                    --md-slider-handle-height: 12px;
-                    --md-slider-handle-shape: 4px;
                     --md-slider-active-track-shape: 4px;
                     --md-slider-inactive-track-shape: 4px;
-                    --md-slider-active-track-height: 12px;
-                    --md-slider-inactive-track-height: 12px;
                 }
                 .volumeMenuItems {
                     display: grid;
@@ -1371,7 +1367,13 @@ const fn=function(t){class e extends t{get form(){return this[mn].form}get label
                 .hass=${this._hass}
                 .entity=${this._entity}></polr-ytube-list>
         `}async _getCurrentlyPlayingItems(){var t,e,i,n,r,a,l,o,d;let c,s=null===(e=null===(t=this._entity)||void 0===t?void 0:t.attributes)||void 0===e?void 0:e.media_content_type,m=null===(n=null===(i=this._entity)||void 0===i?void 0:i.attributes)||void 0===n?void 0:n._media_type;if("idle"!=(null===(r=this._entity)||void 0===r?void 0:r.state))try{if(yt.includes(s)&&!["album"].includes(m)&&(c=await this._hass.callWS({type:"media_player/browse_media",entity_id:this._entity.entity_id,media_content_type:"cur_playlists",media_content_id:""})),["album"].includes(m)&&(c=await this._hass.callWS({type:"media_player/browse_media",entity_id:null===(a=this._entity)||void 0===a?void 0:a.entity_id,media_content_type:"album_of_track",media_content_id:"1"})),"loading..."==(null===(o=null===(l=this._entity)||void 0===l?void 0:l.attributes)||void 0===o?void 0:o.media_title))return void(this._polrYTubeList.state=4);(null===(d=null==c?void 0:c.children)||void 0===d?void 0:d.length)>0&&(this._polrYTubeList.elements=c.children,this._polrYTubeList.state=2),this.requestUpdate()}catch(t){console.error(t),this._polrYTubeList.state=16}}refresh(t){null!=t&&(this._entity=t),this._getCurrentlyPlayingItems()}};wn.styles=s``,n([pt()],wn.prototype,"_hass",void 0),n([pt()],wn.prototype,"_entity",void 0),n([pt()],wn.prototype,"_polrYTubeList",void 0),wn=n([ct("polr-ytube-playing")],wn);class En extends ot{constructor(){super(...arguments),this._config={},this._activeTab=0}static getConfigElement(){}static getStubConfig(){return{entity_id:"media_player.ytube_music_player",showHeader:"true",header:"YouTube Music"}}setConfig(t){if(!t.entity_id)throw new Error("entity_id must be specified");this._config=structuredClone(t),"header"in this._config||(this._config.header="YouTube Music"),"icon"in this._config||(this._config.searchTitle="mdi:speaker")}set hass(t){var e,i;this._hass=t;const n=this._hass.states[this._config.entity_id];wt(this._entity,n,[])||("off"==(null===(e=this._entity)||void 0===e?void 0:e.state)&&"off"!=n.state&&this._changeTab(0),this._entity=structuredClone(n),"off"==this._entity.state&&this._changeTab(1),null===(i=this._playing)||void 0===i||i.refresh())}firstUpdated(t){this._menuButton=this.renderRoot.querySelector("#menuButton"),this._menu=this.renderRoot.querySelector("#menu"),this._playing=this.renderRoot.querySelector("#playing"),this._mediaControl=this.renderRoot.querySelector("mediaControl")}render(){var t;return B`
-            <ha-card style="background: linear-gradient(to top, var(--card-background-color) 50%, rgba(var(--rgb-card-background-color),0.75) 100%), url(${this._entity.attributes.entity_picture}) no-repeat; background-size: contain;">
+            <ha-card style="
+                background: linear-gradient(
+                    to top, var(--card-background-color) 50%, 
+                    rgba(var(--rgb-card-background-color),0.75) 100%), 
+                    url(${this._entity.attributes.entity_picture})
+                    no-repeat;
+                background-size: contain;">
                 <div class="header">
                     <div class="icon-container" @click=${this._togglePower}>
                         ${this._renderIcon()}

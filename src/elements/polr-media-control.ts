@@ -340,12 +340,8 @@ export class PoLRMediaControl extends LitElement {
                 }
                 #progressSlider {
                     --md-sys-color-primary: var(--primary-color);
-                    --md-slider-handle-height: 12px;
-                    --md-slider-handle-shape: 4px;
                     --md-slider-active-track-shape: 4px;
                     --md-slider-inactive-track-shape: 4px;
-                    --md-slider-active-track-height: 12px;
-                    --md-slider-inactive-track-height: 12px;
                 }
                 .volumeMenuItems {
                     display: grid;
