@@ -75,11 +75,13 @@ export class PoLRYTubePlayingCard extends LitElement {
 
     render() {
         return html`
-            <ha-card>
+            <ha-card style="background: linear-gradient(to top, var(--card-background-color) 50%, rgba(var(--rgb-card-background-color),0.75) 100%), url(${
+                this._entity.attributes.entity_picture
+            }) no-repeat; background-size: contain;">
                 <div class="header">
-                    <div class="icon-container" @click=${
-                        this._togglePower
-                    }>${this._renderIcon()}</div>
+                    <div class="icon-container" @click=${this._togglePower}>
+                        ${this._renderIcon()}
+                    </div>
                     <div class="info-container">
                         <div class="primary">${this._config.header}</div>
                         ${this._renderSecondary()}
