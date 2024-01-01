@@ -12,6 +12,8 @@ import { map } from "lit/directives/map.js";
 import { PoLRYTubeList } from "./polr-ytube-list";
 import { PoLRYTubeItem, PoLRYTubeListState } from "../utils/utils";
 import { ArrowLeftIcon, CloseIcon } from "../utils/icons";
+import "../shared/polr-select";
+import "../shared/polr-textfield";
 
 @customElement("polr-ytube-browser")
 export class PoLRYTubeBrowser extends LitElement {
@@ -50,16 +52,17 @@ export class PoLRYTubeBrowser extends LitElement {
     _renderSearch() {
         return html`
             <div class="search">
-                <mwc-textfield
-                    label="Search "
+                <polr-textfield
                     type="search"
                     id="query"
                     outlined
+                    icon
                     @keyup="${this._handleSearchInput}">
-                </mwc-textfield>
-                <mwc-select
+                    <ha-icon slot="icon" icon="mdi:magnify"></ha-icon>
+                </polr-textfield>
+
+                <polr-select
                     id="filter"
-                    label="Filter"
                     fixedMenuPosition
                     naturalMenuWidth
                     @selected=${this._search}>
@@ -71,7 +74,7 @@ export class PoLRYTubeBrowser extends LitElement {
                     <mwc-list-item selected value="playlists">
                         Playlists
                     </mwc-list-item>
-                </mwc-select>
+                </polr-select>
             </div>
         `;
     }
@@ -254,6 +257,8 @@ export class PoLRYTubeBrowser extends LitElement {
                     align-items: center;
                     gap: 4px;
                     justify-content: flex-start;
+                    --mdc-icon-button-size: 32px;
+                    --mdc-icon-size: 20px;
                 }
 
                 .breadcrumb {
@@ -289,6 +294,15 @@ export class PoLRYTubeBrowser extends LitElement {
 
                 polr-ytube-list {
                     overflow: scroll;
+                }
+
+                #filter {
+                    --select-height: 42px;
+                    width: 100%;
+                }
+
+                #query {
+                    --textfield-height: 42px;
                 }
             `,
         ];
