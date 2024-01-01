@@ -272,7 +272,9 @@ export class PoLRYTubePlayingCard extends LitElement {
                 }
 
                 ha-card {
-                    overflow: hidden;
+                    height: 700px;
+                    display: flex;
+                    flex-direction: column;
                 }
 
                 .header {
@@ -307,6 +309,8 @@ export class PoLRYTubePlayingCard extends LitElement {
                 }
 
                 .action-container {
+                    display: flex;
+                    justify-content: flex-end;
                 }
 
                 .primary {
@@ -318,20 +322,29 @@ export class PoLRYTubePlayingCard extends LitElement {
                 }
 
                 .content {
-                    padding: 12px;
-                    display: grid;
+                    display: flex;
+                    flex-direction: column;
+                    overflow: auto;
                     gap: 12px;
+                    padding: 12px;
                 }
 
-                .action-container {
+                .results {
+                    overflow: auto;
                     display: flex;
-                    justify-content: flex-end;
+                    flex-direction: column;
                 }
+
                 .source {
                     position: relative;
                 }
                 .hiddenTab {
                     display: none;
+                }
+                polr-ytube-browser {
+                    display: flex;
+                    flex-grow: 1;
+                    overflow: auto;
                 }
             `,
         ];

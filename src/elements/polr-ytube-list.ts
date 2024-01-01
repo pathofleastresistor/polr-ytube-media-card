@@ -185,8 +185,6 @@ export class PoLRYTubeList extends LitElement {
         return [
             css`
                 .elements {
-                    height: 400px;
-                    overflow: scroll;
                 }
 
                 .element {

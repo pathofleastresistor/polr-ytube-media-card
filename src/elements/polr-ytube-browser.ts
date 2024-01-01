@@ -65,12 +65,14 @@ export class PoLRYTubeBrowser extends LitElement {
 
     render() {
         return html`
-            ${this._renderSearch()} ${this._renderNavigation()}
-            <polr-ytube-list
-                .hass=${this.hass}
-                .entity=${this.entity}
-                @navigate=${(ev) =>
-                    this._browse(ev.detail.action)}></polr-ytube-list>
+            <div class="container">
+                ${this._renderSearch()} ${this._renderNavigation()}
+                <polr-ytube-list
+                    .hass=${this.hass}
+                    .entity=${this.entity}
+                    @navigate=${(ev) =>
+                        this._browse(ev.detail.action)}></polr-ytube-list>
+            </div>
         `;
     }
 
@@ -240,9 +242,15 @@ export class PoLRYTubeBrowser extends LitElement {
     static get styles(): CSSResultGroup {
         return [
             css`
+                .container {
+                    display: flex;
+                    overflow: auto;
+                    flex-grow: 1;
+                    flex-direction: column;
+                }
+
                 .navigation-row {
                     display: flex;
-                    padding: 12px 0px;
                     align-items: center;
                     gap: 4px;
                     justify-content: flex-start;
@@ -265,15 +273,22 @@ export class PoLRYTubeBrowser extends LitElement {
                     font-size: 10px;
                     font-weight: bold;
                 }
+
                 .separator {
                     font-weight: bold;
                     padding: 4px;
                 }
+
                 .search {
                     display: grid;
                     grid-template-columns: 1fr min-content;
                     align-items: center;
                     gap: 4px;
+                    padding: 8px 0px;
+                }
+
+                polr-ytube-list {
+                    overflow: scroll;
                 }
             `,
         ];
