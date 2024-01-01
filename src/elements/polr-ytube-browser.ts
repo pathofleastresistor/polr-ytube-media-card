@@ -293,7 +293,7 @@ export class PoLRYTubeBrowser extends LitElement {
                 }
 
                 polr-ytube-list {
-                    overflow: scroll;
+                    overflow: auto;
                 }
 
                 #filter {

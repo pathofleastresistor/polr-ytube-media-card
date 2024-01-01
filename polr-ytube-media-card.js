@@ -792,7 +792,7 @@ function*(t,e){const i="function"==typeof e;if(void 0!==t){let n=-1;for(const r 
                 }
 
                 polr-ytube-list {
-                    overflow: scroll;
+                    overflow: auto;
                 }
 
                 #filter {
