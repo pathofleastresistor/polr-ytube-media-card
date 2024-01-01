@@ -7,6 +7,7 @@ export class PoLRYTubeItem {
     thumbnail: string;
     children_media_class: string;
     media_class: string;
+    children: PoLRYTubeItem[];
 }
 
 export const enum PoLRYTubeListState {

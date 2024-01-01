@@ -213,6 +213,12 @@ const CastAudioIcon = x `
             d="M2 11V13C7 13 11 17 11 22H13C13 15.9 8.1 11 2 11M20 2H10C8.9 2 8 2.9 8 4V10.5C9 11 9.9 11.7 10.7 12.4C11.6 11 13.2 10 15 10C17.8 10 20 12.2 20 15S17.8 20 15 20H14.8C14.9 20.7 15 21.3 15 22H20C21.1 22 22 21.1 22 20V4C22 2.9 21.1 2 20 2M15 8C13.9 8 13 7.1 13 6C13 4.9 13.9 4 15 4C16.1 4 17 4.9 17 6S16.1 8 15 8M15 18C14.8 18 14.5 18 14.3 17.9C13.8 16.4 13.1 15.1 12.2 13.9C12.6 12.8 13.7 11.9 15 11.9C16.7 11.9 18 13.2 18 14.9S16.7 18 15 18M2 15V17C4.8 17 7 19.2 7 22H9C9 18.1 5.9 15 2 15M2 19V22H5C5 20.3 3.7 19 2 19" />
     </svg>
 `;
+const CloseIcon = x `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path
+            d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+    </svg>
+`;
 const ForwardBurgerIcon = x `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
         <title>forwardburger</title>
@@ -498,6 +504,280 @@ __decorate([
 PoLRYTubeList = __decorate([
     e$5("polr-ytube-list")
 ], PoLRYTubeList);
+
+/**
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+function*o$3(o,t){const f="function"==typeof t;if(void 0!==o){let i=-1;for(const n of o)i>-1&&(yield f?t(i):t),i++,yield n;}}
+
+/**
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+function*o$2(o,f){if(void 0!==o){let i=0;for(const t of o)yield f(t,i++);}}
+
+let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
+    constructor() {
+        super(...arguments);
+        this._browseHistory = [];
+        this._previousBrowseHistory = [];
+    }
+    firstUpdated(_changedProperties) {
+        this._polrYTubeList = this.renderRoot.querySelector("polr-ytube-list");
+        this._searchTextField = this.renderRoot.querySelector("#query");
+        if (this.initialAction) {
+            this._browse(this.initialAction);
+        }
+    }
+    _renderSearch() {
+        return x `
+            <div class="search">
+                <mwc-textfield
+                    label="Search "
+                    type="search"
+                    id="query"
+                    outlined
+                    @keyup="${this.handleKey}">
+                </mwc-textfield>
+                <mwc-select
+                    id="filter"
+                    label="Filter"
+                    fixedMenuPosition
+                    naturalMenuWidth>
+                    <mwc-list-item value="all"> All </mwc-list-item>
+                    <mwc-list-item value="artists"> Artists </mwc-list-item>
+                    <mwc-list-item selected value="songs">
+                        Songs
+                    </mwc-list-item>
+                    <mwc-list-item selected value="playlists">
+                        Playlists
+                    </mwc-list-item>
+                </mwc-select>
+            </div>
+        `;
+    }
+    render() {
+        return x `
+            ${this._renderSearch()} ${this._renderNavigation()}
+            <polr-ytube-list
+                .hass=${this.hass}
+                .entity=${this.entity}
+                @navigate=${(ev) => this._browse(ev.detail.action)}></polr-ytube-list>
+        `;
+    }
+    loadElement(element) {
+        this._browseHistory = [];
+        this._browse(element);
+    }
+    _renderNavigation() {
+        // if (this._browseHistory.length <= 1) return html``;
+        let breadcrumbItems;
+        if (this._browseHistory.length > 2) {
+            breadcrumbItems = [
+                this._browseHistory[0].title,
+                "...",
+                this._browseHistory[this._browseHistory.length - 1].title,
+            ];
+        }
+        else {
+            breadcrumbItems = this._browseHistory.map((item) => item.title);
+        }
+        let breadcrumb = x `
+            ${o$3(o$2(breadcrumbItems, (i) => x `<span class="crumb">${i}</span>`), x `<span class="separator">/</span>`)}
+        `;
+        return x `
+            <div class="navigation-row">
+                ${this._isSearchResults
+            ? x `
+                          <mwc-icon-button
+                              @click=${() => {
+                this._isSearchResults = false;
+                this._browseHistory =
+                    this._previousBrowseHistory;
+                this._searchTextField.value = "";
+                this._browse(this._browseHistory.pop());
+            }}>
+                              ${CloseIcon}
+                          </mwc-icon-button>
+                      `
+            : A}
+                ${this._browseHistory.length > 1
+            ? x `
+                          <mwc-icon-button
+                              @click=${() => this._browse(this._browseHistory.pop() &&
+                this._browseHistory.pop())}>
+                              ${ArrowLeftIcon}
+                          </mwc-icon-button>
+                      `
+            : A}
+                ${this._browseHistory.length > 1 || this._isSearchResults
+            ? x ` <div class="breadcrumb">${breadcrumb}</div> `
+            : A}
+            </div>
+        `;
+    }
+    handleKey(ev) {
+        if (ev.keyCode == 13) {
+            this._search();
+            this._searchTextField.blur();
+        }
+    }
+    async _search() {
+        var _a, _b;
+        const query = this.shadowRoot.querySelector("#query").value;
+        const filter = this.renderRoot.querySelector("#filter")
+            .selected.value;
+        let data;
+        if (filter == "all") {
+            data = {
+                entity_id: (_a = this.entity) === null || _a === void 0 ? void 0 : _a.entity_id,
+                query: query,
+                limit: 40,
+            };
+        }
+        else {
+            data = {
+                entity_id: (_b = this.entity) === null || _b === void 0 ? void 0 : _b.entity_id,
+                query: query,
+                filter: filter,
+                limit: 40,
+            };
+        }
+        await this.hass.callService("ytube_music_player", "search", data);
+        this._fetchSearchResults();
+    }
+    async _browse(element) {
+        var _a;
+        this._polrYTubeList.state = 4 /* PoLRYTubeListState.LOADING */;
+        this._browseHistory.push(element);
+        if (((_a = element.children) === null || _a === void 0 ? void 0 : _a.length) > 0) {
+            console.log("has children");
+            this._polrYTubeList.elements = element["children"];
+            this._polrYTubeList.state = 2 /* PoLRYTubeListState.HAS_RESULTS */;
+        }
+        else {
+            try {
+                const response = await this.hass.callWS({
+                    type: "media_player/browse_media",
+                    entity_id: this.entity["entity_id"],
+                    media_content_type: element.media_content_type,
+                    media_content_id: element.media_content_id,
+                });
+                this._polrYTubeList.elements = response["children"];
+                this._polrYTubeList.state = 2 /* PoLRYTubeListState.HAS_RESULTS */;
+            }
+            catch (e) {
+                this._polrYTubeList.state = 16 /* PoLRYTubeListState.ERROR */;
+                console.error(e, element.media_content_type, element.media_content_id);
+            }
+        }
+        this.requestUpdate();
+    }
+    async _fetchSearchResults() {
+        var _a, _b;
+        this._polrYTubeList.state = 4 /* PoLRYTubeListState.LOADING */;
+        try {
+            let response = await this.hass.callWS({
+                type: "media_player/browse_media",
+                entity_id: (_a = this.entity) === null || _a === void 0 ? void 0 : _a.entity_id,
+                media_content_type: "search",
+                media_content_id: "",
+            });
+            if (((_b = response["children"]) === null || _b === void 0 ? void 0 : _b.length) > 0) {
+                // TODO: Move to ytube_music_player component,
+                //       instead of handling in frontend
+                // Filter out community playlists of podcast
+                response["children"].filter((el) => !el["media_content_id"].startsWith("MPSP"));
+                if (!this._isSearchResults)
+                    this._previousBrowseHistory = this._browseHistory;
+                this._isSearchResults = true;
+                this._browseHistory = [];
+                this._browse(response);
+                this.requestUpdate();
+            }
+            else
+                this._polrYTubeList.state = 8 /* PoLRYTubeListState.NO_RESULTS */;
+        }
+        catch (e) {
+            this._polrYTubeList.state = 16 /* PoLRYTubeListState.ERROR */;
+            console.error(e);
+        }
+    }
+    static get styles() {
+        return [
+            i$5 `
+                .navigation-row {
+                    display: flex;
+                    padding: 12px 0px;
+                    align-items: center;
+                    gap: 4px;
+                    justify-content: flex-start;
+                }
+
+                .breadcrumb {
+                    display: flex;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    align-items: center;
+                    margin-left: 4px;
+                }
+
+                .crumb {
+                    background-color: rgba(111, 111, 111, 0.2);
+                    padding: 4px 8px;
+                    border-radius: 4px;
+                    text-transform: uppercase;
+                    font-size: 10px;
+                    font-weight: bold;
+                }
+                .separator {
+                    font-weight: bold;
+                    padding: 4px;
+                }
+                .search {
+                    display: grid;
+                    grid-template-columns: 1fr min-content;
+                    align-items: center;
+                    gap: 4px;
+                }
+            `,
+        ];
+    }
+};
+__decorate([
+    n$3()
+], PoLRYTubeBrowser.prototype, "entity", void 0);
+__decorate([
+    n$3()
+], PoLRYTubeBrowser.prototype, "hass", void 0);
+__decorate([
+    t$1()
+], PoLRYTubeBrowser.prototype, "initialAction", void 0);
+__decorate([
+    t$1()
+], PoLRYTubeBrowser.prototype, "initialElements", void 0);
+__decorate([
+    t$1()
+], PoLRYTubeBrowser.prototype, "_browseHistory", void 0);
+__decorate([
+    t$1()
+], PoLRYTubeBrowser.prototype, "_previousBrowseHistory", void 0);
+__decorate([
+    t$1()
+], PoLRYTubeBrowser.prototype, "_polrYTubeList", void 0);
+__decorate([
+    t$1()
+], PoLRYTubeBrowser.prototype, "_searchTextField", void 0);
+__decorate([
+    n$3()
+], PoLRYTubeBrowser.prototype, "_isSearchResults", void 0);
+PoLRYTubeBrowser = __decorate([
+    e$5("polr-ytube-browser")
+], PoLRYTubeBrowser);
 
 /**
  * @license
@@ -1797,7 +2077,7 @@ var MDCTextFieldFoundation$1 = MDCTextFieldFoundation;
  * @license
  * Copyright 2018 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
- */const o$3=e$1(class extends i$1{constructor(t$1){var i;if(super(t$1),t$1.type!==t.ATTRIBUTE||"class"!==t$1.name||(null===(i=t$1.strings)||void 0===i?void 0:i.length)>2)throw Error("`classMap()` can only be used in the `class` attribute and must be the only part in the attribute.")}render(t){return " "+Object.keys(t).filter((i=>t[i])).join(" ")+" "}update(i,[s]){var r,o;if(void 0===this.it){this.it=new Set,void 0!==i.strings&&(this.nt=new Set(i.strings.join(" ").split(/\s/).filter((t=>""!==t))));for(const t in s)s[t]&&!(null===(r=this.nt)||void 0===r?void 0:r.has(t))&&this.it.add(t);return this.render(s)}const e=i.element.classList;this.it.forEach((t=>{t in s||(e.remove(t),this.it.delete(t));}));for(const t in s){const i=!!s[t];i===this.it.has(t)||(null===(o=this.nt)||void 0===o?void 0:o.has(t))||(i?(e.add(t),this.it.add(t)):(e.remove(t),this.it.delete(t)));}return T}});
+ */const o$1=e$1(class extends i$1{constructor(t$1){var i;if(super(t$1),t$1.type!==t.ATTRIBUTE||"class"!==t$1.name||(null===(i=t$1.strings)||void 0===i?void 0:i.length)>2)throw Error("`classMap()` can only be used in the `class` attribute and must be the only part in the attribute.")}render(t){return " "+Object.keys(t).filter((i=>t[i])).join(" ")+" "}update(i,[s]){var r,o;if(void 0===this.it){this.it=new Set,void 0!==i.strings&&(this.nt=new Set(i.strings.join(" ").split(/\s/).filter((t=>""!==t))));for(const t in s)s[t]&&!(null===(r=this.nt)||void 0===r?void 0:r.has(t))&&this.it.add(t);return this.render(s)}const e=i.element.classList;this.it.forEach((t=>{t in s||(e.remove(t),this.it.delete(t));}));for(const t in s){const i=!!s[t];i===this.it.has(t)||(null===(o=this.nt)||void 0===o?void 0:o.has(t))||(i?(e.add(t),this.it.add(t)):(e.remove(t),this.it.delete(t)));}return T}});
 
 /**
  * @license
@@ -1950,7 +2230,7 @@ class TextFieldBase extends FormElement {
             'mdc-text-field--end-aligned': this.endAligned,
         };
         return x `
-      <label class="mdc-text-field ${o$3(classes)}">
+      <label class="mdc-text-field ${o$1(classes)}">
         ${this.renderRipple()}
         ${this.outlined ? this.renderOutline() : this.renderLabel()}
         ${this.renderLeadingIcon()}
@@ -2013,7 +2293,7 @@ class TextFieldBase extends FormElement {
             'mdc-text-field__icon--leading': !isTrailingIcon,
             'mdc-text-field__icon--trailing': isTrailingIcon
         };
-        return x `<i class="material-icons mdc-text-field__icon ${o$3(classes)}">${icon}</i>`;
+        return x `<i class="material-icons mdc-text-field__icon ${o$1(classes)}">${icon}</i>`;
     }
     /** @soyTemplate */
     renderPrefix() {
@@ -2030,7 +2310,7 @@ class TextFieldBase extends FormElement {
             'mdc-text-field__affix--prefix': !isSuffix,
             'mdc-text-field__affix--suffix': isSuffix
         };
-        return x `<span class="mdc-text-field__affix ${o$3(classes)}">
+        return x `<span class="mdc-text-field__affix ${o$1(classes)}">
         ${content}</span>`;
     }
     /** @soyTemplate */
@@ -2099,7 +2379,7 @@ class TextFieldBase extends FormElement {
       <div class="mdc-text-field-helper-line">
         <div id="helper-text"
              aria-hidden="${l$1(ariaHiddenOrUndef)}"
-             class="mdc-text-field-helper-text ${o$3(classes)}"
+             class="mdc-text-field-helper-text ${o$1(classes)}"
              >${helperText}</div>
         ${this.renderCharCounter(shouldRenderCharCounter)}
       </div>`;
@@ -3616,7 +3896,7 @@ class SelectBase extends FormElement {
         const describedby = this.shouldRenderHelperText ? 'helper-text' : undefined;
         return x `
       <div
-          class="mdc-select ${o$3(classes)}">
+          class="mdc-select ${o$1(classes)}">
         <input
             class="formElement"
             name="${this.name}"
@@ -3675,7 +3955,7 @@ class SelectBase extends FormElement {
       <mwc-menu
         innerRole="listbox"
         wrapFocus
-        class=" ${o$3(classes)}"
+        class=" ${o$1(classes)}"
         activatable
         .fullwidth=${this.fixedMenuPosition ? false : !this.naturalMenuWidth}
         .open=${this.menuOpen}
@@ -3754,7 +4034,7 @@ class SelectBase extends FormElement {
         };
         return x `
         <p
-          class="mdc-select-helper-text ${o$3(classes)}"
+          class="mdc-select-helper-text ${o$1(classes)}"
           id="helper-text">${showValidationMessage ? this.validationMessage : this.helper}</p>`;
     }
     createAdapter() {
@@ -4278,17 +4558,21 @@ Select = __decorate([
 let PoLRYTubeSearch = class PoLRYTubeSearch extends s$1 {
     constructor() {
         super();
+        this._elements = [];
         this._limit = 25;
     }
     firstUpdated(_changedProperties) {
-        this._polrYTubeList = this.renderRoot.querySelector("polr-ytube-list");
+        this._polrYTubeBrowser =
+            this.renderRoot.querySelector("polr-ytube-browser");
         this._searchTextField = this.renderRoot.querySelector("#query");
     }
     _renderResults() {
+        console.log(this._elements);
         return x `
-            <polr-ytube-list
+            <polr-ytube-browser
                 .hass=${this._hass}
-                .entity=${this._entity}></polr-ytube-list>
+                .entity=${this._entity}
+                .initialAction=${this.initialAction}></polr-ytube-browser>
         `;
     }
     render() {
@@ -4322,8 +4606,8 @@ let PoLRYTubeSearch = class PoLRYTubeSearch extends s$1 {
         `;
     }
     async _fetchResults() {
+        //this._polrYTubeList.state = PoLRYTubeListState.LOADING;
         var _a, _b;
-        this._polrYTubeList.state = 4 /* PoLRYTubeListState.LOADING */;
         try {
             let response = await this._hass.callWS({
                 type: "media_player/browse_media",
@@ -4336,14 +4620,16 @@ let PoLRYTubeSearch = class PoLRYTubeSearch extends s$1 {
                 //       instead of handling in frontend
                 // Filter out community playlists of podcast
                 response["children"].filter((el) => !el["media_content_id"].startsWith("MPSP"));
-                this._polrYTubeList.state = 2 /* PoLRYTubeListState.HAS_RESULTS */;
-                this._polrYTubeList.elements = response["children"];
-            }
-            else
-                this._polrYTubeList.state = 8 /* PoLRYTubeListState.NO_RESULTS */;
+                //this._polrYTubeList.state = PoLRYTubeListState.HAS_RESULTS;
+                //this._polrYTubeList.elements = response["children"];
+                this._elements = response;
+                this._polrYTubeBrowser.loadElement(response);
+                console.log(this._elements);
+                this.requestUpdate();
+            } //else //this._polrYTubeList.state = PoLRYTubeListState.NO_RESULTS;
         }
         catch (e) {
-            this._polrYTubeList.state = 16 /* PoLRYTubeListState.ERROR */;
+            // this._polrYTubeList.state = PoLRYTubeListState.ERROR;
             console.error(e);
         }
     }
@@ -4355,7 +4641,7 @@ let PoLRYTubeSearch = class PoLRYTubeSearch extends s$1 {
     }
     async _search() {
         var _a, _b;
-        this._polrYTubeList.state = 4 /* PoLRYTubeListState.LOADING */;
+        //this._polrYTubeList.state = PoLRYTubeListState.LOADING;
         const query = this.shadowRoot.querySelector("#query").value;
         const filter = this.renderRoot.querySelector("#filter")
             .selected.value;
@@ -4398,10 +4684,16 @@ __decorate([
 ], PoLRYTubeSearch.prototype, "_limit", void 0);
 __decorate([
     t$1()
-], PoLRYTubeSearch.prototype, "_polrYTubeList", void 0);
+], PoLRYTubeSearch.prototype, "_polrYTubeBrowser", void 0);
+__decorate([
+    n$3()
+], PoLRYTubeSearch.prototype, "_elements", void 0);
 __decorate([
     t$1()
 ], PoLRYTubeSearch.prototype, "_searchTextField", void 0);
+__decorate([
+    n$3()
+], PoLRYTubeSearch.prototype, "initialAction", void 0);
 PoLRYTubeSearch = __decorate([
     e$5("polr-ytube-search")
 ], PoLRYTubeSearch);
@@ -4815,7 +5107,7 @@ class TabBase extends BaseElement {
         return x `
       <button
         @click="${this.handleClick}"
-        class="mdc-tab ${o$3(classes)}"
+        class="mdc-tab ${o$1(classes)}"
         role="tab"
         aria-selected="false"
         tabindex="-1"
@@ -5227,10 +5519,10 @@ class TabIndicatorBase extends BaseElement {
             'mdc-tab-indicator__content--underline': !this.icon,
         };
         return x `
-      <span class="mdc-tab-indicator ${o$3({
+      <span class="mdc-tab-indicator ${o$1({
             'mdc-tab-indicator--fade': this.fade
         })}">
-        <span class="mdc-tab-indicator__content ${o$3(contentClasses)}">${this.icon}</span>
+        <span class="mdc-tab-indicator__content ${o$1(contentClasses)}">${this.icon}</span>
       </span>
       `;
     }
@@ -6621,7 +6913,7 @@ __decorate([i$2("polr-tab-scroller")], TabBarBase.prototype, "scrollerElement", 
  * @license
  * Copyright 2018 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
- */const i="important",n$1=" !"+i,o$2=e$1(class extends i$1{constructor(t$1){var e;if(super(t$1),t$1.type!==t.ATTRIBUTE||"style"!==t$1.name||(null===(e=t$1.strings)||void 0===e?void 0:e.length)>2)throw Error("The `styleMap` directive must be used in the `style` attribute and must be the only part in the attribute.")}render(t){return Object.keys(t).reduce(((e,r)=>{const s=t[r];return null==s?e:e+`${r=r.includes("-")?r:r.replace(/(?:^(webkit|moz|ms|o)|)(?=[A-Z])/g,"-$&").toLowerCase()}:${s};`}),"")}update(e,[r]){const{style:s}=e.element;if(void 0===this.ut){this.ut=new Set;for(const t in r)this.ut.add(t);return this.render(r)}this.ut.forEach((t=>{null==r[t]&&(this.ut.delete(t),t.includes("-")?s.removeProperty(t):s[t]="");}));for(const t in r){const e=r[t];if(null!=e){this.ut.add(t);const r="string"==typeof e&&e.endsWith(n$1);t.includes("-")||r?s.setProperty(t,r?e.slice(0,-11):e,r?i:""):s[t]=e;}}return T}});
+ */const i="important",n$1=" !"+i,o=e$1(class extends i$1{constructor(t$1){var e;if(super(t$1),t$1.type!==t.ATTRIBUTE||"style"!==t$1.name||(null===(e=t$1.strings)||void 0===e?void 0:e.length)>2)throw Error("The `styleMap` directive must be used in the `style` attribute and must be the only part in the attribute.")}render(t){return Object.keys(t).reduce(((e,r)=>{const s=t[r];return null==s?e:e+`${r=r.includes("-")?r:r.replace(/(?:^(webkit|moz|ms|o)|)(?=[A-Z])/g,"-$&").toLowerCase()}:${s};`}),"")}update(e,[r]){const{style:s}=e.element;if(void 0===this.ut){this.ut=new Set;for(const t in r)this.ut.add(t);return this.render(r)}this.ut.forEach((t=>{null==r[t]&&(this.ut.delete(t),t.includes("-")?s.removeProperty(t):s[t]="");}));for(const t in r){const e=r[t];if(null!=e){this.ut.add(t);const r="string"==typeof e&&e.endsWith(n$1);t.includes("-")||r?s.setProperty(t,r?e.slice(0,-11):e,r?i:""):s[t]=e;}}return T}});
 
 /**
  * @license
@@ -7375,13 +7667,13 @@ class Slider extends sliderBaseClass {
             hover: this.handleStartHover || this.handleEndHover,
         };
         return x ` <div
-      class="container ${o$3(containerClasses)}"
-      style=${o$2(containerStyles)}>
+      class="container ${o$1(containerClasses)}"
+      style=${o(containerStyles)}>
       ${n(this.range, () => this.renderInput(inputStartProps))}
       ${this.renderInput(inputEndProps)} ${this.renderTrack()}
       <div class="handleContainerPadded">
         <div class="handleContainerBlock">
-          <div class="handleContainer ${o$3(handleContainerClasses)}">
+          <div class="handleContainer ${o$1(handleContainerClasses)}">
             ${n(this.range, () => this.renderHandle(handleStartProps))}
             ${this.renderHandle(handleEndProps)}
           </div>
@@ -7405,7 +7697,7 @@ class Slider extends sliderBaseClass {
         const isOverlapping = !this.disabled && this.handlesOverlapping;
         const name = start ? 'start' : 'end';
         return x `<div
-      class="handle ${o$3({
+      class="handle ${o$1({
             [name]: true,
             hover,
             onTop,
@@ -7427,7 +7719,7 @@ class Slider extends sliderBaseClass {
         const name = start ? `start` : `end`;
         return x `<input
       type="range"
-      class="${o$3({
+      class="${o$1({
             start,
             end: !start,
         })}"
@@ -8205,138 +8497,6 @@ PoLRYTubePlaying = __decorate([
     e$5("polr-ytube-playing")
 ], PoLRYTubePlaying);
 
-/**
- * @license
- * Copyright 2021 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
-function*o$1(o,t){const f="function"==typeof t;if(void 0!==o){let i=-1;for(const n of o)i>-1&&(yield f?t(i):t),i++,yield n;}}
-
-/**
- * @license
- * Copyright 2021 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
-function*o(o,f){if(void 0!==o){let i=0;for(const t of o)yield f(t,i++);}}
-
-let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
-    constructor() {
-        super(...arguments);
-        this._browseHistory = [];
-    }
-    firstUpdated(_changedProperties) {
-        this._polrYTubeList = this.renderRoot.querySelector("polr-ytube-list");
-        this._browse(this.initialAction);
-    }
-    render() {
-        return x `
-            ${this._renderNavigation()}
-            <polr-ytube-list
-                .hass=${this.hass}
-                .entity=${this.entity}
-                @navigate=${(ev) => this._browse(ev.detail.action)}></polr-ytube-list>
-        `;
-    }
-    _renderNavigation() {
-        if (this._browseHistory.length <= 1)
-            return x ``;
-        let breadcrumbItems;
-        if (this._browseHistory.length > 2) {
-            breadcrumbItems = [
-                this._browseHistory[0].title,
-                "...",
-                this._browseHistory[this._browseHistory.length - 1].title,
-            ];
-        }
-        else {
-            breadcrumbItems = this._browseHistory.map((item) => item.title);
-        }
-        let breadcrumb = x `
-            ${o$1(o(breadcrumbItems, (i) => x `<span class="crumb">${i}</span>`), x `<span class="separator">/</span>`)}
-        `;
-        return x `
-            <div class="back-button">
-                <mwc-icon-button
-                    @click=${() => this._browse(this._browseHistory.pop() &&
-            this._browseHistory.pop())}>
-                    ${ArrowLeftIcon}
-                </mwc-icon-button>
-                <div class="breadcrumb">${breadcrumb}</div>
-            </div>
-        `;
-    }
-    async _browse(element) {
-        this._polrYTubeList.state = 4 /* PoLRYTubeListState.LOADING */;
-        this._browseHistory.push(element);
-        try {
-            const response = await this.hass.callWS({
-                type: "media_player/browse_media",
-                entity_id: this.entity["entity_id"],
-                media_content_type: element.media_content_type,
-                media_content_id: element.media_content_id,
-            });
-            this._polrYTubeList.elements = response["children"];
-            this._polrYTubeList.state = 2 /* PoLRYTubeListState.HAS_RESULTS */;
-        }
-        catch (e) {
-            this._polrYTubeList.state = 16 /* PoLRYTubeListState.ERROR */;
-            console.error(e, element.media_content_type, element.media_content_id);
-        }
-        this.requestUpdate();
-    }
-    static get styles() {
-        return [
-            i$5 `
-                .back-button {
-                    display: grid;
-                    padding: 12px 0;
-                    grid-template-columns: min-content 1fr;
-                    align-items: center;
-                    gap: 12px;
-                }
-
-                .breadcrumb {
-                    display: flex;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    align-items: center;
-                }
-                .crumb {
-                    background-color: rgba(111, 111, 111, 0.2);
-                    padding: 4px 8px;
-                    border-radius: 12px;
-                    text-transform: uppercase;
-                    font-size: 10px;
-                    font-weight: bold;
-                }
-                .separator {
-                    font-weight: bold;
-                    padding: 4px;
-                }
-            `,
-        ];
-    }
-};
-__decorate([
-    n$3()
-], PoLRYTubeBrowser.prototype, "entity", void 0);
-__decorate([
-    n$3()
-], PoLRYTubeBrowser.prototype, "hass", void 0);
-__decorate([
-    t$1()
-], PoLRYTubeBrowser.prototype, "initialAction", void 0);
-__decorate([
-    t$1()
-], PoLRYTubeBrowser.prototype, "_browseHistory", void 0);
-__decorate([
-    t$1()
-], PoLRYTubeBrowser.prototype, "_polrYTubeList", void 0);
-PoLRYTubeBrowser = __decorate([
-    e$5("polr-ytube-browser")
-], PoLRYTubeBrowser);
-
 class PoLRYTubePlayingCard extends s$1 {
     constructor() {
         super(...arguments);
@@ -8476,16 +8636,6 @@ class PoLRYTubePlayingCard extends s$1 {
                 .entity=${this._entity}
                 .initialAction=${forYouItem}></polr-ytube-browser>
         `);
-        // Search tab
-        tabs.push(x `
-            <polr-ytube-search
-                class="${this._activeTab == 2 /* PoLRYTubeTab.SEARCH */
-            ? "activeTab"
-            : "hiddenTab"}"
-                ._hass=${this._hass}
-                ._entity=${this._entity}
-                ._limit="50"></polr-ytube-search>
-        `);
         return tabs;
     }
     render() {
@@ -8516,7 +8666,6 @@ class PoLRYTubePlayingCard extends s$1 {
                         @MDCTabBar:activated="${(ev) => this._changeTab(ev.detail.index)}">
                         <polr-tab label="Playing"></polr-tab>
                         <polr-tab label="For You"></polr-tab>
-                        <polr-tab label="Search"></polr-tab>
                     </polr-tab-bar>
 
                     <div class="results">${this._renderTab()}</div>
@@ -8532,12 +8681,6 @@ class PoLRYTubePlayingCard extends s$1 {
                 break;
             case 1:
                 this._activeTab = 1 /* PoLRYTubeTab.FOR_YOU */;
-                break;
-            case 2:
-                this._activeTab = 2 /* PoLRYTubeTab.SEARCH */;
-                break;
-            case 3:
-                this._activeTab = 3 /* PoLRYTubeTab.YOURS */;
                 break;
         }
     }

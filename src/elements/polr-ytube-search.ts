@@ -1,8 +1,10 @@
 import { LitElement, html, css, CSSResultGroup, PropertyValueMap } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import { PoLRYTubeListState } from "../utils/utils";
+import { PoLRYTubeListState, PoLRYTubeItem } from "../utils/utils";
 import { PoLRYTubeList } from "../elements/polr-ytube-list";
+import { PoLRYTubeBrowser } from "../elements/polr-ytube-browser";
 import "../elements/polr-ytube-list";
+import "../elements/polr-ytube-browser";
 import "@material/mwc-textfield";
 import "@material/mwc-select";
 
@@ -11,25 +13,29 @@ export class PoLRYTubeSearch extends LitElement {
     @property() public _hass: any;
     @state() public _entity: any;
     @state() public _limit: number;
-    @state() private _polrYTubeList: PoLRYTubeList;
+    @state() private _polrYTubeBrowser: PoLRYTubeBrowser;
+    @property() private _elements: PoLRYTubeItem[] = [];
     @state() private _searchTextField: any;
+    @property() public initialAction: PoLRYTubeItem;
 
     constructor() {
         super();
-
         this._limit = 25;
     }
 
     protected firstUpdated(_changedProperties): void {
-        this._polrYTubeList = this.renderRoot.querySelector("polr-ytube-list");
+        this._polrYTubeBrowser =
+            this.renderRoot.querySelector("polr-ytube-browser");
         this._searchTextField = this.renderRoot.querySelector("#query");
     }
 
     _renderResults() {
+        console.log(this._elements);
         return html`
-            <polr-ytube-list
+            <polr-ytube-browser
                 .hass=${this._hass}
-                .entity=${this._entity}></polr-ytube-list>
+                .entity=${this._entity}
+                .initialAction=${this.initialAction}></polr-ytube-browser>
         `;
     }
 
@@ -65,7 +71,7 @@ export class PoLRYTubeSearch extends LitElement {
     }
 
     async _fetchResults() {
-        this._polrYTubeList.state = PoLRYTubeListState.LOADING;
+        //this._polrYTubeList.state = PoLRYTubeListState.LOADING;
 
         try {
             let response = await this._hass.callWS({
@@ -83,11 +89,15 @@ export class PoLRYTubeSearch extends LitElement {
                     (el) => !el["media_content_id"].startsWith("MPSP")
                 );
 
-                this._polrYTubeList.state = PoLRYTubeListState.HAS_RESULTS;
-                this._polrYTubeList.elements = response["children"];
-            } else this._polrYTubeList.state = PoLRYTubeListState.NO_RESULTS;
+                //this._polrYTubeList.state = PoLRYTubeListState.HAS_RESULTS;
+                //this._polrYTubeList.elements = response["children"];
+                this._elements = response;
+                this._polrYTubeBrowser.loadElement(response);
+                console.log(this._elements);
+                this.requestUpdate();
+            } //else //this._polrYTubeList.state = PoLRYTubeListState.NO_RESULTS;
         } catch (e) {
-            this._polrYTubeList.state = PoLRYTubeListState.ERROR;
+            // this._polrYTubeList.state = PoLRYTubeListState.ERROR;
             console.error(e);
         }
     }
@@ -100,7 +110,7 @@ export class PoLRYTubeSearch extends LitElement {
     }
 
     async _search() {
-        this._polrYTubeList.state = PoLRYTubeListState.LOADING;
+        //this._polrYTubeList.state = PoLRYTubeListState.LOADING;
         const query = (this.shadowRoot.querySelector("#query") as any).value;
         const filter = (this.renderRoot.querySelector("#filter") as any)
             .selected.value;

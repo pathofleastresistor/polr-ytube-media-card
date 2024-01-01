@@ -182,17 +182,6 @@ export class PoLRYTubePlayingCard extends LitElement {
                 .initialAction=${forYouItem}></polr-ytube-browser>
         `);
 
-        // Search tab
-        tabs.push(html`
-            <polr-ytube-search
-                class="${this._activeTab == PoLRYTubeTab.SEARCH
-                    ? "activeTab"
-                    : "hiddenTab"}"
-                ._hass=${this._hass}
-                ._entity=${this._entity}
-                ._limit="50"></polr-ytube-search>
-        `);
-
         return tabs;
     }
 
@@ -228,7 +217,6 @@ export class PoLRYTubePlayingCard extends LitElement {
                             this._changeTab(ev.detail.index)}">
                         <polr-tab label="Playing"></polr-tab>
                         <polr-tab label="For You"></polr-tab>
-                        <polr-tab label="Search"></polr-tab>
                     </polr-tab-bar>
 
                     <div class="results">${this._renderTab()}</div>
@@ -246,13 +234,6 @@ export class PoLRYTubePlayingCard extends LitElement {
             case 1:
                 this._activeTab = PoLRYTubeTab.FOR_YOU;
                 break;
-            case 2:
-                this._activeTab = PoLRYTubeTab.SEARCH;
-                break;
-            case 3:
-                this._activeTab = PoLRYTubeTab.YOURS;
-                break;
-
             default:
                 break;
         }
