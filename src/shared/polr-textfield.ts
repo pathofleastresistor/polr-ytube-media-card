@@ -21,13 +21,19 @@ export class PoLRTextfield extends TextFieldBase {
     static override styles = [
         styles,
         css`
-            .mdc-text-field--outlined {
+            .mdc-text-field {
                 height: var(--textfield-height, 56px) !important;
-                overflow: visible;
+                border-radius: var(--mdc-shape-small, 4px) !important;
             }
+
+            .mdc-line-ripple::before,
+            .mdc-line-ripple::after {
+                border-bottom-style: none !important;
+            }
+
             .mdc-textfield__icon {
-                --mdc-icon-size: 12px;
-                padding: 8px;
+                --mdc-icon-size: 18px;
+                padding: 0 12px 0 8px;
             }
         `,
     ];
