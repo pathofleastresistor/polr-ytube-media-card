@@ -221,7 +221,7 @@ export class PoLRYTubeList extends LitElement {
                 }
 
                 .current {
-                    background-color: rgba(111, 111, 111, 0.2);
+                    background-color: var(--primary-background-color);
                 }
 
                 .empty,

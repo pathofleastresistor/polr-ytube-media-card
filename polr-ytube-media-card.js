@@ -212,7 +212,7 @@ const ct=t=>e=>"function"==typeof e?((t,e)=>(customElements.define(t,e),e))(t,e)
                 }
 
                 .current {
-                    background-color: rgba(111, 111, 111, 0.2);
+                    background-color: var(--primary-background-color);
                 }
 
                 .empty,
