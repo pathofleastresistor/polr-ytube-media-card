@@ -2,7 +2,8 @@
 
 A collection of cards was design to enhance the features of the [YTube_Media_Player integration](https://github.com/KoljaWindeler/ytube_music_player) and the [Mini Media Player](https://github.com/kalkih/mini-media-player)
 
-<img src="img/polr-ytube-media-card.gif" align="center" width="400px"></img>
+[Demo](https://github.com/pathofleastresistor/polr-ytube-media-card/assets/91756648/7d072b67-9dc3-4737-b949-40d7fae1e7ef)
+
 
 ## Installation
 
