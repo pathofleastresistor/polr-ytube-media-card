@@ -7,6 +7,7 @@ import {
     nothing,
 } from "lit";
 import { property, state } from "lit/decorators.js";
+import "../shared/polr-select";
 import "../shared/polr-tab";
 import "../shared/polr-tab-bar";
 import "../elements/polr-media-control";
@@ -175,20 +176,14 @@ export class PoLRYTubePlayingCard extends LitElement {
         });
 
         return html`
-            <div class="source" style="position: relative;">
-                <mwc-icon-button
-                    id="menuButton"
-                    @click=${() => this._menu.show()}>
-                    ${CastAudioIcon}
-                </mwc-icon-button>
-                <mwc-menu
+            <div>
+                <polr-select
                     id="menu"
-                    .anchor=${this._menuButton}
-                    @selected=${this._selectSource}
-                    corner="BOTTOM_END"
-                    menuCorner="END"
-                    naturalmenuwidth
-                    fixed>
+                    class="source"
+                    id="filter"
+                    fixedMenuPosition
+                    naturalMenuWidth
+                    @selected=${this._selectSource}>
                     ${media_players.map((item) =>
                         item[0] == this._entity?.attributes?.remote_player_id
                             ? html`<mwc-list-item
@@ -201,7 +196,7 @@ export class PoLRYTubePlayingCard extends LitElement {
                                   >${item[1]}</mwc-list-item
                               > `
                     )}
-                </mwc-menu>
+                </polr-select>
             </div>
         `;
     }
@@ -286,7 +281,7 @@ export class PoLRYTubePlayingCard extends LitElement {
                 .header {
                     display: grid;
                     padding: 12px 12px 0 12px;
-                    grid-template-columns: 40px auto min-content;
+                    grid-template-columns: 40px auto 120px;
                     gap: 12px;
                     align-items: center;
                 }
@@ -343,7 +338,9 @@ export class PoLRYTubePlayingCard extends LitElement {
 
                 .source {
                     position: relative;
+                    --select-height: 32px;
                 }
+
                 .hiddenTab {
                     display: none;
                 }

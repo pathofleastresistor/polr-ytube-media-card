@@ -24,6 +24,12 @@ export class PoLRSelect extends SelectBase {
             .mdc-line-ripple::before, .mdc-line-ripple::after {
                 border-bottom-style: none !important;
             }
+            .mdc-select__selected-text {
+                font-size: 10px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
         `,
     ];
 }
