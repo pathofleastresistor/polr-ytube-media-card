@@ -115,9 +115,7 @@ export class PoLRMediaControl extends LitElement {
     }
 
     _renderProgress() {
-        let totalTime = new Date(this.entity?.attributes?.media_duration * 1000)
-            .toISOString()
-            .substring(14, 19);
+        let totalTime = secondsToMMSS(this.entity?.attributes?.media_duration);
 
         return html`
             <div class="time">
