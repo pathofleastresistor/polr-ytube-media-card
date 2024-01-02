@@ -8253,7 +8253,7 @@ let PoLRMediaControl = class PoLRMediaControl extends s$1 {
     }
     _renderPlayPause() {
         return x `
-            <mwc-icon-button @click=${this._togglePlayPause}>
+            <mwc-icon-button class="playPause" @click=${this._togglePlayPause}>
                 ${this.entity.state == "playing" ? PauseIcon : PlayIcon}
             </mwc-icon-button>
         `;
@@ -8439,6 +8439,7 @@ let PoLRMediaControl = class PoLRMediaControl extends s$1 {
             i$5 `
                 :host {
                     display: grid;
+                    gap: 4px;
                 }
 
                 .action-row {
@@ -8461,6 +8462,10 @@ let PoLRMediaControl = class PoLRMediaControl extends s$1 {
                     justify-content: space-evenly;
                 }
 
+                .playPause {
+                    --mdc-icon-button-size: 64px;
+                    --mdc-icon-size: 48px;
+                }
                 .time {
                     display: grid;
                     grid-template-columns: min-content 1fr min-content;

@@ -100,7 +100,7 @@ export class PoLRMediaControl extends LitElement {
 
     _renderPlayPause() {
         return html`
-            <mwc-icon-button @click=${this._togglePlayPause}>
+            <mwc-icon-button class="playPause" @click=${this._togglePlayPause}>
                 ${this.entity.state == "playing" ? PauseIcon : PlayIcon}
             </mwc-icon-button>
         `;
@@ -312,12 +312,12 @@ export class PoLRMediaControl extends LitElement {
             css`
                 :host {
                     display: grid;
+                    gap: 4px;
                 }
 
                 .action-row {
                     display: grid;
                     grid-template-columns: min-content min-content min-content;
-
                     justify-content: space-evenly;
                 }
 
@@ -334,6 +334,10 @@ export class PoLRMediaControl extends LitElement {
                     justify-content: space-evenly;
                 }
 
+                .playPause {
+                    --mdc-icon-button-size: 64px;
+                    --mdc-icon-size: 48px;
+                }
                 .time {
                     display: grid;
                     grid-template-columns: min-content 1fr min-content;
