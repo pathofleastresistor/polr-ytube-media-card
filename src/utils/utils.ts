@@ -40,6 +40,9 @@ export const isNumeric = (num: any) =>
         (typeof num === "string" && num.trim() !== "")) &&
     !isNaN(num as number);
 
+export const secondsToMMSS = (seconds: number) =>
+    new Date(seconds * 1000).toISOString().substring(14, 19);
+
 export function areDeeplyEqual(obj1, obj2, ignoreKeys) {
     if (obj1 === obj2) return true;
 

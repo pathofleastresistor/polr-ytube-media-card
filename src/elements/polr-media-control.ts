@@ -8,6 +8,7 @@ import {
 } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import "../shared/polr-slider";
+import { secondsToMMSS } from "../utils/utils";
 import {
     PauseIcon,
     PlayIcon,
@@ -26,12 +27,13 @@ import {
 export class PoLRMediaControl extends LitElement {
     @property() hass: any;
     @property() entity: any;
-    @property() volumeSlider: any;
-    @property() tracker: any;
-    @property() progress: any;
-    @property() progressSlider: any;
-    @property() volumeButton: any;
-    @property() volumeMenu: any;
+    volumeSlider: any;
+    tracker: any;
+    progress: any;
+    progressSlider: any;
+    @property() progressTime: string;
+    volumeMenu: any;
+    volumeButton: any;
 
     async connectedCallback() {
         super.connectedCallback();
@@ -113,12 +115,21 @@ export class PoLRMediaControl extends LitElement {
     }
 
     _renderProgress() {
+        let totalTime = new Date(this.entity?.attributes?.media_duration * 1000)
+            .toISOString()
+            .substring(14, 19);
+
         return html`
-            <polr-slider
-                id="progressSlider"
-                min="0"
-                max="100"
-                @change=${this._seekProgress}></polr-slider>
+            <div class="time">
+                <span>${this.progressTime}</span>
+                <polr-slider
+                    id="progressSlider"
+                    min="0"
+                    step="1"
+                    max=${Math.round(this.entity?.attributes?.media_duration)}
+                    @change=${this._seekProgress}></polr-slider>
+                <span>${totalTime}</span>
+            </div>
         `;
     }
 
@@ -221,12 +232,9 @@ export class PoLRMediaControl extends LitElement {
     async _seekProgress() {
         let progress = this.renderRoot.querySelector("#progressSlider") as any;
 
-        let position =
-            (progress.value / 100) * this.entity?.attributes?.media_duration;
-
         this.hass.callService("media_player", "media_seek", {
             entity_id: this.entity["entity_id"],
-            seek_position: position,
+            seek_position: progress.value,
         });
     }
 
@@ -271,16 +279,16 @@ export class PoLRMediaControl extends LitElement {
         let last_update = Date.parse(
             this.entity?.attributes?.media_position_updated_at
         );
+
         let current =
             this.entity?.attributes?.media_position +
             (now - last_update) / 1000;
-        let position =
-            100 * (current / this.entity?.attributes?.media_duration);
 
         if (this.progressSlider != null) {
-            this.progressSlider.value = position;
-            if (this.entity?.attributes?.media_position == null)
-                this.progressSlider.value = 0;
+            if (this.entity?.attributes?.media_position != null) {
+                this.progressSlider.value = Math.round(current);
+                this.progressTime = secondsToMMSS(current);
+            }
         }
 
         if (!this.tracker)
@@ -325,6 +333,13 @@ export class PoLRMediaControl extends LitElement {
 
                     justify-content: space-evenly;
                 }
+
+                .time {
+                    display: grid;
+                    grid-template-columns: min-content 1fr min-content;
+                    align-items: center;
+                }
+
                 #volumeSlider {
                     transform: rotate(-90deg);
                 }
@@ -338,11 +353,13 @@ export class PoLRMediaControl extends LitElement {
                     --md-slider-active-track-height: 5px;
                     --md-slider-inactive-track-height: 5px;
                 }
+
                 #progressSlider {
                     --md-sys-color-primary: var(--primary-color);
                     --md-slider-active-track-shape: 4px;
                     --md-slider-inactive-track-shape: 4px;
                 }
+
                 .volumeMenuItems {
                     display: grid;
                     grid-template-columns: min-content 1fr;
