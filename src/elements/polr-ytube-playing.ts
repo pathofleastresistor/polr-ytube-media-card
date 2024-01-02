@@ -19,14 +19,15 @@ export class PoLRYTubePlaying extends LitElement {
         return html`
             <polr-ytube-list
                 .hass=${this._hass}
-                .entity=${this._entity}></polr-ytube-list>
+                .entity=${this._entity}
+            ></polr-ytube-list>
         `;
     }
 
     async _getCurrentlyPlayingItems() {
         let media_content_type = this._entity?.attributes?.media_content_type;
         let _media_type = this._entity?.attributes?._media_type;
-        let results;
+        let results: any = {};
         if (this._entity?.state == "idle") return;
 
         try {
@@ -42,12 +43,19 @@ export class PoLRYTubePlaying extends LitElement {
                 });
             }
 
+            // Treat songs as a playlist
             if (["album"].includes(_media_type)) {
                 results = await this._hass.callWS({
                     type: "media_player/browse_media",
                     entity_id: this._entity?.entity_id,
                     media_content_type: "album_of_track",
                     media_content_id: "1",
+                });
+
+                results?.children?.map((r: any, index: number) => {
+                    r["media_content_type"] = "PLAYLIST_GOTO_TRACK";
+                    r["media_content_id"] = index + 1;
+                    return r;
                 });
             }
 
