@@ -43,8 +43,8 @@ export class PoLRYTubeBrowser extends LitElement {
                 <polr-ytube-list
                     .hass=${this.hass}
                     .entity=${this.entity}
-                    @navigate=${(ev) =>
-                        this._browse(ev.detail.action)}></polr-ytube-list>
+                    @navigate=${(ev) => this._browse(ev.detail.action)}
+                ></polr-ytube-list>
             </div>
         `;
     }
@@ -56,7 +56,8 @@ export class PoLRYTubeBrowser extends LitElement {
                     type="search"
                     id="query"
                     icon
-                    @keyup="${this._handleSearchInput}">
+                    @keyup="${this._handleSearchInput}"
+                >
                     <ha-icon slot="icon" icon="mdi:magnify"></ha-icon>
                 </polr-textfield>
 
@@ -64,7 +65,8 @@ export class PoLRYTubeBrowser extends LitElement {
                     id="filter"
                     fixedMenuPosition
                     naturalMenuWidth
-                    @selected=${this._search}>
+                    @selected=${this._search}
+                >
                     <mwc-list-item value="all"> All </mwc-list-item>
                     <mwc-list-item value="artists"> Artists </mwc-list-item>
                     <mwc-list-item selected value="songs">
@@ -183,7 +185,8 @@ export class PoLRYTubeBrowser extends LitElement {
                                       this._previousBrowseHistory;
                                   this._searchTextField.value = "";
                                   this._browse(this._browseHistory.pop());
-                              }}>
+                              }}
+                          >
                               ${CloseIcon}
                           </mwc-icon-button>
                       `
@@ -195,7 +198,8 @@ export class PoLRYTubeBrowser extends LitElement {
                                   this._browse(
                                       this._browseHistory.pop() &&
                                           this._browseHistory.pop()
-                                  )}>
+                                  )}
+                          >
                               ${ArrowLeftIcon}
                           </mwc-icon-button>
                       `
@@ -256,9 +260,9 @@ export class PoLRYTubeBrowser extends LitElement {
                     align-items: center;
                     gap: 4px;
                     justify-content: flex-start;
-                    padding: 4px 0;
-                    --mdc-icon-button-size: 32px;
-                    --mdc-icon-size: 20px;
+                    padding: 8px 0;
+                    --mdc-icon-button-size: 24px;
+                    --mdc-icon-size: 14px;
                 }
 
                 .breadcrumb {
