@@ -73,6 +73,7 @@ export class PoLRYTubeList extends LitElement {
                 :host {
                     display: grid;
                     gap: 4px;
+                    --mdc-list-item-graphic-size: 40px;
                 }
 
                 .empty,

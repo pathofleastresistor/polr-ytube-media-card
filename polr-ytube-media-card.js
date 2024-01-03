@@ -566,6 +566,7 @@ let PoLRYTubeList = class PoLRYTubeList extends s$1 {
                 :host {
                     display: grid;
                     gap: 4px;
+                    --mdc-list-item-graphic-size: 40px;
                 }
 
                 .empty,
