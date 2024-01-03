@@ -6,7 +6,7 @@ import {
     PropertyValueMap,
     nothing,
 } from "lit";
-import { property, state } from "lit/decorators.js";
+import { property, state, query } from "lit/decorators.js";
 import "../shared/polr-tab";
 import "../shared/polr-tab-bar";
 import "../elements/polr-media-control";
@@ -20,18 +20,23 @@ export class PoLRYTubePlayingCard extends LitElement {
     _hass: any;
     @state() _entity: any;
     @state() _activeTab: PoLRYTubeTab = PoLRYTubeTab.CURRENTLY_PLAYING;
-    @state() _menuButton: any;
-    @state() _menu: any;
-    @state() _playing: any;
-    @state() _forYou: any;
-    @state() _mediaControl: any;
+    @state() _sourceSelectorButton: any;
+    @query("#sourceSelectorMenu") _sourceSelectorMenu: any;
+    @query("#playing") _playing: any;
+
+    protected firstUpdated(
+        _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
+    ): void {
+        this._sourceSelectorButton = this.renderRoot.querySelector(
+            "#sourceSelectorButton"
+        );
+    }
 
     static getConfigElement() {}
 
     static getStubConfig() {
         return {
             entity_id: "media_player.ytube_music_player",
-            showHeader: "true",
             header: "YouTube Music",
         };
     }
@@ -63,71 +68,80 @@ export class PoLRYTubePlayingCard extends LitElement {
         }
     }
 
-    protected firstUpdated(
-        _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
-    ): void {
-        // (async () => await loadHaForm())();
-        this._menuButton = this.renderRoot.querySelector("#menuButton");
-        this._menu = this.renderRoot.querySelector("#menu");
-        this._playing = this.renderRoot.querySelector("#playing");
-        this._mediaControl = this.renderRoot.querySelector("mediaControl");
-    }
-
     render() {
         return html`
-            <ha-card style="
-                background: linear-gradient(
-                    to top, var(--card-background-color) 50%, 
-                    rgba(var(--rgb-card-background-color),0.75) 100%), 
-                    url(${this._entity.attributes.entity_picture})
-                    no-repeat;
-                background-size: contain;">
+            <ha-card>
+                ${this._renderBackground()}
                 <div class="header">
                     <div class="icon-container" @click=${this._togglePower}>
                         ${this._renderIcon()}
                     </div>
                     <div class="info-container">
-                        <div class="primary">${this._config.header}</div>
-                        ${this._renderSecondary()}
+                        ${this._renderPrimary()} ${this._renderSecondary()}
                     </div>
                     <div class="action-container">
                         ${this._renderSourceSelctor()}
                     </div>
                 </div>
-                </polr-header>
                 <div class="content">
-                    ${
-                        this._entity?.state != "off"
-                            ? html`
-                                  <polr-media-control
-                                      id="mediaControl"
-                                      .hass=${this._hass}
-                                      .entity=${this._entity}>
-                                  </polr-media-control>
-                                  <polr-tab-bar
-                                      activeIndex=${this._activeTab}
-                                      @MDCTabBar:activated="${(ev) =>
-                                          this._changeTab(ev.detail.index)}">
-                                      <polr-tab label="Playing"></polr-tab>
-                                      <polr-tab label="For You"></polr-tab>
-                                  </polr-tab-bar>
-                              `
-                            : nothing
-                    }
-                    <div class="results">${this._renderTab()}</div>
+                    ${this._entity?.state != "off"
+                        ? html`
+                              <polr-media-control
+                                  id="mediaControl"
+                                  .hass=${this._hass}
+                                  .entity=${this._entity}
+                              >
+                              </polr-media-control>
+                              <polr-tab-bar
+                                  activeIndex=${this._activeTab}
+                                  @MDCTabBar:activated="${(ev) =>
+                                      this._changeTab(ev.detail.index)}"
+                              >
+                                  <polr-tab label="Playing"></polr-tab>
+                                  <polr-tab label="For You"></polr-tab>
+                              </polr-tab-bar>
+                          `
+                        : nothing}
+                    ${this._renderTab()}
                 </div>
             </ha-card>
         `;
     }
 
-    _renderIcon() {
-        if (this._entity?.attributes?.entity_picture_local != null)
-            return html`<img
-                src="${this._entity.attributes.entity_picture_local}" /> `;
+    _renderBackground() {
+        let img_url;
 
-        if (this._entity?.attributes?.entity_picture != null)
+        if (this._entity?.attributes?.entity_picture_local)
+            img_url = this._entity.attributes.entity_picture_local;
+
+        if (this._entity?.attributes?.entity_picture)
+            img_url = this._entity.attributes.entity_picture_local;
+
+        return html`
+            <div
+                class="background"
+                style="
+                background: linear-gradient(
+                    to top, var(--card-background-color) 50%, 
+                    rgba(var(--rgb-card-background-color),0.75) 100%), 
+                    url('${img_url}')
+                    no-repeat;
+                background-size: contain;
+                transition: background 2s ease-in-out;"
+            ></div>
+        `;
+    }
+
+    _renderIcon() {
+        if (this._entity?.attributes?.entity_picture_local)
             return html`<img
-                src="${this._entity.attributes.entity_picture}" /> `;
+                src="${this._entity.attributes.entity_picture_local}"
+            /> `;
+
+        if (this._entity?.attributes?.entity_picture)
+            return html`<img
+                src="${this._entity.attributes.entity_picture}"
+            /> `;
 
         if (this._entity?.state == "off")
             return html`<ha-icon icon="mdi:speaker"></ha-icon> `;
@@ -135,21 +149,24 @@ export class PoLRYTubePlayingCard extends LitElement {
         return html`<ha-icon icon="${this._config.icon}"></ha-icon> `;
     }
 
+    _renderPrimary() {
+        if (this._entity?.attributes?.media_title)
+            return html`<div class="primary">
+                ${this._entity.attributes.media_title}
+            </div>`;
+
+        return html` <div class="primary">${this._config.header}</div> `;
+    }
+
     _renderSecondary() {
-        const items = [];
-        if (
-            this._entity?.attributes?.media_title &&
-            this._entity.attributes.media_title != ""
-        )
-            items.push(this._entity.attributes.media_title);
+        if (this._entity?.attributes?.media_artist)
+            return html`
+                <div class="secondary">
+                    ${this._entity.attributes.media_artist}
+                </div>
+            `;
 
-        if (
-            this._entity?.attributes?.media_artist &&
-            this._entity.attributes.media_artist != ""
-        )
-            items.push(this._entity.attributes.media_artist);
-
-        return html` <div class="secondary">${items.join(" - ")}</div> `;
+        return html``;
     }
 
     _renderSourceSelctor() {
@@ -165,36 +182,35 @@ export class PoLRYTubePlayingCard extends LitElement {
         }
 
         media_players.sort(function (a, b) {
-            if (a[1] < b[1]) {
-                return -1;
-            }
-            if (a[1] > b[1]) {
-                return 1;
-            }
+            if (a[1] < b[1]) return -1;
+            if (a[1] > b[1]) return 1;
             return 0;
         });
 
         return html`
             <div class="source" style="position: relative;">
                 <mwc-icon-button
-                    id="menuButton"
-                    @click=${() => this._menu.show()}>
+                    id="sourceSelectorButton"
+                    @click=${() => this._sourceSelectorMenu.show()}
+                >
                     ${CastAudioIcon}
                 </mwc-icon-button>
                 <mwc-menu
-                    id="menu"
-                    .anchor=${this._menuButton}
+                    id="sourceSelectorMenu"
                     @selected=${this._selectSource}
+                    .anchor=${this._sourceSelectorButton}
                     corner="BOTTOM_END"
                     menuCorner="END"
                     naturalmenuwidth
-                    fixed>
+                    fixed
+                >
                     ${media_players.map((item) =>
                         item[0] == this._entity?.attributes?.remote_player_id
                             ? html`<mwc-list-item
                                   selected
                                   activated
-                                  value=${item[0]}>
+                                  value=${item[0]}
+                              >
                                   ${item[1]}
                               </mwc-list-item> `
                             : html`<mwc-list-item value=${item[0]}
@@ -207,34 +223,27 @@ export class PoLRYTubePlayingCard extends LitElement {
     }
 
     _renderTab() {
-        let tabs = [];
-
         const forYouItem = new PoLRYTubeItem();
-        forYouItem.title = "Yours";
+        forYouItem.title = "You";
 
-        // Currently Playing Tab
-        tabs.push(html`
+        return html`
             <polr-ytube-playing
                 class="${this._activeTab == PoLRYTubeTab.CURRENTLY_PLAYING
                     ? "activeTab"
                     : "hiddenTab"}"
                 id="playing"
                 ._hass=${this._hass}
-                ._entity=${this._entity}></polr-ytube-playing>
-        `);
-
-        // For You Tab
-        tabs.push(html`
+                ._entity=${this._entity}
+            ></polr-ytube-playing>
             <polr-ytube-browser
                 class="${this._activeTab == PoLRYTubeTab.FOR_YOU
                     ? "activeTab"
                     : "hiddenTab"}"
                 .hass=${this._hass}
                 .entity=${this._entity}
-                .initialAction=${forYouItem}></polr-ytube-browser>
-        `);
-
-        return tabs;
+                .initialAction=${forYouItem}
+            ></polr-ytube-browser>
+        `;
     }
 
     async _changeTab(index: any) {
@@ -251,12 +260,11 @@ export class PoLRYTubePlayingCard extends LitElement {
         }
     }
 
-    async _selectSource(ev) {
-        const selectedSource = this._menu.selected.value;
+    async _selectSource() {
+        const selectedSource = this._sourceSelectorMenu.selected.value;
         const currentSource = this._entity?.attributes?.remote_player_id;
 
-        if (selectedSource == "") return;
-        if (selectedSource == currentSource) return;
+        if (selectedSource == "" || selectedSource == currentSource) return;
 
         this._hass.callService("media_player", "select_source", {
             entity_id: this._config.entity_id,
@@ -268,25 +276,34 @@ export class PoLRYTubePlayingCard extends LitElement {
         await this._hass.callService("media_player", "turn_off", {
             entity_id: this._config.entity_id,
         });
+
         this.requestUpdate();
     }
 
     static get styles(): CSSResultGroup {
         return [
             css`
-                :host {
-                }
-
                 ha-card {
                     height: 700px;
                     display: flex;
                     flex-direction: column;
+                    overflow: hidden;
+                }
+
+                .background {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    transition: filter 0.8s ease 0s;
                 }
 
                 .header {
+                    position: relative;
                     display: grid;
-                    padding: 12px 12px 0 12px;
                     grid-template-columns: 40px auto min-content;
+                    padding: 12px 12px 0 12px;
                     gap: 12px;
                     align-items: center;
                 }
@@ -314,11 +331,6 @@ export class PoLRYTubePlayingCard extends LitElement {
                     justify-content: center;
                 }
 
-                .action-container {
-                    display: flex;
-                    justify-content: flex-end;
-                }
-
                 .primary {
                     font-weight: bold;
                 }
@@ -327,26 +339,29 @@ export class PoLRYTubePlayingCard extends LitElement {
                     font-size: 12px;
                 }
 
+                .action-container {
+                    display: flex;
+                    justify-content: flex-end;
+                }
+
                 .content {
+                    position: relative;
                     display: flex;
                     flex-direction: column;
+                    flex-grow: 1;
                     overflow: auto;
                     gap: 12px;
                     padding: 12px;
                 }
 
-                .results {
-                    overflow: auto;
-                    display: flex;
-                    flex-direction: column;
-                }
-
-                .source {
-                    position: relative;
-                }
                 .hiddenTab {
                     display: none;
                 }
+
+                #playing {
+                    overflow: auto;
+                }
+
                 polr-ytube-browser {
                     display: flex;
                     flex-grow: 1;
@@ -356,7 +371,6 @@ export class PoLRYTubePlayingCard extends LitElement {
         ];
     }
 }
-
 customElements.define("polr-ytube-playing-card", PoLRYTubePlayingCard);
 
 (window as any).customCards = (window as any).customCards || [];
