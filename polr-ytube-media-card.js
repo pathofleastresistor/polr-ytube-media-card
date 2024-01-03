@@ -305,60 +305,64 @@ const VolumeOffIcon = x ` <svg
         d="M12,4L9.91,6.09L12,8.18M4.27,3L3,4.27L7.73,9H3V15H7L12,20V13.27L16.25,17.53C15.58,18.04 14.83,18.46 14,18.7V20.77C15.38,20.45 16.63,19.82 17.68,18.96L19.73,21L21,19.73L12,10.73M19,12C19,12.94 18.8,13.82 18.46,14.64L19.97,16.15C20.62,14.91 21,13.5 21,12C21,7.72 18,4.14 14,3.23V5.29C16.89,6.15 19,8.83 19,12M16.5,12C16.5,10.23 15.5,8.71 14,7.97V10.18L16.45,12.63C16.5,12.43 16.5,12.21 16.5,12Z" />
 </svg>`;
 
-let PoLRYTubeList = class PoLRYTubeList extends s$1 {
-    updated(_changedProperties) {
-        // this.renderRoot.querySelector(".current")?.scrollIntoView({
-        //     behavior: "smooth",
-        //     block: "start",
-        //     inline: "center",
-        // });
+let PoLRYTubeListItem = class PoLRYTubeListItem extends s$1 {
+    constructor() {
+        super(...arguments);
+        this._actions = [];
+        this._hasAdditionalActions = false;
     }
-    _is_current(element) {
-        if (this.entity == null)
-            return false;
-        if (!isNumeric(element.media_content_id))
-            return false;
-        if ("current_track" in this.entity["attributes"]) {
-            return (parseInt(element.media_content_id) - 1 ==
-                this.entity["attributes"]["current_track"]);
-        }
-        return false;
+    firstUpdated(_changedProperties) {
+        if (this.element.can_expand)
+            this._primaryAction = "more";
+        else
+            this._primaryAction = "play";
+        this._hasAdditionalActions =
+            this.element.can_expand == this.element.can_play
+                ? this.element.can_expand
+                : this.element.media_content_type == "track";
+        this.requestUpdate();
     }
     render() {
-        if (this.state == 4 /* PoLRYTubeListState.LOADING */) {
-            return x `<div class="loading">Loading...</div>`;
+        return x `
+            <mwc-list-item
+                graphic="medium"
+                hasMeta
+                @click=${this._performPrimaryAction}
+                ?activated=${this.current}
+            >
+                ${this._renderThumbnail(this.element)} ${this.element.title}
+                ${this._renderAction()}
+            </mwc-list-item>
+            ${this._hasAdditionalActions
+            ? x `
+                      <div class="divider"></div>
+                      <div class="actions">
+                          ${this._primaryAction != "more"
+                ? this._renderMoreButton(this.element)
+                : x ``}
+                          ${this._primaryAction != "play"
+                ? this._renderPlayButton(this.element)
+                : x ``}
+                          ${this._renderRadioButton(this.element)}
+                      </div>
+                  `
+            : ``}
+        `;
+    }
+    _performPrimaryAction() {
+        if (this._primaryAction == "more")
+            this._fireNavigateEvent(this.element);
+        if (this._primaryAction == "play")
+            this._play(this.element);
+    }
+    _renderAction() {
+        if (this._primaryAction == "more") {
+            return x `<span slot="meta">${ForwardBurgerIcon}</span>`;
         }
-        if (this.state == 8 /* PoLRYTubeListState.NO_RESULTS */) {
-            return x `<div class="empty">No results</div>`;
+        if (this._primaryAction == "play") {
+            return x `<ha-icon slot="meta" icon="mdi:play"></ha-icon>`;
         }
-        if (this.state == 16 /* PoLRYTubeListState.ERROR */) {
-            return x `<div class="error">Unknown Error</div>`;
-        }
-        if (this.state == 2 /* PoLRYTubeListState.HAS_RESULTS */) {
-            if (this.elements.length == 0)
-                return x ``;
-            const renderedElements = this.elements.map((element) => {
-                return x `
-                    <div
-                        class="element ${this._is_current(element)
-                    ? "current"
-                    : ""}">
-                        ${this._renderThumbnail(element)}
-                        <div class="info">${element.title}</div>
-                        <div class="actions">
-                            ${this._renderMoreButton(element)}
-                            ${this._renderRadioButton(element)}
-                            ${this._renderPlayButton(element)}
-                        </div>
-                    </div>
-                `;
-            });
-            return x `
-                <div class="list-container">
-                    <div class="elements">${renderedElements}</div>
-                </div>
-            `;
-        }
+        return x ``;
     }
     _renderMoreButton(element) {
         if (!element["can_expand"])
@@ -379,8 +383,7 @@ let PoLRYTubeList = class PoLRYTubeList extends s$1 {
         `;
     }
     _renderRadioButton(element) {
-        if (this._is_current(element) ||
-            element.media_content_type == "track") {
+        if (element.media_content_type == "track") {
             const id = element.media_content_type == "track"
                 ? element.media_content_id
                 : this.entity["attributes"]["videoId"];
@@ -394,11 +397,13 @@ let PoLRYTubeList = class PoLRYTubeList extends s$1 {
     }
     _renderThumbnail(element) {
         if (element.thumbnail == "") {
-            return x `<div class="empty-thumbnail thumbnail">
+            return x `<div slot="graphic" class="empty-thumbnail thumbnail">
                 <ha-icon icon="mdi:music-box"></ha-icon>
             </div>`;
         }
-        return x ` <img class="thumbnail" src="${element.thumbnail}" /> `;
+        return x `
+            <img slot="graphic" class="thumbnail" src="${element.thumbnail}" />
+        `;
     }
     async _fireNavigateEvent(element) {
         this.dispatchEvent(new CustomEvent("navigate", {
@@ -441,25 +446,37 @@ let PoLRYTubeList = class PoLRYTubeList extends s$1 {
     static get styles() {
         return [
             i$5 `
-                .elements {
+                :host {
+                    display: grid;
+                    grid-template-columns: 1fr min-content min-content;
+                    align-items: center;
                 }
 
-                .element {
-                    display: grid;
-                    grid-template-columns: 40px 1fr min-content;
-                    align-items: center;
-                    gap: 12px;
-                    padding: 12px;
+                mwc-list-item {
                     border-radius: 12px;
+                }
+
+                svg {
+                    width: 18px;
+                    height: 18px;
+                    fill: var(--primary-text-color);
+                }
+
+                .divider {
+                    width: 2px;
+                    background: rgba(var(--rgb-primary-text-color), 0.2);
+                    height: 50%;
+                    margin: 0 4px;
                 }
 
                 .actions {
                     display: grid;
-                    grid-template-columns: auto auto auto;
+                    grid-template-columns: auto;
+                    align-items: center;
                 }
 
                 .actions > mwc-button {
-                    margin-right: 8px;
+                    margin: 0 8px;
                 }
 
                 .element img {
@@ -476,9 +493,79 @@ let PoLRYTubeList = class PoLRYTubeList extends s$1 {
                     align-items: center;
                     justify-content: center;
                 }
+            `,
+        ];
+    }
+};
+__decorate([
+    t$1()
+], PoLRYTubeListItem.prototype, "entity", void 0);
+__decorate([
+    t$1()
+], PoLRYTubeListItem.prototype, "hass", void 0);
+__decorate([
+    t$1()
+], PoLRYTubeListItem.prototype, "element", void 0);
+__decorate([
+    t$1()
+], PoLRYTubeListItem.prototype, "current", void 0);
+PoLRYTubeListItem = __decorate([
+    e$5("polr-ytube-list-item")
+], PoLRYTubeListItem);
 
-                .current {
-                    background-color: var(--primary-background-color);
+let PoLRYTubeList = class PoLRYTubeList extends s$1 {
+    render() {
+        if (this.state == 4 /* PoLRYTubeListState.LOADING */) {
+            return x `<div class="loading">Loading...</div>`;
+        }
+        if (this.state == 8 /* PoLRYTubeListState.NO_RESULTS */) {
+            return x `<div class="empty">No results</div>`;
+        }
+        if (this.state == 16 /* PoLRYTubeListState.ERROR */) {
+            return x `<div class="error">Unknown Error</div>`;
+        }
+        if (this.state == 2 /* PoLRYTubeListState.HAS_RESULTS */) {
+            if (this.elements.length == 0)
+                return x ``;
+            const renderedElements = this.elements.map((element) => {
+                return x `
+                    <polr-ytube-list-item
+                        .hass=${this.hass}
+                        .entity=${this.entity}
+                        .element=${element}
+                        .current=${this._is_current(element)}
+                        @navigate=${(ev) => this._fireNavigateEvent(ev.detail.action)}
+                    ></polr-ytube-list-item>
+                `;
+            });
+            return x `${renderedElements}`;
+        }
+    }
+    _is_current(element) {
+        if (this.entity == null)
+            return false;
+        if (!isNumeric(element.media_content_id))
+            return false;
+        if ("current_track" in this.entity["attributes"]) {
+            return (parseInt(element.media_content_id) - 1 ==
+                this.entity["attributes"]["current_track"]);
+        }
+        return false;
+    }
+    async _fireNavigateEvent(element) {
+        this.dispatchEvent(new CustomEvent("navigate", {
+            detail: {
+                action: element,
+            },
+        }));
+        return;
+    }
+    static get styles() {
+        return [
+            i$5 `
+                :host {
+                    display: grid;
+                    gap: 4px;
                 }
 
                 .empty,
@@ -4552,9 +4639,9 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
                     align-items: center;
                     gap: 4px;
                     justify-content: flex-start;
-                    padding: 4px 0;
-                    --mdc-icon-button-size: 32px;
-                    --mdc-icon-size: 20px;
+                    padding: 8px 0;
+                    --mdc-icon-button-size: 24px;
+                    --mdc-icon-size: 14px;
                 }
 
                 .breadcrumb {
