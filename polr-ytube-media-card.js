@@ -4345,7 +4345,6 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
     }
     updated(_changedProperties) {
         if (_changedProperties.has("initialAction")) {
-            console.log(this.initialAction);
             this._browseHistory = [];
             this._previousBrowseHistory = [];
             this._browse(this.initialAction);
@@ -8634,6 +8633,12 @@ class PoLRYTubePlayingCard extends s$1 {
             this._config.header = "YouTube Music";
         if (!("icon" in this._config))
             this._config.searchTitle = "mdi:speaker";
+        if (!("initialAction" in this._config)) {
+            this._config.initialAction = new PoLRYTubeItem();
+            this._config.initialAction.title = "You";
+            this._config.initialAction.media_content_type = A;
+            this._config.initialAction.media_content_id = A;
+        }
         if (!("media_content_type" in this._config))
             this._config.media_content_type = A;
         if (!("media_content_id" in this._config))
@@ -8798,10 +8803,6 @@ class PoLRYTubePlayingCard extends s$1 {
         `;
     }
     _renderTab() {
-        const forYouItem = new PoLRYTubeItem();
-        forYouItem.title = "You";
-        forYouItem.media_content_type = this._config.media_content_type;
-        forYouItem.media_content_id = this._config.media_content_id;
         return x `
             <polr-ytube-playing
                 class="${this._activeTab == 0 /* PoLRYTubeTab.CURRENTLY_PLAYING */
@@ -8817,7 +8818,7 @@ class PoLRYTubePlayingCard extends s$1 {
             : "hiddenTab"}"
                 .hass=${this._hass}
                 .entity=${this._entity}
-                .initialAction=${forYouItem}
+                .initialAction=${this._config.initialAction}
             ></polr-ytube-browser>
         `;
     }
