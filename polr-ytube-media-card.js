@@ -8624,6 +8624,10 @@ class PoLRYTubePlayingCard extends s$1 {
             this._config.header = "YouTube Music";
         if (!("icon" in this._config))
             this._config.searchTitle = "mdi:speaker";
+        if (!("media_content_type" in this._config))
+            this._config.media_content_type = A;
+        if (!("media_content_id" in this._config))
+            this._config.media_content_id = A;
     }
     set hass(hass) {
         var _a, _b;
@@ -8786,6 +8790,8 @@ class PoLRYTubePlayingCard extends s$1 {
     _renderTab() {
         const forYouItem = new PoLRYTubeItem();
         forYouItem.title = "You";
+        forYouItem.media_content_type = this._config.media_content_type;
+        forYouItem.media_content_id = this._config.media_content_id;
         return x `
             <polr-ytube-playing
                 class="${this._activeTab == 0 /* PoLRYTubeTab.CURRENTLY_PLAYING */
