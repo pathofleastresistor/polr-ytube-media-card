@@ -31,7 +31,6 @@ export class PoLRYTubeBrowser extends LitElement {
         _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
     ): void {
         if (_changedProperties.has("initialAction")) {
-            console.log(this.initialAction);
             this._browseHistory = [];
             this._previousBrowseHistory = [];
             this._browse(this.initialAction);

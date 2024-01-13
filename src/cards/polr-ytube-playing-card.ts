@@ -49,6 +49,12 @@ export class PoLRYTubePlayingCard extends LitElement {
         this._config = structuredClone(config);
         if (!("header" in this._config)) this._config.header = "YouTube Music";
         if (!("icon" in this._config)) this._config.searchTitle = "mdi:speaker";
+        if (!("initialAction" in this._config)) {
+            this._config.initialAction = new PoLRYTubeItem();
+            this._config.initialAction.title = "You";
+            this._config.initialAction.media_content_type = nothing;
+            this._config.initialAction.media_content_id = nothing;
+        }
         if (!("media_content_type" in this._config))
             this._config.media_content_type = nothing;
         if (!("media_content_id" in this._config))
@@ -227,11 +233,6 @@ export class PoLRYTubePlayingCard extends LitElement {
     }
 
     _renderTab() {
-        const forYouItem = new PoLRYTubeItem();
-        forYouItem.title = "You";
-        forYouItem.media_content_type = this._config.media_content_type;
-        forYouItem.media_content_id = this._config.media_content_id;
-
         return html`
             <polr-ytube-playing
                 class="${this._activeTab == PoLRYTubeTab.CURRENTLY_PLAYING
@@ -247,7 +248,7 @@ export class PoLRYTubePlayingCard extends LitElement {
                     : "hiddenTab"}"
                 .hass=${this._hass}
                 .entity=${this._entity}
-                .initialAction=${forYouItem}
+                .initialAction=${this._config.initialAction}
             ></polr-ytube-browser>
         `;
     }
