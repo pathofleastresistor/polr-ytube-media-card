@@ -266,8 +266,8 @@ export class PoLRYTubeBrowser extends LitElement {
                     align-items: center;
                     gap: 4px;
                     justify-content: flex-start;
-                    padding: 4px 0;
-                    --mdc-icon-button-size: 32px;
+                    padding: 8px 0;
+                    --mdc-icon-button-size: 30px;
                     --mdc-icon-size: 20px;
                 }
 
