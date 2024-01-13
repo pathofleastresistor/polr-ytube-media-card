@@ -19,7 +19,7 @@ import "../shared/polr-textfield";
 export class PoLRYTubeBrowser extends LitElement {
     @state() public entity: any;
     @state() public hass: any;
-    @state() public initialAction: PoLRYTubeItem;
+    @property() public initialAction: PoLRYTubeItem;
     @state() public initialElements: PoLRYTubeItem;
     @state() private _browseHistory: PoLRYTubeItem[] = [];
     @state() private _previousBrowseHistory: PoLRYTubeItem[] = [];
@@ -27,13 +27,20 @@ export class PoLRYTubeBrowser extends LitElement {
     @state() private _searchTextField: any;
     @state() private _isSearchResults: boolean;
 
+    protected updated(
+        _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
+    ): void {
+        if (_changedProperties.has("initialAction")) {
+            console.log(this.initialAction);
+            this._browseHistory = [];
+            this._previousBrowseHistory = [];
+            this._browse(this.initialAction);
+        }
+    }
+
     protected firstUpdated(_changedProperties): void {
         this._polrYTubeList = this.renderRoot.querySelector("polr-ytube-list");
         this._searchTextField = this.renderRoot.querySelector("#query");
-
-        if (this.initialAction) {
-            this._browse(this.initialAction);
-        }
     }
 
     render() {
@@ -43,8 +50,8 @@ export class PoLRYTubeBrowser extends LitElement {
                 <polr-ytube-list
                     .hass=${this.hass}
                     .entity=${this.entity}
-                    @navigate=${(ev) =>
-                        this._browse(ev.detail.action)}></polr-ytube-list>
+                    @navigate=${(ev) => this._browse(ev.detail.action)}
+                ></polr-ytube-list>
             </div>
         `;
     }
@@ -56,7 +63,8 @@ export class PoLRYTubeBrowser extends LitElement {
                     type="search"
                     id="query"
                     icon
-                    @keyup="${this._handleSearchInput}">
+                    @keyup="${this._handleSearchInput}"
+                >
                     <ha-icon slot="icon" icon="mdi:magnify"></ha-icon>
                 </polr-textfield>
 
@@ -64,7 +72,8 @@ export class PoLRYTubeBrowser extends LitElement {
                     id="filter"
                     fixedMenuPosition
                     naturalMenuWidth
-                    @selected=${this._search}>
+                    @selected=${this._search}
+                >
                     <mwc-list-item value="all"> All </mwc-list-item>
                     <mwc-list-item value="artists"> Artists </mwc-list-item>
                     <mwc-list-item selected value="songs">
@@ -183,7 +192,8 @@ export class PoLRYTubeBrowser extends LitElement {
                                       this._previousBrowseHistory;
                                   this._searchTextField.value = "";
                                   this._browse(this._browseHistory.pop());
-                              }}>
+                              }}
+                          >
                               ${CloseIcon}
                           </mwc-icon-button>
                       `
@@ -195,7 +205,8 @@ export class PoLRYTubeBrowser extends LitElement {
                                   this._browse(
                                       this._browseHistory.pop() &&
                                           this._browseHistory.pop()
-                                  )}>
+                                  )}
+                          >
                               ${ArrowLeftIcon}
                           </mwc-icon-button>
                       `

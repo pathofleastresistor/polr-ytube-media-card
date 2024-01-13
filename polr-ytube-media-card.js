@@ -4343,12 +4343,17 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
         this._browseHistory = [];
         this._previousBrowseHistory = [];
     }
+    updated(_changedProperties) {
+        if (_changedProperties.has("initialAction")) {
+            console.log(this.initialAction);
+            this._browseHistory = [];
+            this._previousBrowseHistory = [];
+            this._browse(this.initialAction);
+        }
+    }
     firstUpdated(_changedProperties) {
         this._polrYTubeList = this.renderRoot.querySelector("polr-ytube-list");
         this._searchTextField = this.renderRoot.querySelector("#query");
-        if (this.initialAction) {
-            this._browse(this.initialAction);
-        }
     }
     render() {
         return x `
@@ -4357,7 +4362,8 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
                 <polr-ytube-list
                     .hass=${this.hass}
                     .entity=${this.entity}
-                    @navigate=${(ev) => this._browse(ev.detail.action)}></polr-ytube-list>
+                    @navigate=${(ev) => this._browse(ev.detail.action)}
+                ></polr-ytube-list>
             </div>
         `;
     }
@@ -4368,7 +4374,8 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
                     type="search"
                     id="query"
                     icon
-                    @keyup="${this._handleSearchInput}">
+                    @keyup="${this._handleSearchInput}"
+                >
                     <ha-icon slot="icon" icon="mdi:magnify"></ha-icon>
                 </polr-textfield>
 
@@ -4376,7 +4383,8 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
                     id="filter"
                     fixedMenuPosition
                     naturalMenuWidth
-                    @selected=${this._search}>
+                    @selected=${this._search}
+                >
                     <mwc-list-item value="all"> All </mwc-list-item>
                     <mwc-list-item value="artists"> Artists </mwc-list-item>
                     <mwc-list-item selected value="songs">
@@ -4477,7 +4485,8 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
                     this._previousBrowseHistory;
                 this._searchTextField.value = "";
                 this._browse(this._browseHistory.pop());
-            }}>
+            }}
+                          >
                               ${CloseIcon}
                           </mwc-icon-button>
                       `
@@ -4486,7 +4495,8 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
             ? x `
                           <mwc-icon-button
                               @click=${() => this._browse(this._browseHistory.pop() &&
-                this._browseHistory.pop())}>
+                this._browseHistory.pop())}
+                          >
                               ${ArrowLeftIcon}
                           </mwc-icon-button>
                       `
@@ -4602,7 +4612,7 @@ __decorate([
     t$1()
 ], PoLRYTubeBrowser.prototype, "hass", void 0);
 __decorate([
-    t$1()
+    n$3()
 ], PoLRYTubeBrowser.prototype, "initialAction", void 0);
 __decorate([
     t$1()
