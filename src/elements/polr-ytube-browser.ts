@@ -50,6 +50,8 @@ export class PoLRYTubeBrowser extends LitElement {
                     .hass=${this.hass}
                     .entity=${this.entity}
                     @navigate=${(ev) => this._browse(ev.detail.action)}
+                    grid="true"
+                    columns="3"
                 ></polr-ytube-list>
             </div>
         `;

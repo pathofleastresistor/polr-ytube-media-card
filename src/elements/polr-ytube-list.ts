@@ -1,7 +1,8 @@
 import { LitElement, html, css, CSSResultGroup } from "lit";
-import { customElement, state } from "lit/decorators.js";
+import { customElement, state, property } from "lit/decorators.js";
 import { isNumeric, PoLRYTubeItem, PoLRYTubeListState } from "../utils/utils";
 import "./polr-ytube-list-item";
+import "./polr-ytube-grid-item";
 
 @customElement("polr-ytube-list")
 export class PoLRYTubeList extends LitElement {
@@ -9,6 +10,8 @@ export class PoLRYTubeList extends LitElement {
     @state() public hass: any;
     @state() public elements: PoLRYTubeItem[];
     @state() public state: PoLRYTubeListState;
+    @property() public columns: Number = 1;
+    @property() public grid: Boolean = false;
 
     render() {
         if (this.state == PoLRYTubeListState.LOADING) {
@@ -26,20 +29,43 @@ export class PoLRYTubeList extends LitElement {
         if (this.state == PoLRYTubeListState.HAS_RESULTS) {
             if (this.elements.length == 0) return html``;
 
-            const renderedElements = this.elements.map((element) => {
-                return html`
-                    <polr-ytube-list-item
-                        .hass=${this.hass}
-                        .entity=${this.entity}
-                        .element=${element}
-                        .current=${this._is_current(element)}
-                        @navigate=${(ev) =>
-                            this._fireNavigateEvent(ev.detail.action)}
-                    ></polr-ytube-list-item>
-                `;
-            });
+            let renderedElements;
+            if (this.grid) {
+                renderedElements = this.elements.map((element) => {
+                    return html`
+                        <polr-ytube-grid-item
+                            .hass=${this.hass}
+                            .entity=${this.entity}
+                            .element=${element}
+                            .current=${this._is_current(element)}
+                            @navigate=${(ev) =>
+                                this._fireNavigateEvent(ev.detail.action)}
+                        ></polr-ytube-grid-item>
+                    `;
+                });
+            } else {
+                renderedElements = this.elements.map((element) => {
+                    return html`
+                        <polr-ytube-list-item
+                            .hass=${this.hass}
+                            .entity=${this.entity}
+                            .element=${element}
+                            .current=${this._is_current(element)}
+                            @navigate=${(ev) =>
+                                this._fireNavigateEvent(ev.detail.action)}
+                        ></polr-ytube-list-item>
+                    `;
+                });
+            }
 
-            return html`${renderedElements}`;
+            return html`
+                <div
+                    class="container"
+                    style="--polr-ytube-list-columns: ${this.columns}"
+                >
+                    ${renderedElements}
+                </div>
+            `;
         }
     }
 
@@ -70,9 +96,13 @@ export class PoLRYTubeList extends LitElement {
     static get styles(): CSSResultGroup {
         return [
             css`
-                :host {
+                .container {
                     display: grid;
-                    gap: 4px;
+                    grid-template-columns: repeat(
+                        var(--polr-ytube-list-columns, 1),
+                        minmax(0, 1fr)
+                    );
+                    gap: 12px;
                     --mdc-list-item-graphic-size: 40px;
                 }
 

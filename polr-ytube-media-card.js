@@ -513,7 +513,215 @@ PoLRYTubeListItem = __decorate([
     e$5("polr-ytube-list-item")
 ], PoLRYTubeListItem);
 
+let PoLRYTubeGridItem = class PoLRYTubeGridItem extends s$1 {
+    constructor() {
+        super(...arguments);
+        this._actions = [];
+        this._hasAdditionalActions = false;
+    }
+    firstUpdated(_changedProperties) {
+        if (this.element.can_expand)
+            this._primaryAction = "more";
+        else
+            this._primaryAction = "play";
+        this._hasAdditionalActions =
+            this.element.can_expand == this.element.can_play
+                ? this.element.can_expand
+                : this.element.media_content_type == "track";
+        this.requestUpdate();
+    }
+    render() {
+        return x `
+            <div class="grid-item">
+                <div @click=${this._performPrimaryAction}>
+                    ${this._renderThumbnail(this.element)}
+                </div>
+                <span class="title"> ${this.element.title}</span>
+                <div class="actions">
+                    ${this._hasAdditionalActions
+            ? x `
+                              ${this._primaryAction != "more"
+                ? this._renderMoreButton(this.element)
+                : x ``}
+                              ${this._primaryAction != "play"
+                ? this._renderPlayButton(this.element)
+                : x ``}
+                              ${this._renderRadioButton(this.element)}
+                          `
+            : ``}
+                </div>
+            </div>
+        `;
+    }
+    _performPrimaryAction() {
+        if (this._primaryAction == "more")
+            this._fireNavigateEvent(this.element);
+        if (this._primaryAction == "play")
+            this._play(this.element);
+    }
+    _renderPrimaryAction() {
+        if (this._primaryAction == "more") {
+            return this._renderMoreButton(this.element);
+        }
+        if (this._primaryAction == "play") {
+            return this._renderPlayButton(this.element);
+        }
+        return x ``;
+    }
+    _renderMoreButton(element) {
+        if (!element["can_expand"])
+            return x ``;
+        return x `
+            <mwc-icon-button @click=${() => this._fireNavigateEvent(element)}>
+                ${ForwardBurgerIcon}
+            </mwc-icon-button>
+        `;
+    }
+    _renderPlayButton(element) {
+        if (!element.can_play)
+            return x ``;
+        return x `
+            <mwc-icon-button @click=${() => this._play(element)}>
+                ${PlayIcon}
+            </mwc-icon-button>
+        `;
+    }
+    _renderRadioButton(element) {
+        if (element.media_content_type == "track") {
+            const id = element.media_content_type == "track"
+                ? element.media_content_id
+                : this.entity["attributes"]["videoId"];
+            return x `
+                <mwc-icon-button @click=${() => this._startRadio(id)}>
+                    ${RadioTowerIcon}
+                </mwc-icon-button>
+            `;
+        }
+        return A;
+    }
+    _renderThumbnail(element) {
+        if (element.thumbnail == "") {
+            return x `<div class="empty-thumbnail thumbnail">
+                <ha-icon icon="mdi:music-box"></ha-icon>
+            </div>`;
+        }
+        return x ` <img class="thumbnail" src="${element.thumbnail}" /> `;
+    }
+    async _fireNavigateEvent(element) {
+        this.dispatchEvent(new CustomEvent("navigate", {
+            detail: {
+                action: element,
+            },
+        }));
+        return;
+    }
+    async _startRadio(media_content_id) {
+        this.hass.callService("media_player", "shuffle_set", {
+            entity_id: this.entity["entity_id"],
+            shuffle: false,
+        });
+        this.hass.callService("media_player", "play_media", {
+            entity_id: this.entity["entity_id"],
+            media_content_id: media_content_id,
+            media_content_type: "vid_channel",
+        });
+        return;
+    }
+    async _play(element) {
+        if (element.media_content_type == "PLAYLIST_GOTO_TRACK") {
+            this.hass.callService("ytube_music_player", "call_method", {
+                entity_id: this.entity["entity_id"],
+                command: "goto_track",
+                parameters: element.media_content_id,
+            });
+            return;
+        }
+        if (PlayableMediaList.includes(element.media_class)) {
+            this.hass.callService("media_player", "play_media", {
+                entity_id: this.entity["entity_id"],
+                media_content_id: element.media_content_id,
+                media_content_type: element.media_content_type,
+            });
+            return;
+        }
+    }
+    static get styles() {
+        return [
+            i$5 `
+                :host {
+                    --mdc-theme-primary: #e9437a;
+                }
+
+                .grid-item {
+                    position: relative;
+                    display: grid;
+                    gap: 4px;
+                }
+
+                .title {
+                    display: -webkit-box;
+                    overflow: hidden;
+                    -webkit-box-orient: vertical;
+                    -webkit-line-clamp: 2;
+                }
+
+                .actions {
+                    position: absolute;
+                    top: 4px;
+                    right: 4px;
+
+                    display: grid;
+                    grid-template-columns: auto;
+                    align-items: center;
+                }
+
+                .actions > mwc-button {
+                    margin: 0 8px;
+                }
+
+                .thumbnail img {
+                }
+
+                .thumbnail {
+                    aspect-ratio: 1 / 1;
+                    width: 100%;
+                    max-height: 100%;
+                    border-radius: 5px;
+                    cursor: pointer;
+                }
+
+                .empty-thumbnail {
+                    display: flex;
+                    background-color: rgba(111, 111, 111, 0.2);
+                    align-items: center;
+                    justify-content: center;
+                }
+            `,
+        ];
+    }
+};
+__decorate([
+    t$1()
+], PoLRYTubeGridItem.prototype, "entity", void 0);
+__decorate([
+    t$1()
+], PoLRYTubeGridItem.prototype, "hass", void 0);
+__decorate([
+    t$1()
+], PoLRYTubeGridItem.prototype, "element", void 0);
+__decorate([
+    t$1()
+], PoLRYTubeGridItem.prototype, "current", void 0);
+PoLRYTubeGridItem = __decorate([
+    e$5("polr-ytube-grid-item")
+], PoLRYTubeGridItem);
+
 let PoLRYTubeList = class PoLRYTubeList extends s$1 {
+    constructor() {
+        super(...arguments);
+        this.columns = 1;
+        this.grid = false;
+    }
     render() {
         if (this.state == 4 /* PoLRYTubeListState.LOADING */) {
             return x `<div class="loading">Loading...</div>`;
@@ -527,18 +735,41 @@ let PoLRYTubeList = class PoLRYTubeList extends s$1 {
         if (this.state == 2 /* PoLRYTubeListState.HAS_RESULTS */) {
             if (this.elements.length == 0)
                 return x ``;
-            const renderedElements = this.elements.map((element) => {
-                return x `
-                    <polr-ytube-list-item
-                        .hass=${this.hass}
-                        .entity=${this.entity}
-                        .element=${element}
-                        .current=${this._is_current(element)}
-                        @navigate=${(ev) => this._fireNavigateEvent(ev.detail.action)}
-                    ></polr-ytube-list-item>
-                `;
-            });
-            return x `${renderedElements}`;
+            let renderedElements;
+            if (this.grid) {
+                renderedElements = this.elements.map((element) => {
+                    return x `
+                        <polr-ytube-grid-item
+                            .hass=${this.hass}
+                            .entity=${this.entity}
+                            .element=${element}
+                            .current=${this._is_current(element)}
+                            @navigate=${(ev) => this._fireNavigateEvent(ev.detail.action)}
+                        ></polr-ytube-grid-item>
+                    `;
+                });
+            }
+            else {
+                renderedElements = this.elements.map((element) => {
+                    return x `
+                        <polr-ytube-list-item
+                            .hass=${this.hass}
+                            .entity=${this.entity}
+                            .element=${element}
+                            .current=${this._is_current(element)}
+                            @navigate=${(ev) => this._fireNavigateEvent(ev.detail.action)}
+                        ></polr-ytube-list-item>
+                    `;
+                });
+            }
+            return x `
+                <div
+                    class="container"
+                    style="--polr-ytube-list-columns: ${this.columns}"
+                >
+                    ${renderedElements}
+                </div>
+            `;
         }
     }
     _is_current(element) {
@@ -563,9 +794,13 @@ let PoLRYTubeList = class PoLRYTubeList extends s$1 {
     static get styles() {
         return [
             i$5 `
-                :host {
+                .container {
                     display: grid;
-                    gap: 4px;
+                    grid-template-columns: repeat(
+                        var(--polr-ytube-list-columns, 1),
+                        minmax(0, 1fr)
+                    );
+                    gap: 12px;
                     --mdc-list-item-graphic-size: 40px;
                 }
 
@@ -593,6 +828,12 @@ __decorate([
 __decorate([
     t$1()
 ], PoLRYTubeList.prototype, "state", void 0);
+__decorate([
+    n$3()
+], PoLRYTubeList.prototype, "columns", void 0);
+__decorate([
+    n$3()
+], PoLRYTubeList.prototype, "grid", void 0);
 PoLRYTubeList = __decorate([
     e$5("polr-ytube-list")
 ], PoLRYTubeList);
@@ -4450,6 +4691,8 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
                     .hass=${this.hass}
                     .entity=${this.entity}
                     @navigate=${(ev) => this._browse(ev.detail.action)}
+                    grid="true"
+                    columns="3"
                 ></polr-ytube-list>
             </div>
         `;
