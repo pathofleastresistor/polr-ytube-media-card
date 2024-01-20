@@ -4,7 +4,6 @@ A collection of cards was design to enhance the features of the [YTube_Media_Pla
 
 [Demo](https://github.com/pathofleastresistor/polr-ytube-media-card/assets/91756648/3fae5ef4-8dcd-40c5-83d7-f7c5862f9b32)
 
-
 ## Installation
 
 ### HACS
@@ -27,8 +26,8 @@ Get the full experience of the ytube_music_player component! You can see what's 
 ### Settings
 
 -   `entity_id` - a YTube_Media_Player entity
--   `showHeader` - `true`/`false` to show the header
 -   `header` - title of the card
+-   `coverNavigation` - `true/false` to have the "For You" section to use covers or a list to navigate. Defaults to false.
 
 ### Example
 
@@ -36,29 +35,6 @@ Get the full experience of the ytube_music_player component! You can see what's 
 type: custom:polr-ytube-playing-card
 entity_id: media_player.youtube_living_room_display
 header: YouTube Music
-showHeader: true
 ```
 
 <img src="img/polr-ytube-playing-card.png" height="400" />
-
-## PoLR-YTube-Search-Card
-
-If you just want a search bar, then use `polr-ytube-search-card` to get the search functionality without the rest of the card experience.
-
-### Settings
-
--   `entity_id` - a YTube_Media_Player entity
--   `showHeader` - `true`/`false` to show the header
--   `header` - title of the card
-
-### Example
-
-```
-type: custom:polr-ytube-search-card
-icon: mdi:card-search
-entity_id: media_player.youtube_living_room_display
-header: Living Room (YouTube)
-searchTitle: Search on Living Room
-```
-
-<img src="img/polr-ytube-search-card.png" align="center" height="400" />
