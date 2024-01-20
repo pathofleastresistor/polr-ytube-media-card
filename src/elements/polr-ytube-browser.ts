@@ -20,6 +20,7 @@ export class PoLRYTubeBrowser extends LitElement {
     @state() public entity: any;
     @state() public hass: any;
     @property() public initialAction: PoLRYTubeItem;
+    @property() public coverNavigation: boolean;
     @state() public initialElements: PoLRYTubeItem;
     @state() private _browseHistory: PoLRYTubeItem[] = [];
     @state() private _previousBrowseHistory: PoLRYTubeItem[] = [];
@@ -50,7 +51,7 @@ export class PoLRYTubeBrowser extends LitElement {
                     .hass=${this.hass}
                     .entity=${this.entity}
                     @navigate=${(ev) => this._browse(ev.detail.action)}
-                    grid="true"
+                    .grid=${this.coverNavigation}
                     columns="3"
                 ></polr-ytube-list>
             </div>
@@ -261,6 +262,7 @@ export class PoLRYTubeBrowser extends LitElement {
                     overflow: auto;
                     flex-grow: 1;
                     flex-direction: column;
+                    gap: 8px;
                 }
 
                 .navigation-row {
@@ -268,7 +270,6 @@ export class PoLRYTubeBrowser extends LitElement {
                     align-items: center;
                     gap: 4px;
                     justify-content: flex-start;
-                    padding: 8px 0;
                     --mdc-icon-button-size: 30px;
                     --mdc-icon-size: 20px;
                 }
@@ -301,7 +302,6 @@ export class PoLRYTubeBrowser extends LitElement {
                     grid-template-columns: 1fr 120px;
                     align-items: center;
                     gap: 4px;
-                    padding: 8px 0px;
                 }
 
                 polr-ytube-list {

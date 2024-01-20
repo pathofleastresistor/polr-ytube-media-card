@@ -55,10 +55,9 @@ export class PoLRYTubePlayingCard extends LitElement {
             this._config.initialAction.media_content_type = nothing;
             this._config.initialAction.media_content_id = nothing;
         }
-        if (!("media_content_type" in this._config))
-            this._config.media_content_type = nothing;
-        if (!("media_content_id" in this._config))
-            this._config.media_content_id = nothing;
+        if (!("coverNavigation" in this._config)) {
+            this._config.coverNavigation = false;
+        }
     }
 
     set hass(hass) {
@@ -249,6 +248,7 @@ export class PoLRYTubePlayingCard extends LitElement {
                 .hass=${this._hass}
                 .entity=${this._entity}
                 .initialAction=${this._config.initialAction}
+                .coverNavigation=${this._config.coverNavigation}
             ></polr-ytube-browser>
         `;
     }

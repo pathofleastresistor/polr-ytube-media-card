@@ -4691,7 +4691,7 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
                     .hass=${this.hass}
                     .entity=${this.entity}
                     @navigate=${(ev) => this._browse(ev.detail.action)}
-                    grid="true"
+                    .grid=${this.coverNavigation}
                     columns="3"
                 ></polr-ytube-list>
             </div>
@@ -4876,6 +4876,7 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
                     overflow: auto;
                     flex-grow: 1;
                     flex-direction: column;
+                    gap: 8px;
                 }
 
                 .navigation-row {
@@ -4883,7 +4884,6 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
                     align-items: center;
                     gap: 4px;
                     justify-content: flex-start;
-                    padding: 8px 0;
                     --mdc-icon-button-size: 30px;
                     --mdc-icon-size: 20px;
                 }
@@ -4916,7 +4916,6 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
                     grid-template-columns: 1fr 120px;
                     align-items: center;
                     gap: 4px;
-                    padding: 8px 0px;
                 }
 
                 polr-ytube-list {
@@ -4944,6 +4943,9 @@ __decorate([
 __decorate([
     n$3()
 ], PoLRYTubeBrowser.prototype, "initialAction", void 0);
+__decorate([
+    n$3()
+], PoLRYTubeBrowser.prototype, "coverNavigation", void 0);
 __decorate([
     t$1()
 ], PoLRYTubeBrowser.prototype, "initialElements", void 0);
@@ -8970,10 +8972,9 @@ class PoLRYTubePlayingCard extends s$1 {
             this._config.initialAction.media_content_type = A;
             this._config.initialAction.media_content_id = A;
         }
-        if (!("media_content_type" in this._config))
-            this._config.media_content_type = A;
-        if (!("media_content_id" in this._config))
-            this._config.media_content_id = A;
+        if (!("coverNavigation" in this._config)) {
+            this._config.coverNavigation = false;
+        }
     }
     set hass(hass) {
         var _a, _b;
@@ -9150,6 +9151,7 @@ class PoLRYTubePlayingCard extends s$1 {
                 .hass=${this._hass}
                 .entity=${this._entity}
                 .initialAction=${this._config.initialAction}
+                .coverNavigation=${this._config.coverNavigation}
             ></polr-ytube-browser>
         `;
     }
