@@ -189,12 +189,13 @@ export class PoLRYTubeGridItem extends LitElement {
 
                 .actions {
                     position: absolute;
+                    display: grid;
+                    align-items: center;
+                    grid-template-columns: auto;
                     top: 4px;
                     right: 4px;
-
-                    display: grid;
-                    grid-template-columns: auto;
-                    align-items: center;
+                    background: rgba(0, 0, 0, 0.5);
+                    border-radius: 9999px;
                 }
 
                 .actions > mwc-button {

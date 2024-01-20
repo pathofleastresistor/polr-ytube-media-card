@@ -667,12 +667,13 @@ let PoLRYTubeGridItem = class PoLRYTubeGridItem extends s$1 {
 
                 .actions {
                     position: absolute;
+                    display: grid;
+                    align-items: center;
+                    grid-template-columns: auto;
                     top: 4px;
                     right: 4px;
-
-                    display: grid;
-                    grid-template-columns: auto;
-                    align-items: center;
+                    background: rgba(0, 0, 0, 0.5);
+                    border-radius: 9999px;
                 }
 
                 .actions > mwc-button {
@@ -800,7 +801,7 @@ let PoLRYTubeList = class PoLRYTubeList extends s$1 {
                         var(--polr-ytube-list-columns, 1),
                         minmax(0, 1fr)
                     );
-                    gap: 12px;
+                    gap: 4px;
                     --mdc-list-item-graphic-size: 40px;
                 }
 

@@ -102,7 +102,7 @@ export class PoLRYTubeList extends LitElement {
                         var(--polr-ytube-list-columns, 1),
                         minmax(0, 1fr)
                     );
-                    gap: 12px;
+                    gap: 4px;
                     --mdc-list-item-graphic-size: 40px;
                 }
 
