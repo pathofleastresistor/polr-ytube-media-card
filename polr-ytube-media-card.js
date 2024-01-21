@@ -4703,7 +4703,7 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
                     .entity=${this.entity}
                     @navigate=${(ev) => this._browse(ev.detail.action)}
                     .grid=${this.coverNavigation}
-                    columns="3"
+                    columns=${this.coverNavigation ? "3" : "1"}
                 ></polr-ytube-list>
             </div>
         `;
