@@ -9232,11 +9232,7 @@ class PoLRYTubePlayingCard extends s$1 {
     static get styles() {
         return [
             i$5 `
-                ha-card {
-                    height: 700px;
-                    display: flex;
-                    flex-direction: column;
-                    overflow: hidden;
+                :host {
                     --polr-ytube-bg-brightness: 40%;
                     --polr-ytube-bg-color: #1c1c1c;
                     --polr-ytube-text-color: #ffffff;
@@ -9256,6 +9252,15 @@ class PoLRYTubePlayingCard extends s$1 {
                     );
                     --mdc-theme-surface: var(--polr-ytube-bg-color);
                     --mdc-text-field-ink-color: var(--polr-ytube-text-color);
+                    --mdc-theme-primary: var(--primary-color);
+                    --icon-primary-color: var(--primary-color);
+                }
+
+                ha-card {
+                    height: 700px;
+                    display: flex;
+                    flex-direction: column;
+                    overflow: hidden;
                 }
 
                 .background {
