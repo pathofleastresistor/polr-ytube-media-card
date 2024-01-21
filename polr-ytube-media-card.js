@@ -664,7 +664,7 @@ let PoLRYTubeGridItem = class PoLRYTubeGridItem extends s$1 {
 
                 .title {
                     position: absolute;
-                    z-index: 100;
+                    z-index: 2;
                     left: 0;
                     right: 0;
                     bottom: 0;
