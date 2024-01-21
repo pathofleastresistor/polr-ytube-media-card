@@ -299,7 +299,7 @@ export class PoLRYTubePlayingCard extends LitElement {
         return [
             css`
                 :host {
-                    --polr-ytube-bg-brightness: 40%;
+                    --polr-ytube-bg-brightness: 25%;
                     --polr-ytube-bg-color: #1c1c1c;
                     --polr-ytube-text-color: #ffffff;
                     --primary-text-color: var(--polr-ytube-text-color);
@@ -319,7 +319,7 @@ export class PoLRYTubePlayingCard extends LitElement {
                     --mdc-theme-surface: var(--polr-ytube-bg-color);
                     --mdc-text-field-ink-color: var(--polr-ytube-text-color);
                     --mdc-theme-primary: var(--primary-color);
-                    --icon-primary-color: var(--primary-color);
+                    --icon-primary-color: var(--polr-ytube-text-color);
                 }
 
                 ha-card {
