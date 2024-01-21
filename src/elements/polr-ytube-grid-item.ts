@@ -35,10 +35,8 @@ export class PoLRYTubeGridItem extends LitElement {
 
     render() {
         return html`
-            <div class="grid-item">
-                <div @click=${this._performPrimaryAction}>
-                    ${this._renderThumbnail(this.element)}
-                </div>
+            <div class="grid-item" @click=${this._performPrimaryAction}>
+                <div>${this._renderThumbnail(this.element)}</div>
                 <span class="title"> ${this.element.title}</span>
                 <div class="actions">
                     ${this._hasAdditionalActions
@@ -171,18 +169,36 @@ export class PoLRYTubeGridItem extends LitElement {
         return [
             css`
                 :host {
-                    --mdc-theme-primary: #e9437a;
                 }
 
                 .grid-item {
                     position: relative;
                     display: grid;
-                    gap: 4px;
+                    aspect-ratio: 1 / 1;
+                    cursor: pointer;
+                    border-radius: 5px;
+                    overflow: hidden;
+                }
+
+                .grid-item:focus {
+                    outline: dotted thin;
                 }
 
                 .title {
-                    display: -webkit-box;
+                    position: absolute;
+                    z-index: 100;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    padding: 4px 8px;
+                    background-color: color-mix(
+                        in srgb,
+                        var(--primary-color) 90%,
+                        #000000aa
+                    );
+                    font-size: 12px;
                     overflow: hidden;
+                    display: -webkit-box;
                     -webkit-box-orient: vertical;
                     -webkit-line-clamp: 2;
                 }
@@ -202,15 +218,9 @@ export class PoLRYTubeGridItem extends LitElement {
                     margin: 0 8px;
                 }
 
-                .thumbnail img {
-                }
-
                 .thumbnail {
-                    aspect-ratio: 1 / 1;
                     width: 100%;
-                    max-height: 100%;
-                    border-radius: 5px;
-                    cursor: pointer;
+                    height: 100%;
                 }
 
                 .empty-thumbnail {
