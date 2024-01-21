@@ -193,7 +193,7 @@ export class PoLRYTubeGridItem extends LitElement {
                     padding: 4px 8px;
                     background-color: color-mix(
                         in srgb,
-                        var(--primary-color) 90%,
+                        var(--primary-color) 50%,
                         #000000aa
                     );
                     font-size: 12px;
@@ -201,6 +201,7 @@ export class PoLRYTubeGridItem extends LitElement {
                     display: -webkit-box;
                     -webkit-box-orient: vertical;
                     -webkit-line-clamp: 2;
+                    color: #ffffff;
                 }
 
                 .actions {
@@ -210,7 +211,7 @@ export class PoLRYTubeGridItem extends LitElement {
                     grid-template-columns: auto;
                     top: 4px;
                     right: 4px;
-                    background: rgba(0, 0, 0, 0.5);
+                    background: rgba(0, 0, 0, 0.25);
                     border-radius: 9999px;
                 }
 
