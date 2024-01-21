@@ -4699,6 +4699,7 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
         return x `
             <div class="container">
                 ${this._renderSearch()} ${this._renderNavigation()}
+                ${this._renderPlay()}
                 <polr-ytube-list
                     .hass=${this.hass}
                     .entity=${this.entity}
@@ -4849,6 +4850,28 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
             </div>
         `;
     }
+    _renderPlay() {
+        const element = this._browseHistory[this._browseHistory.length - 1];
+        console.log(element);
+        if (element === null || element === void 0 ? void 0 : element.can_play) {
+            return x `
+                <div class="playable_result">
+                    ${element.title}
+                    <mwc-button
+                        raised
+                        dense
+                        @click=${() => this.hass.callService("media_player", "play_media", {
+                entity_id: this.entity["entity_id"],
+                media_content_id: element.media_content_id,
+                media_content_type: element.media_content_type,
+            })}
+                    >
+                        Play
+                    </mwc-button>
+                </div>
+            `;
+        }
+    }
     _handleSearchInput(ev) {
         if (ev.keyCode == 13) {
             this._search();
@@ -4928,6 +4951,12 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
                     grid-template-columns: 1fr 120px;
                     align-items: center;
                     gap: 4px;
+                }
+
+                .playable_result {
+                    display: inline-flex;
+                    justify-content: space-between;
+                    align-items: center;
                 }
 
                 polr-ytube-list {
