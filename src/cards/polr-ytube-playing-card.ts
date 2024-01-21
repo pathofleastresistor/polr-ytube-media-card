@@ -179,12 +179,19 @@ export class PoLRYTubePlayingCard extends LitElement {
     }
 
     _renderSourceSelctor() {
-        const media_players = [];
+        let media_players = [];
 
         for (const [key, value] of Object.entries(this._hass["states"])) {
             if (key.startsWith("media_player")) {
                 // Skip ytube_media_player entities
                 if ((value as any)?.attributes?.remote_player_id) continue;
+
+                if (
+                    "speakers" in this._config &&
+                    !this._config.speakers.includes(key)
+                ) {
+                    continue;
+                }
 
                 media_players.push([key, value["attributes"]["friendly_name"]]);
             }
