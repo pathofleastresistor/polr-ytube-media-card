@@ -4852,7 +4852,6 @@ let PoLRYTubeBrowser = class PoLRYTubeBrowser extends s$1 {
     }
     _renderPlay() {
         const element = this._browseHistory[this._browseHistory.length - 1];
-        console.log(element);
         if (element === null || element === void 0 ? void 0 : element.can_play) {
             return x `
                 <div class="playable_result">
